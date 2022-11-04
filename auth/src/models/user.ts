@@ -10,9 +10,9 @@ export const USER_TYPES = {
 // An interface that describe the properties
 // that are required to create user
 interface UserAttrs {
-  firstName: String;
-  lastName: String;
-  type: String;
+  firstName: string;
+  lastName: string;
+  type: string;
   email: string;
   password: string;
 }
@@ -20,9 +20,9 @@ interface UserAttrs {
 // An interface that describe the properties
 // that user document has
 interface UserDoc extends mongoose.Document {
-  firstName: String;
-  lastName: String;
-  type: String;
+  firstName: string;
+  lastName: string;
+  type: string;
   email: string;
   password: string;
 }

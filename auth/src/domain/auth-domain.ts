@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import { User } from '../models/user';
 import jwt from 'jsonwebtoken';
 import { Password } from '../services/password';
+import { UserCreatedPublisher } from '../events/publisher/user-created-publisher';
+import { natsWrapper } from '../nats-wrapper';
 
 export class AuthDomain {
   // SIGNUP
@@ -23,6 +25,7 @@ export class AuthDomain {
       {
         id: user.id,
         email: user.email,
+        type: user.type,
       },
       process.env.JWT_KEY!
       // {expiresIn: '10s'}
@@ -30,6 +33,16 @@ export class AuthDomain {
 
     // Store it on session object
     req.session = { jwt: userJwt };
+
+    await new UserCreatedPublisher(natsWrapper.client).publish({
+      id: user.id,
+      userId: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      type: user.type,
+    });
+
     return res.status(201).send(user);
   }
 
@@ -54,6 +67,7 @@ export class AuthDomain {
       {
         id: exitstingUser.id,
         email: exitstingUser.email,
+        type: exitstingUser.type,
       },
       process.env.JWT_KEY!
       //{expiresIn: '10s'}
