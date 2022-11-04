@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-service-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-service
+  template:
+    metadata:
+      labels:
+        app: chat-service
+    spec:
+      containers:
+        - name: chat-service
+          image: ravinapanchal/chat-service
+          env:
+            - name: MONGO_URI
+              value: 'mongodb://chat-service-mongo-srv:27017/chat-service'   
+            - name: PORT
+              value: '3001'      
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-service-srv
+spec:
+  selector:
+    app: chat-service
+  ports:
+    - name: chat-service
+      protocol: TCP
+      port: 3001
+      targetPort: 3001

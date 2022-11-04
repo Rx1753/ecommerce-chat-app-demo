@@ -1,0 +1,36 @@
+{
+  "name": "chat-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin/run.ts",
+  "scripts": {
+    "start": "ts-node-dev bin/run.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@socket.io/redis-adapter": "^7.2.0",
+    "@types/express": "^4.17.13",
+    "@types/jsonwebtoken": "^8.5.9",
+    "@types/mongoose": "^5.11.97",
+    "@types/http-errors": "^2.0.1",
+    "@types/uuid": "^8.3.4",
+    "body-parser": "^1.20.1",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "helmet": "^6.0.0",
+    "http-errors": "^2.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.7.0",
+    "mongoose-update-if-current": "^1.4.0",
+    "nodemon": "^2.0.20",
+    "redis": "^4.4.0",
+    "socket.io": "^4.5.3",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.8.4",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^8.9.2"
+  }
+}
