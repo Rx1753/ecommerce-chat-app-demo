@@ -1,5 +1,5 @@
 import express, { Request, Response, Router } from 'express';
-import { currentUser, validateRequest, requireAuth } from '@rx-demo/common';
+import { currentUser, validateRequest, requireAuth } from '@rx-ecommerce-chat/common_lib';
 import { body, check } from 'express-validator';
 import { AuthDomain } from '../domain/auth-domain';
 
@@ -49,11 +49,11 @@ Require Auth Verification
 //All User List
 router.get('/api/users/getAllUsers', AuthDomain.getAllUsers);
 
-//Single User Detail
-router.get('/api/users/:id', AuthDomain.getUserById);
+// //Single User Detail
+router.get('/api/users/user/:id', AuthDomain.getUserById);
 
-//Delete Single User
-router.delete('/api/users/:id', AuthDomain.deleteUserById);
+// //Delete Single User
+router.delete('/api/users/user/:id', AuthDomain.deleteUserById);
 
 // SIGN-OUT
 router.post('/api/users/signout', AuthDomain.signOut);

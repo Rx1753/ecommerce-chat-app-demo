@@ -1,4 +1,4 @@
-import { BadRequestError } from '@rx-demo/common';
+import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { Request, Response } from 'express';
 import { User } from '../models/user';
 import jwt from 'jsonwebtoken';
@@ -23,7 +23,6 @@ export class AuthDomain {
       {
         id: user.id,
         email: user.email,
-        type: user.type,
       },
       process.env.JWT_KEY!
       // {expiresIn: '10s'}
@@ -55,7 +54,6 @@ export class AuthDomain {
       {
         id: exitstingUser.id,
         email: exitstingUser.email,
-        type: exitstingUser.type,
       },
       process.env.JWT_KEY!
       //{expiresIn: '10s'}
@@ -80,7 +78,7 @@ export class AuthDomain {
   static async getUserById(req: Request, res: Response) {
     const user = await User.findOne({ _id: req.params.id });
     if (!user) {
-      throw new BadRequestError('User doesn\'t exist');
+      throw new BadRequestError("User doesn't exist");
     }
     res.status(200).send(user);
   }
@@ -96,6 +94,7 @@ export class AuthDomain {
 
   // SIGN-OUT
   static async signOut(req: Request, res: Response) {
+    console.log('signOut-------');
     req.session = null;
     res.send({});
   }
