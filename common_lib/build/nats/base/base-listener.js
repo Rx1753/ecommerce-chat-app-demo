@@ -24,7 +24,9 @@ class Listener {
     }
     parseMessage(msg) {
         const data = msg.getData();
-        return typeof data === 'string' ? JSON.parse(data) : JSON.parse(data.toString('utf-8')); //utf-8 for buffer
+        return typeof data === 'string'
+            ? JSON.parse(data)
+            : JSON.parse(data.toString('utf-8')); //utf-8 for buffer
     }
 }
 exports.Listener = Listener;

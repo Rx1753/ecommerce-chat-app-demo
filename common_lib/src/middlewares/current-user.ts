@@ -28,7 +28,8 @@ export const currentUser = (
   if (req.session?.jwt) {
     token = req.session?.jwt;
   } else {
-    token = req.headers['authorization'];
+    const accessToken = (req.headers.authorization as String).split(' ')[1];
+    token = accessToken;
   }
 
   try {

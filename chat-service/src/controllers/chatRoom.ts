@@ -18,7 +18,7 @@ export default {
       //     type: { type: types.enum, options: { enum: CHAT_ROOM_TYPES } },
       //   },
       // }));
-      // if (!validation.success) return res.status(400).json({ ...validation });
+      //if (!validation.success) return res.status(400).json({ ...validation });
       const { userIds, type } = req.body;
       const { userId: chatInitiator } = req;
       const allUserIds = [...userIds, chatInitiator];

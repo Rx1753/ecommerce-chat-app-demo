@@ -15,7 +15,8 @@ const currentUser = (req, res, next) => {
         token = (_c = req.session) === null || _c === void 0 ? void 0 : _c.jwt;
     }
     else {
-        token = req.headers['authorization'];
+        const accessToken = req.headers.authorization.split(' ')[1];
+        token = accessToken;
     }
     try {
         const payload = jsonwebtoken_1.default.verify(token, process.env.JWT_KEY);
