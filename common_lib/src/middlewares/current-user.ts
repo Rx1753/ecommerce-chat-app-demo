@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { TokenExpiredError } from 'jsonwebtoken';
+import { BadRequestError } from '..';
 
 interface UserPayload {
   id: string;
@@ -21,7 +22,7 @@ export const currentUser = (
   next: NextFunction
 ) => {
   if (!req.session?.jwt && !req.headers['authorization']) {
-    return next();
+    throw new BadRequestError("Token/Session not provided");
   }
 
   var token;
@@ -34,8 +35,13 @@ export const currentUser = (
 
   try {
     const payload = jwt.verify(token, process.env.JWT_KEY!) as UserPayload;
-
     req.currentUser = payload;
-  } catch (error) {}
+  } catch (error: any) {
+    if (error instanceof TokenExpiredError) {
+      throw new BadRequestError(error.message);
+    } else {
+      throw new BadRequestError(error.message);
+    }
+  }
   next();
 };

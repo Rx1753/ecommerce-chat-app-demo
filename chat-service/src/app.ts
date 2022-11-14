@@ -70,12 +70,16 @@ class ExpressServer {
       );
       //Routers
       this.app.use(currentUser);
-      this.app.use('/api/chats/room', requireAuth, currentUser, chatRoomRoute);
+      this.app.use('/api/chats/room', chatRoomRoute);
       this.app.use('/api/chats/delete', deleteRoomRouter);
 
-      this.app.use((req: any, res: any, next: any) =>
-        next(createError(404, 'File not found'))
-      );
+      // this.app.use((req: any, res: any, next: any) =>
+      //   next(createError(404, 'File not found'))
+      // );
+      this.app.all('*', async () => {
+        throw new NotFoundError();
+      });
+      this.app.use(errorHandler);
 
       // // eslint-disable-next-line no-unused-vars
       // this.app.use((error: any, req: any, res: any, next: any) => {

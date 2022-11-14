@@ -21,6 +21,7 @@ export default {
       //if (!validation.success) return res.status(400).json({ ...validation });
       const { userIds, type } = req.body;
       const { userId: chatInitiator } = req;
+      console.log(`Current user ---- `, req.currentUser)
       const allUserIds = [...userIds, chatInitiator];
       const chatRoom = await ChatRoom.initiateChat(
         allUserIds,

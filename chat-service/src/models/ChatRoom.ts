@@ -30,10 +30,10 @@ interface ChatRoomDoc extends mongoose.Document {
 
 const chatRoomSchema = new mongoose.Schema(
   {
-    _id: {
-      type: String,
-      default: () => uuidv4().replace(/\-/g, ''),
-    },
+    // _id: {
+    //   type: String,
+    //   default: () => uuidv4().replace(/\-/g, ''),
+    // },
     userIds: Array,
     type: String,
     chatInitiator: String,
