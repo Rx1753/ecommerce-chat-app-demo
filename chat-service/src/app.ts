@@ -6,14 +6,10 @@ import express, { Application } from 'express';
 import 'express-async-errors';
 import cookieSession from 'cookie-session';
 
-import {
-  requireAuth,
-  currentUser,
-  errorHandler,
-  NotFoundError,
-} from '@rx-ecommerce-chat/common_lib';
+import { errorHandler, NotFoundError } from '@rx-ecommerce-chat/common_lib';
 import { natsWrapper } from './nats-wrapper';
 import { UserCreatedListener } from './events/listener/user-created-listener';
+import { currentUser } from './middlewares/current-user';
 
 import chatRoomRoute from './routes/chatRoom';
 import deleteRoomRouter from './routes/delete';
@@ -69,8 +65,8 @@ class ExpressServer {
         res.sendStatus(204)
       );
       //Routers
-      this.app.use(currentUser);
-      this.app.use('/api/chats/room', chatRoomRoute);
+      //this.app.use(currentUser);
+      this.app.use('/api/chats/room',currentUser,chatRoomRoute);
       this.app.use('/api/chats/delete', deleteRoomRouter);
 
       // this.app.use((req: any, res: any, next: any) =>

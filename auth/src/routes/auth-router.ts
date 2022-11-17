@@ -1,9 +1,10 @@
 import express, { Request, Response, Router } from 'express';
 import {
-  currentUser,
+  //currentUser,
   validateRequest,
-  requireAuth,
+  //requireAuth,
 } from '@rx-ecommerce-chat/common_lib';
+import { currentUser } from '../middlewares/current-user';
 import { body, check } from 'express-validator';
 import { AuthDomain } from '../domain/auth-domain';
 
