@@ -5,44 +5,18 @@ import {
   //requireAuth,
 } from '@rx-ecommerce-chat/common_lib';
 import { currentUser } from '../middlewares/current-user';
-import { body, check } from 'express-validator';
 import { AuthDomain } from '../domain/auth-domain';
+import { Validation } from '../validations/validation';
 
 const router = express.Router();
 
 // SIGN-UP
-router.post(
-  '/api/users/signup',
-  [
-    body('firstName')
-      .trim()
-      .notEmpty()
-      .withMessage('Please provide a first name.'),
-    body('lastName')
-      .trim()
-      .notEmpty()
-      .withMessage('Please provide a last name.'),
-    body('type').trim().notEmpty().withMessage('Type can not be empty'),
-    body('email').isEmail().withMessage('email must be valid -----'),
-    body('password')
-      .trim()
-      .isLength({ min: 8, max: 20 })
-      .withMessage('password must be between 4 and 20 characters ----'),
-  ],
-  validateRequest,
-  AuthDomain.signUp
-);
+router.post('/api/users/signup', Validation.signUpValidation,validateRequest, AuthDomain.signUp);
 
 // SIGN-IN
 router.post(
   '/api/users/signin',
-  [
-    body('email').isEmail().withMessage('Email Must Be Valid'),
-    body('password')
-      .trim()
-      .notEmpty()
-      .withMessage('You Must supply a password'),
-  ],
+  Validation.signInValidation,
   validateRequest,
   AuthDomain.signIn
 );
@@ -50,7 +24,6 @@ router.post(
 /*
 Require Auth Verification
 */
-
 //All User List
 router.get('/api/users/getAllUsers', AuthDomain.getAllUsers);
 

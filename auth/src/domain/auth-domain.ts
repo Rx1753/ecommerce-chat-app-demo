@@ -1,96 +1,54 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { Request, Response } from 'express';
-import { User } from '../models/user';
 import jwt from 'jsonwebtoken';
 import { Password } from '../services/password';
-import { UserCreatedPublisher } from '../events/publisher/user-created-publisher';
-import { natsWrapper } from '../nats-wrapper';
+import { AuthDatabaseLayer } from '../database-layer/auth-database';
 
 export class AuthDomain {
   // SIGNUP
   static async signUp(req: Request, res: Response) {
-    const { firstName, lastName, type, email, password } = req.body;
-
-    const existingUser = await User.findOne({ email });
-
+    const { email } = req.body;
+    const existingUser = await AuthDatabaseLayer.isExistingUser(email);
     if (existingUser) {
       throw new BadRequestError('Email In Use');
     }
-
-    const user = User.build({ firstName, lastName, type, email, password });
-    await user.save();
-
-    // Generate JWT
-    const userJwt = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-        type: user.type,
-      },
-      process.env.JWT_KEY!
-      // {expiresIn: '10s'}
-    );
-
-    // Store it on session object
-    req.session = { jwt: userJwt };
-
-    await new UserCreatedPublisher(natsWrapper.client).publish({
-      id: user.id,
-      userId: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      type: user.type,
-    });
-
+    var user = await AuthDatabaseLayer.signUpUser(req);
     return res.status(201).send(user);
   }
 
   // SIGNIN
   static async signIn(req: Request, res: Response) {
     const { email, password } = req.body;
-    const exitstingUser = await User.findOne({ email });
+    const exitstingUser = await AuthDatabaseLayer.isExistingUser(email);
     if (!exitstingUser) {
       throw new BadRequestError('Invalid email');
     }
-    const passwordMatch = await Password.compare(
+    const passwordMatch = await AuthDatabaseLayer.checkPassword(
       exitstingUser.password,
       password
     );
-
     if (!passwordMatch) {
       throw new BadRequestError('Invalid Password');
     }
-
-    // Generate JWT
-    const userJwt = jwt.sign(
-      {
-        id: exitstingUser.id,
-        email: exitstingUser.email,
-        type: exitstingUser.type,
-      },
-      process.env.JWT_KEY!
-      //{expiresIn: '10s'}
-    );
-
+    var jwtToken = await AuthDatabaseLayer.loginAndAccessToken(exitstingUser);
     // Store it on session object
-    req.session = { jwt: userJwt };
+    req.session = { jwt: jwtToken };
     return res.status(200).json({
       success: true,
-      authorization: userJwt,
+      authorization: jwtToken,
       user: exitstingUser,
     });
   }
 
   // GET ALL USERS
   static async getAllUsers(req: Request, res: Response) {
-    const users = await User.find();
+    var users = await AuthDatabaseLayer.getAllUsers();
     res.status(200).send(users);
   }
 
   //Get Single user detail
   static async getUserById(req: Request, res: Response) {
-    const user = await User.findOne({ _id: req.params.id });
+    const user = await AuthDatabaseLayer.getUserById(req.params.id);
     if (!user) {
       throw new BadRequestError("User doesn't exist");
     }
@@ -99,10 +57,10 @@ export class AuthDomain {
 
   //Delete user by Id
   static async deleteUserById(req: Request, res: Response) {
-    const user = await User.remove({ _id: req.params.id });
+    const deletedCount = await AuthDatabaseLayer.deleteUserById(req.params.id);
     res.status(200).json({
       success: true,
-      message: `Deleted a count of ${user.deletedCount} user.`,
+      message: `Deleted a count of ${deletedCount} user.`,
     });
   }
 
