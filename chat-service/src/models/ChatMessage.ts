@@ -62,10 +62,10 @@ const readByRecipientSchema = new mongoose.Schema(
 
 const chatMessageSchema = new mongoose.Schema(
   {
-    _id: {
-      type: String,
-      default: () => uuidv4().replace(/\-/g, ''),
-    },
+    // _id: {
+    //   type: String,
+    //   default: () => uuidv4().replace(/\-/g, ''),
+    // },
     chatRoomId: String,
     message: mongoose.Schema.Types.Mixed,
     type: {

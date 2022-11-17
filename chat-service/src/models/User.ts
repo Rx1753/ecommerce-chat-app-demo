@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 interface UserAttrs {
-  id: string;
+ // id: string;
   firstName: string;
   lastName: string;
   type: string;
@@ -34,9 +34,9 @@ interface UserDoc extends mongoose.Document {
 
 const userSchema = new mongoose.Schema(
   {
-    _id: {
-      type: String
-    },
+    // _id: {
+    //   type: String
+    // },
     firstName: String,
     lastName: String,
     type: String,
@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema(
 
 userSchema.statics.build = (attr: UserAttrs) => {
   return new User({
-    _id: attr.id,
+   // _id: attr.id,
     firstName: attr.firstName,
     lastName: attr.lastName,
     type: attr.type,

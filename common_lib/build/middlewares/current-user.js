@@ -1,28 +1,43 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.currentUser = void 0;
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const currentUser = (req, res, next) => {
-    var _a, _b, _c;
-    if (!((_a = req.session) === null || _a === void 0 ? void 0 : _a.jwt) && !req.headers['authorization']) {
-        return next();
-    }
-    var token;
-    if ((_b = req.session) === null || _b === void 0 ? void 0 : _b.jwt) {
-        token = (_c = req.session) === null || _c === void 0 ? void 0 : _c.jwt;
-    }
-    else {
-        const accessToken = req.headers.authorization.split(' ')[1];
-        token = accessToken;
-    }
-    try {
-        const payload = jsonwebtoken_1.default.verify(token, process.env.JWT_KEY);
-        req.currentUser = payload;
-    }
-    catch (error) { }
-    next();
-};
-exports.currentUser = currentUser;
+// import { Request, Response, NextFunction } from 'express';
+// import jwt, { TokenExpiredError } from 'jsonwebtoken';
+// import { BadRequestError } from '..';
+// interface UserPayload {
+//   id: string;
+//   email: string;
+//   type: string;
+// }
+// declare global {
+//   namespace Express {
+//     interface Request {
+//       currentUser?: UserPayload;
+//     }
+//   }
+// }
+// export const currentUser = (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   if (!req.session?.jwt && !req.headers['authorization']) {
+//     throw new BadRequestError("Token/Session not provided");
+//   }
+//   var token;
+//   if (req.session?.jwt) {
+//     token = req.session?.jwt;
+//   } else {
+//     const accessToken = (req.headers.authorization as String).split(' ')[1];
+//     token = accessToken;
+//   }
+//   try {
+//     const payload = jwt.verify(token, process.env.JWT_KEY!) as UserPayload;
+//     req.currentUser = payload;
+//   } catch (error: any) {
+//     if (error instanceof TokenExpiredError) {
+//       throw new BadRequestError(error.message);
+//     } else {
+//       throw new BadRequestError(error.message);
+//     }
+//   }
+//   next();
+// };

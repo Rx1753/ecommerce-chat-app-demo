@@ -20,7 +20,9 @@ export default {
       // }));
       //if (!validation.success) return res.status(400).json({ ...validation });
       const { userIds, type } = req.body;
-      const { userId: chatInitiator } = req;
+      var chatInitiator = req.currentUser.id;
+      //const { userId : chatInitiator } = req;
+      console.log(`chatInitiator ---- 123... `, req.currentUser.id);
       const allUserIds = [...userIds, chatInitiator];
       const chatRoom = await ChatRoom.initiateChat(
         allUserIds,
@@ -46,12 +48,13 @@ export default {
       const messagePayload = {
         messageText: req.body.messageText,
       };
-      const currentLoggedUser = req.userId;
+      const currentLoggedUser = req.currentUser.id;
       const post = await ChatMessage.createPostInChatRoom(
         roomId,
         messagePayload,
         currentLoggedUser
       );
+      console.log(`roomId :: ${roomId} ----> messagePayload :: ${messagePayload} ---> currentLoggedUser :: ${currentLoggedUser}`)
       //global.io.sockets.in(roomId).emit('new message', { message: post });
       return res.status(200).json({ success: true, post });
     } catch (error) {
@@ -60,18 +63,23 @@ export default {
   },
   getRecentConversation: async (req: any, res: any) => {
     try {
-      const currentLoggedUser = req.userId;
+      const currentLoggedUser = req.currentUser.id;
       const options = {
         page: parseInt(req.query.page) || 0,
         limit: parseInt(req.query.limit) || 10,
       };
       const rooms = await ChatRoom.getChatRoomsByUserId(currentLoggedUser);
+      console.log(`ROOMS :: ${rooms} ----> currentLoggedUser ${currentLoggedUser}`);
       const roomIds = rooms.map((room: any) => room._id);
+      console.log(`ROOM IDS :: ${roomIds}`);
       const recentConversation = await ChatMessage.getRecentConversation(
         roomIds,
         options,
         currentLoggedUser
       );
+
+      console.log(`----> recentConversation ${recentConversation}`);
+
       return res
         .status(200)
         .json({ success: true, conversation: recentConversation });
@@ -118,7 +126,7 @@ export default {
         });
       }
 
-      const currentLoggedUser = req.userId;
+      const currentLoggedUser = req.currentUser.id;
       const result = await ChatMessage.markMessageRead(
         roomId,
         currentLoggedUser

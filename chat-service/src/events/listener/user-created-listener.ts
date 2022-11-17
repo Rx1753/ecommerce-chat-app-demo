@@ -13,7 +13,7 @@ export class UserCreatedListener extends Listener<UserCreatedEvent> {
   async onMessage(data: UserCreatedEvent['data'], msg: Message) {
     const { id, firstName, lastName, email, type } = data;
     const user = User.build({
-      id: id,
+      //id: id,
       firstName: firstName,
       lastName: lastName,
       type: type,
