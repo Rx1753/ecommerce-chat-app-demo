@@ -21,7 +21,7 @@ export const currentUser = (
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.session?.jwt && !req.headers['authorization']) {
+  if (!req.session?.jwt && !req.headers['token']) {
     throw new BadRequestError('Token/Session not provided');
   }
 

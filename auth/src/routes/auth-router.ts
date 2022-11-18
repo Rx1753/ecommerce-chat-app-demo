@@ -3,7 +3,7 @@ import {
   //currentUser,
   validateRequest,
   //requireAuth,
-} from '@rx-ecommerce-chat/common_lib';
+} from '../middlewares/validate-request';
 import { currentUser } from '../middlewares/current-user';
 import { AuthDomain } from '../domain/auth-domain';
 import { Validation } from '../validations/validation';

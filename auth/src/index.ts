@@ -6,6 +6,7 @@ import { natsWrapper } from './nats-wrapper';
 const port = 3000;
 
 const start = async () => {
+  
   if (!process.env.JWT_KEY) {
     throw new Error('JWT_KEY must be defined');
   }
@@ -44,7 +45,10 @@ const start = async () => {
     throw Error(error);
   }
 
-  app.listen(port);
+  app.listen(port,()=>{
+    console.log('listen at',port);
+    
+  });
 };
 
 start();
