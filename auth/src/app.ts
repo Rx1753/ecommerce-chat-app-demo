@@ -2,7 +2,7 @@ import express from 'express';
 import 'express-async-errors';
 import cookieSession from 'cookie-session';
 import { errorHandler, NotFoundError } from '@rx-ecommerce-chat/common_lib';
-import { authRouter } from './routes/auth-router';
+import { authRouter } from './routes/admin-auth-router';
 
 const app = express();
 

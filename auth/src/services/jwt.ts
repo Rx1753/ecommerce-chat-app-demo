@@ -6,6 +6,6 @@ export class JwtService {
   };
 
   static refreshToken = async (payload: object) => {
-    return jwt.sign(payload, process.env.JWT_KEY!, { expiresIn: '5d' });
+    return jwt.sign(payload, process.env.JWT_KEY!, { expiresIn: '10d' });
   };
 }
