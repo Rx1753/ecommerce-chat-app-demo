@@ -4,9 +4,9 @@ import mongoose from 'mongoose';
 // that are required to create invitionCode
 interface invitionCodeAttrs {
     type: string;
-    phoneNumber: Number;
-    email: string;
-    userId:Number;
+    phoneNumber?: Number;
+    email?: string;
+    userId?:Number;
     code: String;
     expirationDays: Number;
 }
@@ -20,6 +20,7 @@ interface invitionCodeDoc extends mongoose.Document {
     userId:Number;
     code: String;
     expirationDays: Number;
+    created_By:String;
     created_at: Number;
     updated_at: Number;
 }
@@ -39,6 +40,8 @@ const invitionCodeSchema = new mongoose.Schema(
         email:{type:String},
         code: { type: String },
         expirationDays: { type: Number, default: 10 },
+        isUsed:{type:Boolean,defaul:false},
+        created_By:{type:String},
         created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
         updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
     },

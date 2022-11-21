@@ -6,6 +6,7 @@ import shortid from 'shortid';
 import mongoose from 'mongoose';
 import { CustomerAuthDatabaseLayer } from '../database-layer/customer-auth-databse';
 import { JwtService } from '../services/jwt';
+import { invitionCode } from '../models/invition-code';
 
 // import { UserCreatedPublisher } from '../events/publisher/user-created-publisher';
 // import { natsWrapper } from '../nats-wrapper';
@@ -16,12 +17,15 @@ export class CustomerDomain {
     static async signUp(req: Request, res: Response) {
 
         const { email, phoneNumber } = req.body;
-
-        console.log(email);
-
-        const existingUser = await CustomerAuthDatabaseLayer.isExistingEmail(email);
-        const exitstingPhone = await CustomerAuthDatabaseLayer.isExistingPhone(phoneNumber);
-
+        var exitstingPhone;
+        var existingUser
+        if(email!=undefined || email!=null){
+            existingUser = await CustomerAuthDatabaseLayer.isExistingEmail(email);    
+        }
+        if(phoneNumber!=undefined || phoneNumber!=null){
+             exitstingPhone = await CustomerAuthDatabaseLayer.isExistingPhone(phoneNumber);
+        }
+        
         if (existingUser) {
             throw new BadRequestError('Email In Use');
         }
@@ -62,8 +66,8 @@ export class CustomerDomain {
         }
 
         if (exitstingEmail) {
-            const accessToken =await JwtService.accessToken({ email: exitstingEmail.email, password: exitstingEmail.password }, process.env.JWT_KEY!);
-            const newRefreshToken = await CustomerAuthDatabaseLayer.updateRefreshToken(exitstingEmail.id, exitstingEmail.email, exitstingEmail.password)
+            const accessToken = await JwtService.accessToken({ email: exitstingEmail.email, id: exitstingEmail.id, phoneNumber:exitstingEmail.phoneNumber,userType:'Customer'});
+            const newRefreshToken = await CustomerAuthDatabaseLayer.updateRefreshToken(exitstingEmail.id, exitstingEmail.email, exitstingEmail.phoneNumber)
             return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
         }
 
@@ -94,7 +98,7 @@ export class CustomerDomain {
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        
+
         const deletedCount = await CustomerAuthDatabaseLayer.deleteUserById(req.params.id);
         res.status(200).json({
             success: true,
@@ -103,12 +107,29 @@ export class CustomerDomain {
     }
 
     //Get User By name 
-    static async getUserByName(req:Request,res:Response){
+    static async getUserByName(req: Request, res: Response) {
         const customer = await CustomerAuthDatabaseLayer.getUserByName(req.params.name);
         res.status(200).send(customer);
     }
 
-    
+
+    //Switch Toogle
+    static async inviteOnlyGenralSwitch(req: Request, res: Response) {
+        var status = await CustomerAuthDatabaseLayer.inviteOnlyGenralSwitch(req);
+        res.status(200).send({ status: status });
+    }
+
+    static async generateReferalCode(req: Request, res: Response) {
+        var createReferalCode = invitionCode.build({
+            type: 'email',
+            email: 'abc@gmail.com',
+            code: '123456',
+            expirationDays: 8
+        })
+        await createReferalCode.save();
+        return createReferalCode;
+    }
+
 }
 
 

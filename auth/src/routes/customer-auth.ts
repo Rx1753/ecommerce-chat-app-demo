@@ -31,8 +31,12 @@ router.get('/api/users/customer/getuserbyname/:name',CustomerDomain.getUserByNam
 router.post('/api/users/signout', 
 // AuthDomain.signOut
 );
-// 
+ 
 // CURRENT_USER
 // router.get('/api/users/currentuser', currentUser,CustomerDomain.currentUser);
-// 
+ 
+
+router.get('/api/users/customer/setinvitecode/:status',CustomerDomain.inviteOnlyGenralSwitch );
+router.get('/api/users/customer/generatereferalcode',CustomerDomain.generateReferalCode );
+
 export { router as customerRouter };

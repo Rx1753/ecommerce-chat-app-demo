@@ -4,12 +4,14 @@ import { Password } from "../services/password";
 // intetface that describe the prooerties
 // that are required to cretae new user
 export interface CustomerAttrs {
-    email: string;
-    phoneNumber: number;
+    email?: string | null;
+    phoneNumber?: number | null;
     name: string;
     password: string;
     inviteCode: string;
-    refreshToken:string;
+    status?:string;
+    referalId?:String;
+    referalType?:String;
 }
 
 // interface for usermodel pass
@@ -43,8 +45,8 @@ export interface CustomerDoc extends mongoose.Document {
 }
 
 const customerSchema = new mongoose.Schema({
-    email: { type: String, },
-    phoneNumber: { type: Number, },
+    email: { type: String || null, },
+    phoneNumber: { type: Number|| null, },
     name: { type: String },
     password: { type: String, required: true },
     faceId: { type: String, default: null },
@@ -61,7 +63,8 @@ const customerSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: false },
     isApproved: { type: Boolean, default: false },
     inviteCode: { type: String, required: true, unique: true },
-    referalId: { type: Number, default: null, ref: 'CustomerUser' },
+    referalType:{type:String,enum:['Admin','CustomeUser']},
+    referalId: { type: String, default: null, ref: 'CustomerUser' },
     noOfFriend: { type: Number, default: 0 },
     status: { type: String, enum: ['New', 'pending', 'Approved', 'Rejected', 'diActivated'], default: 'New' },
     noOfFollowedBusiness: { type: Number, default: 0 },
