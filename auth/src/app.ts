@@ -4,6 +4,7 @@ import cookieSession from 'cookie-session';
 import { errorHandler } from '../src/middlewares/error-handler';
 import { authRouter } from './routes/auth-router';
 import { customerRouter } from './routes/customer-auth';
+import { customerAddressRouter } from './routes/customer-address-route';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use(
 
 app.use(authRouter);
 app.use(customerRouter);
+app.use(customerAddressRouter);
 app.use(errorHandler);
 
 // app.all('*', async () => {

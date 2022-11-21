@@ -19,13 +19,13 @@ export class CustomerDomain {
         const { email, phoneNumber } = req.body;
         var exitstingPhone;
         var existingUser
-        if(email!=undefined || email!=null){
-            existingUser = await CustomerAuthDatabaseLayer.isExistingEmail(email);    
+        if (email != undefined || email != null) {
+            existingUser = await CustomerAuthDatabaseLayer.isExistingEmail(email);
         }
-        if(phoneNumber!=undefined || phoneNumber!=null){
-             exitstingPhone = await CustomerAuthDatabaseLayer.isExistingPhone(phoneNumber);
+        if (phoneNumber != undefined || phoneNumber != null) {
+            exitstingPhone = await CustomerAuthDatabaseLayer.isExistingPhone(phoneNumber);
         }
-        
+
         if (existingUser) {
             throw new BadRequestError('Email In Use');
         }
@@ -66,7 +66,7 @@ export class CustomerDomain {
         }
 
         if (exitstingEmail) {
-            const accessToken = await JwtService.accessToken({ email: exitstingEmail.email, id: exitstingEmail.id, phoneNumber:exitstingEmail.phoneNumber,userType:'Customer'});
+            const accessToken = await JwtService.accessToken({ email: exitstingEmail.email, id: exitstingEmail.id, phoneNumber: exitstingEmail.phoneNumber, userType: 'Customer' });
             const newRefreshToken = await CustomerAuthDatabaseLayer.updateRefreshToken(exitstingEmail.id, exitstingEmail.email, exitstingEmail.phoneNumber)
             return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
         }
@@ -112,13 +112,24 @@ export class CustomerDomain {
         res.status(200).send(customer);
     }
 
+    //update personal info
+    static async updateUserInfo(req: Request, res: Response) {
+        await CustomerAuthDatabaseLayer.updateUserInfo(req);
+        res.status(201).send({ updated: true });;
+    }
+
+    //currentLoginUSer
+    static async currentLoginUser(req: Request, res: Response) {
+        const currentUser = await CustomerAuthDatabaseLayer.currentLoginUser(req);
+        res.status(200).send(currentUser);
+    }
 
     //Switch Toogle
     static async inviteOnlyGenralSwitch(req: Request, res: Response) {
         var status = await CustomerAuthDatabaseLayer.inviteOnlyGenralSwitch(req);
         res.status(200).send({ status: status });
     }
-
+    //reference Code creation
     static async generateReferalCode(req: Request, res: Response) {
         var createReferalCode = invitionCode.build({
             type: 'email',
@@ -129,6 +140,7 @@ export class CustomerDomain {
         await createReferalCode.save();
         return createReferalCode;
     }
+
 
 }
 

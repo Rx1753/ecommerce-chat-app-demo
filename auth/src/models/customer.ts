@@ -10,7 +10,7 @@ export interface CustomerAttrs {
     password: string;
     inviteCode: string;
     status?:string;
-    referalId?:String;
+    referalId?:string;
     referalType?:String;
 }
 
@@ -63,7 +63,7 @@ const customerSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: false },
     isApproved: { type: Boolean, default: false },
     inviteCode: { type: String, required: true, unique: true },
-    referalType:{type:String,enum:['Admin','CustomeUser']},
+    referalType:{type:String,enum:['Admin','CustomerUser']},
     referalId: { type: String, default: null, ref: 'CustomerUser' },
     noOfFriend: { type: Number, default: 0 },
     status: { type: String, enum: ['New', 'pending', 'Approved', 'Rejected', 'diActivated'], default: 'New' },
@@ -81,7 +81,6 @@ const customerSchema = new mongoose.Schema({
     created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
     updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
 }, {
-    timestamps : true,
     toJSON: {
         transform(doc, ret) {
             ret.customerId = ret._id;

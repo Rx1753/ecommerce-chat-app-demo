@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import { app } from './app';
-import { DatabaseConnectionError } from '@rx-ecommerce-chat/common_lib';
 import { natsWrapper } from './nats-wrapper';
 
 const port = 3000;

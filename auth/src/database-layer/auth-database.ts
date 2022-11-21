@@ -21,7 +21,7 @@ export class AuthDatabaseLayer {
       email: user.email,
       type: user.type,
     };
-    var userJwt = await JwtService.accessToken(payload,process.env.JWT_KEY!);
+    var userJwt = await JwtService.accessToken(payload);
     // Store it on session object
     req.session = { jwt: userJwt };
     await new UserCreatedPublisher(natsWrapper.client).publish({
@@ -45,7 +45,7 @@ export class AuthDatabaseLayer {
       email: existingUser.email,
       type: existingUser.type,
     };
-    var userJwt = await JwtService.accessToken(payload,process.env.JWT_KEY!);
+    var userJwt = await JwtService.accessToken(payload);
     return userJwt;
   }
 

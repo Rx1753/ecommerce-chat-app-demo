@@ -20,7 +20,7 @@ export class CustomerAuthDatabaseLayer {
     }
 
     static async updateRefreshToken(id: ObjectId, email: string, phoneNumber: Number) {
-        const refreshToken =await JwtService.refreshToken({ email: email, id: id, phoneNumber:phoneNumber,userType:'Customer'});    
+        const refreshToken = await JwtService.refreshToken({ email: email, id: id, phoneNumber: phoneNumber, userType: 'Customer' });
         const customer = await Customer.findByIdAndUpdate(id, { refreshToken: refreshToken });
         return customer?.refreshToken;
     }
@@ -60,11 +60,11 @@ export class CustomerAuthDatabaseLayer {
 
         if (checkInviteCase?.status == false) {
             console.log("Admin switch\'s off So directly Signin ");
-            
+
             user.status = "New";
         } else if (checkInviteCase?.status && isWaiting == true) {
             console.log('isWaiting apply so directly in waiting list');
-            
+
             user.status = "pending";
         } else if (checkInviteCase?.status && refralCode != null && refralCode != undefined) {
             console.log('invite code verify logic');
@@ -96,19 +96,21 @@ export class CustomerAuthDatabaseLayer {
 
                 //refer by customer
                 const inviteCodeCheck = await Customer.findOne({ inviteCode: refralCode })
+                console.log(inviteCodeCheck);
 
                 if (inviteCodeCheck) {
-                    user.referalType = 'Customer';
+                    user.referalType = 'CustomerUser';
                     user.referalId = inviteCodeCheck._id;
+                } else {
+                    //inviteCode not verified
+                    throw new BadRequestError('Your Invite Code is not verify');
                 }
-                //inviteCode not verified
-                throw new BadRequestError('Your Invite Code is not verify');
             }
         } else {
             throw new BadRequestError('Invite Code is must needed');
         }
         const storeData = Customer.build(user);
-        storeData.refreshToken = await JwtService.refreshToken({ email: storeData.email, id: storeData._id, phoneNumber:storeData.phoneNumber,userType: 'CustomerUser',})      
+        storeData.refreshToken = await JwtService.refreshToken({ email: storeData.email, id: storeData._id, phoneNumber: storeData.phoneNumber, userType: 'CustomerUser', })
         await storeData.save();
 
         // var payload = {
@@ -149,5 +151,36 @@ export class CustomerAuthDatabaseLayer {
         return user;
     }
 
-    
+    static async currentLoginUser(req: any) {
+        const user = await Customer.findById({ _id: req.currentUser.id });
+        return user;
+    }
+
+    static async updateUserInfo(req: any) {
+        try {
+            const { customerId, name, imageUrl, isReadReceipt, isEmailVisible, isAddressVisible, isAllowToAddGroup, allowFriendsToAddGroup, isAllowToRecieveBrodcast, isLastSeenActive, isAllowToChatStranger } = req.body;
+            const currentDate = new Date();
+            const updated_at = currentDate.getTime();
+            await Customer.findByIdAndUpdate(req.currentUser.id, {
+                'name': name,
+                'imageUrl': imageUrl,
+                'isReadReceipt': isReadReceipt,
+                'isEmailVisible': isEmailVisible,
+                'isAddressVisible': isAddressVisible,
+                'isAllowToAddGroup': isAllowToAddGroup,
+                'allowFriendsToAddGroup': allowFriendsToAddGroup,
+                'isAllowToRecieveBrodcast': isAllowToRecieveBrodcast,
+                'isLastSeenActive': isLastSeenActive,
+                'isAllowToChatStranger': isAllowToChatStranger,
+                'updated_at': updated_at,
+            });
+            return;
+        } catch (err: any) {
+            console.log(err.message);
+            throw new BadRequestError(err.message)
+        }
+    }
+
+
+
 }

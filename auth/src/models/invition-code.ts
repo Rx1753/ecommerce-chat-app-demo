@@ -20,7 +20,7 @@ interface invitionCodeDoc extends mongoose.Document {
     userId:Number;
     code: String;
     expirationDays: Number;
-    created_By:String;
+    created_By:string;
     created_at: Number;
     updated_at: Number;
 }
