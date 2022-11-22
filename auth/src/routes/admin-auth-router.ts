@@ -41,4 +41,4 @@ router.post('/api/admin/signout', AuthDomain.signOut);
 // CURRENT_USER
 router.get('/api/admin/currentuser', verifyAdminToken, AuthDomain.currentUser);
 
-export { router as authRouter };
+export { router as adminAuthRouter };
