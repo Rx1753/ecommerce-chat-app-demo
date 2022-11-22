@@ -21,16 +21,17 @@ export const verifyCustomerToken = (
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.session?.jwt && !req.headers['authorization']) {
+  if (!req.session?.jwt && !req.headers['token']) {
+    console.log('token not wrote');    
     throw new BadRequestError('Token/Session not provided');
   }
+
 
   var token;
   if (req.session?.jwt) {
     token = req.session?.jwt;
   } else {
-    const accessToken = (req.headers.authorization as String).split(' ')[1];
-    token = accessToken;
+    token = req.headers['token'];
   }
 
   try {

@@ -1,8 +1,10 @@
 import express from 'express';
 import 'express-async-errors';
 import cookieSession from 'cookie-session';
-import { errorHandler, NotFoundError } from '@rx-ecommerce-chat/common_lib';
-import { authRouter } from './routes/admin-auth-router';
+import { errorHandler } from '../src/middlewares/error-handler';
+import { authRouter } from './routes/auth-router';
+import { customerRouter } from './routes/customer-auth';
+import { customerAddressRouter } from './routes/customer-address-route';
 
 const app = express();
 
@@ -20,11 +22,15 @@ app.use(
 );
 
 // Router
-app.use(authRouter);
 
-app.all('*', async () => {
-  throw new NotFoundError();
-});
+app.use(authRouter);
+app.use(customerRouter);
+app.use(customerAddressRouter);
 app.use(errorHandler);
+
+// app.all('*', async () => {
+//   throw new NotFoundError();
+// });
+
 
 export { app };
