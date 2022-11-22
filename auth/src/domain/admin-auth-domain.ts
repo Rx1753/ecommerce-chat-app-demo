@@ -9,11 +9,11 @@ export class AuthDomain {
   // Add Permissions
   static async addPermissions(req: Request, res: Response) {
     const data: AdminPermissionsAttrs = req.body;
-    var isAdded = await AuthDatabaseLayer.addPermission(data);
-    if (isAdded) {
+    var isPermissionAdded = await AuthDatabaseLayer.addPermission(data);
+    if (isPermissionAdded) {
       return res
         .status(201)
-        .send({ status: true, message: Strings.permissionAdded });
+        .send({ status: true, message: Strings.permissionAdded,permissionId : isPermissionAdded.id });
     }
   }
 
@@ -21,14 +21,13 @@ export class AuthDomain {
   static async signUp(req: any, res: Response) {
     const { email, permissionId } = req.body;
      var superAdmin = await AuthDatabaseLayer.isSuperAdmin(req.currentUser.email);
-     if (superAdmin) {
+     if (superAdmin) { 
       const existingUser = await AuthDatabaseLayer.isExistingUser(email);
       if (existingUser) {
         throw new BadRequestError(Strings.emailInUse);
       }
 
       var userPermission = await AuthDatabaseLayer.findPermission(permissionId);
-
       if (userPermission) {
         const data: AdminUserAttrs = req.body;
         var jwtToken = await AuthDatabaseLayer.signUpUser(data);

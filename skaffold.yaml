@@ -8,7 +8,7 @@ build:
   local:
     push: false
   artifacts:
-    - image: nidhi9521/auth
+    - image: ravinapanchal/auth
       context: auth
       docker:
         dockerfile: Dockerfile
@@ -16,7 +16,7 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: .
-    - image: nidhi9521/chat-service
+    - image: ravinapanchal/chat-service
       context: chat-service
       docker:
         dockerfile: Dockerfile

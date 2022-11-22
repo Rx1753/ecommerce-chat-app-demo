@@ -1,7 +1,5 @@
-import { BadRequestError } from '../errors/bad-request-error';
+import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { Request, Response } from 'express';
-import { Customer } from '../models/customer';
-import jwt from 'jsonwebtoken';
 import shortid from 'shortid';
 import mongoose from 'mongoose';
 import { CustomerAuthDatabaseLayer } from '../database-layer/customer-auth-databse';

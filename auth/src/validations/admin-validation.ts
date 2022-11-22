@@ -20,6 +20,7 @@ export class Validation {
       }
       return true;
     }),
+    body('permissionId').trim().notEmpty().withMessage('Select permission'),
   ];
 
   static signInValidation = [

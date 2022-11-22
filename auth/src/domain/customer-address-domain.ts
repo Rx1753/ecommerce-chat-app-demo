@@ -1,7 +1,5 @@
-import { BadRequestError } from '../errors/bad-request-error';
+import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import mongoose from 'mongoose';
 import { CustomerAddressDatabaseLayer } from '../database-layer/customer-address-database';
 
 export class CustomerAddressDomain {

@@ -27,14 +27,13 @@ export class AuthDatabaseLayer {
   static async addPermission(data: AdminPermissionsAttrs) {
     const permission = AdminPermissions.build(data);
     await permission.save();
-    console.log(`Add Permissions SAVEd -- ${permission}`);
     return permission;
   }
 
   static async findPermission(permissionId: any) {
     var permission = await AdminPermissions.findById(permissionId);
     if (!permission) {
-      throw Error('Permissions not found in Add permission');
+      throw new BadRequestError('Permissions not found in Add permission');
     }
     return permission;
   }

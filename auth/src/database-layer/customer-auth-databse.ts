@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { BadRequestError } from '../errors/bad-request-error';
+import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { adminSwitches } from '../models/admin-switch';
 import { Customer, CustomerAttrs } from '../models/customer';
 import { invitionCode } from '../models/invition-code';

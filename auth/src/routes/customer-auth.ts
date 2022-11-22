@@ -1,6 +1,6 @@
 import express, { Request, Response, Router } from 'express';
-import {currentUser} from '../middlewares/current-user';
-import { validateRequest } from '../middlewares/validate-request';
+import {verifyCustomerToken} from '../middlewares/current-user';
+import { validateRequest } from '@rx-ecommerce-chat/common_lib';
 import { CustomerDomain } from '../domain/customer-auth-domain';
 import { CustomerAuthValidation } from '../validations/customer-auth-validation';
 
@@ -25,10 +25,10 @@ router.get('/api/users/customer/delete/:id', CustomerDomain.deleteUserById);
 router.get('/api/users/customer/getuserbyname/:name',CustomerDomain.getUserByName)
 
 //User persnol info update
-router.put('/api/users/customer/updateuser',currentUser,CustomerDomain.updateUserInfo)
+router.put('/api/users/customer/updateuser',verifyCustomerToken,CustomerDomain.updateUserInfo)
  
 // CURRENT_USER
-router.get('/api/users/customer/currentuser', currentUser,CustomerDomain.currentLoginUser);
+router.get('/api/users/customer/currentuser', verifyCustomerToken,CustomerDomain.currentLoginUser);
 
 // SIGN-OUT
 router.post('/api/users/signout', 
