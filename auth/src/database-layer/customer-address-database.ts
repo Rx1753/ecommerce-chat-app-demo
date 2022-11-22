@@ -4,16 +4,18 @@ import { customerAddress } from '../models/customer-address';
 export class CustomerAddressDatabaseLayer {
 
     static async createAddress(req: any) {
-        const { phoneNumber, addressType, isDefault, addressLine1, addressLine2, city, state, country } = req.body;
+        var { phoneNumber, addressType, isDefault, addressLine1, addressLine2, cityId, stateId, countryId } = req.body;
 
-        //city Id find logic
-        //state Id find logic
-        //country Id find logic
 
         if (isDefault == true) {
-            const data = await customerAddress.findOne({ $and: [{ customerId: req.currentUser.id }, { isDefalultAddress: true }] });
-            await customerAddress.findByIdAndUpdate(data?._id, { isDefaultAddress: false })
-        } 
+            const data = await customerAddress.findOneAndUpdate({ $and: [{ customerId: req.currentUser.id }, { isDefalultAddress: true }] }, { $set: { isDefalultAddress: false } });
+            console.log('data', data);
+        } else {
+            const data = await customerAddress.find({ coustomerId: req.currentUser.id });
+            if (data.length == 0) {
+                isDefault = true;
+            }
+        }
         const data = customerAddress.build({
             customerId: req.currentUser.id,
             phoneNumber: phoneNumber,
@@ -21,9 +23,9 @@ export class CustomerAddressDatabaseLayer {
             isDefalultAddress: isDefault,
             addressLine1: addressLine1,
             addressLine2: addressLine2,
-            cityId: city,
-            stateId: state,
-            countryId: country
+            cityId: cityId,
+            stateId: stateId,
+            countryId: countryId
         })
         await data.save();
         return data;
@@ -33,15 +35,11 @@ export class CustomerAddressDatabaseLayer {
         const currentDate = new Date();
         const updated_at = currentDate.getTime();
 
-        //city Id find logic
-        //state Id find logic
-        //country Id find logic
-        
         if (req.body.isDefault == true) {
             const data = await customerAddress.findOne({ $and: [{ customerId: req.currentUser.id }, { isDefalultAddress: true }] });
             await customerAddress.findByIdAndUpdate(data?._id, { isDefaultAddress: false });
 
-        } 
+        }
 
         try {
             await customerAddress.findByIdAndUpdate(id, {
@@ -50,9 +48,9 @@ export class CustomerAddressDatabaseLayer {
                 isDefalultAddress: req.body.isDefault,
                 addressLine1: req.body.addressLine1,
                 addressLine2: req.body.addressLine2,
-                cityId: req.body.city,
-                stateId: req.body.state,
-                countryId: req.body.country,
+                cityId: req.body.cityId,
+                stateId: req.body.stateId,
+                countryId: req.body.countryId,
                 updated_at: updated_at
             });
 
@@ -75,7 +73,13 @@ export class CustomerAddressDatabaseLayer {
     }
 
     static async getCurrentUserAddress(req: any) {
-        const data = await customerAddress.find({ customerId: req.currentUser.id });
+        const data = await customerAddress.find({ customerId: req.currentUser.id }, { stateId: 0, countryId: 0 }).populate({
+            path: 'cityId', populate: {
+                path: 'stateId', populate: {
+                    path: 'countryId'
+                }
+            }
+        });
         return data
     }
 

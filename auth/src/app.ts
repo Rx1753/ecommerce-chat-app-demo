@@ -5,6 +5,9 @@ import { errorHandler } from '../src/middlewares/error-handler';
 import { authRouter } from './routes/auth-router';
 import { customerRouter } from './routes/customer-auth';
 import { customerAddressRouter } from './routes/customer-address-route';
+import { stateRouter } from './routes/state-route';
+import { countryRouter } from './routes/country-route';
+import { cityRouter } from './routes/city-route';
 
 const app = express();
 
@@ -26,6 +29,9 @@ app.use(
 app.use(authRouter);
 app.use(customerRouter);
 app.use(customerAddressRouter);
+app.use(stateRouter);
+app.use(countryRouter);
+app.use(cityRouter);
 app.use(errorHandler);
 
 // app.all('*', async () => {

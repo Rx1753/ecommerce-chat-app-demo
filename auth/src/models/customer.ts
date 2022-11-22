@@ -41,7 +41,7 @@ export interface CustomerDoc extends mongoose.Document {
     lastSeenStatus: boolean;
     rewardPoint: Number;
     inviteCode: string;
-    referalId: Number; // userId
+    referalId: CustomerDoc; // userId
     isDelete: boolean;
     refreshToken: string;
 }

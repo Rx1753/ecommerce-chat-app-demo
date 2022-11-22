@@ -1,4 +1,7 @@
 import mongoose, { ObjectId } from 'mongoose';
+import { CityDoc } from './city';
+import { CountryDoc } from './country';
+import { StateDoc } from './state';
 
 // An interface that describe the properties
 // that are required to create customerAddress
@@ -23,9 +26,9 @@ interface customerAddressDoc extends mongoose.Document {
   isDefalultAddress: boolean;
   addressLine1: string;
   addressLine2: string;
-  cityId: string;
-  stateId: string;
-  countryId: string;
+  cityId: CityDoc;
+  stateId: StateDoc;
+  countryId: CountryDoc;
 }
 
 // An interface that describe the properties
