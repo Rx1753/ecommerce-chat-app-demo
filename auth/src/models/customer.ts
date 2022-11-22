@@ -12,6 +12,8 @@ export interface CustomerAttrs {
     status?:string;
     referalId?:string;
     referalType?:String;
+    isPhoneVerified?:boolean;
+    isEmailVerified?:boolean;
 }
 
 // interface for usermodel pass

@@ -10,6 +10,10 @@ export class CustomerAddressDatabaseLayer {
         //state Id find logic
         //country Id find logic
 
+        if (isDefault == true) {
+            const data = await customerAddress.findOne({ $and: [{ customerId: req.currentUser.id }, { isDefalultAddress: true }] });
+            await customerAddress.findByIdAndUpdate(data?._id, { isDefaultAddress: false })
+        } 
         const data = customerAddress.build({
             customerId: req.currentUser.id,
             phoneNumber: phoneNumber,
@@ -32,6 +36,13 @@ export class CustomerAddressDatabaseLayer {
         //city Id find logic
         //state Id find logic
         //country Id find logic
+        
+        if (req.body.isDefault == true) {
+            const data = await customerAddress.findOne({ $and: [{ customerId: req.currentUser.id }, { isDefalultAddress: true }] });
+            await customerAddress.findByIdAndUpdate(data?._id, { isDefaultAddress: false });
+
+        } 
+
         try {
             await customerAddress.findByIdAndUpdate(id, {
                 phoneNumber: req.body.phoneNumber,
@@ -63,8 +74,8 @@ export class CustomerAddressDatabaseLayer {
         }
     }
 
-    static async getCurrentUserAddress(req:any) {
-        const data=await customerAddress.find({customerId:req.currentUser.id});
+    static async getCurrentUserAddress(req: any) {
+        const data = await customerAddress.find({ customerId: req.currentUser.id });
         return data
     }
 

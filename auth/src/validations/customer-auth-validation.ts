@@ -14,9 +14,13 @@ export class CustomerAuthValidation {
             body('email').isEmail().withMessage('email must be valid').optional(),
             body('phoneNumber')
                 .trim()
-                .isLength({ min: 10, max: 10 })
-                .withMessage('phone number must be 10 digits').optional(),
-            oneOf([body('email').notEmpty(),body('phoneNumber').notEmpty()],'One Of field is Require Email or PhoneNumber')
+                .matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im)
+                .withMessage('phone number must be valid')
+                .optional(),
+            oneOf(
+                [body('email').notEmpty(),
+                body('phoneNumber').notEmpty()],
+                'One Of field is Require Email or PhoneNumber')
         ];
     static signInValidation = [
         body('email').isEmail().withMessage('email must be valid'),
