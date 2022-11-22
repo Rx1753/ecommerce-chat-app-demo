@@ -1,8 +1,8 @@
 import express from 'express';
 import 'express-async-errors';
 import cookieSession from 'cookie-session';
-import { errorHandler } from '../src/middlewares/error-handler';
-import { authRouter } from './routes/auth-router';
+import { errorHandler } from '@rx-ecommerce-chat/common_lib';
+import { adminAuthRouter } from './routes/admin-auth-router';
 import { customerRouter } from './routes/customer-auth';
 import { customerAddressRouter } from './routes/customer-address-route';
 import { stateRouter } from './routes/state-route';
@@ -25,8 +25,7 @@ app.use(
 );
 
 // Router
-
-app.use(authRouter);
+app.use(adminAuthRouter);
 app.use(customerRouter);
 app.use(customerAddressRouter);
 app.use(stateRouter);

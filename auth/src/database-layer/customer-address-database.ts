@@ -1,4 +1,4 @@
-import { BadRequestError } from '../errors/bad-request-error';
+import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { customerAddress } from '../models/customer-address';
 
 export class CustomerAddressDatabaseLayer {
