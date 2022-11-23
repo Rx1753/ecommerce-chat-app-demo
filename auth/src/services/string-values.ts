@@ -12,6 +12,7 @@ class Strings {
   static userDoesNotExist = 'User doesn\'t exist';
   static permissionAdded = 'Permission Added';
   static emailInUse = 'Email in use';
+  static profileUpdated = 'Profile updated sucessfully';
 
 }
 

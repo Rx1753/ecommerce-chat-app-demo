@@ -70,7 +70,6 @@ export const verifyAdminToken = (
       throw new BadRequestError('Unauthorized Admin');
     } 
     req.currentUser = payload;
-    console.log(`verifyAdminToken :: ${req.currentUser.email}`)
   } catch (error: any) {
     if (error instanceof TokenExpiredError) {
       throw new BadRequestError(error.message);

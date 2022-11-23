@@ -11,35 +11,51 @@ export class AuthDomain {
     const data: AdminPermissionsAttrs = req.body;
     var isPermissionAdded = await AuthDatabaseLayer.addPermission(data);
     if (isPermissionAdded) {
-      return res
-        .status(201)
-        .send({ status: true, message: Strings.permissionAdded,permissionId : isPermissionAdded.id });
+      return res.status(201).send({
+        status: true,
+        message: Strings.permissionAdded,
+        permissionId: isPermissionAdded.id,
+      });
     }
   }
 
   // SIGNUP
-  static async signUp(req: any, res: Response) {
-    const { email, permissionId } = req.body;
-     var superAdmin = await AuthDatabaseLayer.isSuperAdmin(req.currentUser.email);
-     if (superAdmin) { 
-      const existingUser = await AuthDatabaseLayer.isExistingUser(email);
-      if (existingUser) {
-        throw new BadRequestError(Strings.emailInUse);
-      }
+  static async signUpSuperAdmin(req: any, res: Response) {
+    await AuthDomain.signUpUser(req, res, true);
+  }
 
-      var userPermission = await AuthDatabaseLayer.findPermission(permissionId);
-      if (userPermission) {
-        const data: AdminUserAttrs = req.body;
-        var jwtToken = await AuthDatabaseLayer.signUpUser(data);
-        req.session = { jwt: jwtToken };
-        return res
-          .status(201)
-          .send({ status: true, message: Strings.registrationSuccess });
-      } else {
-        throw new BadRequestError('Permission is not defined');
-      }
+  static async signUpAdmin(req: any, res: Response) {
+    //Sign up for Admin and only Super Admin can add admin
+    var superAdmin = await AuthDatabaseLayer.isSuperAdmin(
+      req.currentUser.email
+    );
+    if (superAdmin) {
+      await AuthDomain.signUpUser(req, res, false);
     } else {
       throw new BadRequestError('UnAuthorized User');
+    }
+  }
+
+  static async signUpUser(req: any, res: Response, isSuperAdmin: boolean) {
+    const { email, permissionId } = req.body;
+    const existingUser = await AuthDatabaseLayer.isExistingUser(email);
+    if (existingUser) {
+      throw new BadRequestError(Strings.emailInUse);
+    }
+    var userPermission = await AuthDatabaseLayer.findPermission(permissionId);
+    if (userPermission) {
+      const data: AdminUserAttrs = req.body;
+      var jwtToken = await AuthDatabaseLayer.signUpUser(
+        data,
+        isSuperAdmin ? email : req.currentUser.id,
+        isSuperAdmin
+      );
+      req.session = { jwt: jwtToken };
+      return res
+        .status(201)
+        .send({ status: true, message: Strings.registrationSuccess });
+    } else {
+      throw new BadRequestError('Permission is not defined');
     }
   }
 
@@ -63,24 +79,51 @@ export class AuthDomain {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
         message: Strings.loginSuccess,
+        userId: adminUser.id,
       });
     }
   }
 
-  // // Update Profile
-  // static async updateProfile(req: Request, res: Response) {
-  //   const { email } = req.body;
-  //   const existingUser = await AuthDatabaseLayer.isExistingUser(email);
-  //   if (existingUser) {
-  //     throw new BadRequestError('Email In Use');
-  //   }
-  //   const data: AdminUserAttrs = req.body;
-  //   var jwtToken = await AuthDatabaseLayer.signUpUser(data);
-  //   req.session = { jwt: jwtToken };
-  //   return res
-  //     .status(201)
-  //     .send({ status: true, message: Strings.registrationSuccess });
-  // }
+  // Update Admin Profile
+  static async updateProfile(req: any, res: Response) {
+    var updatedData = await AuthDatabaseLayer.updateAdminProfile(
+      req.body,
+      req.currentUser.id
+    );
+    return res.status(201).send({
+      status: true,
+      message: Strings.profileUpdated,
+    });
+  }
+
+  // MFA
+  static async checkMFA(req: any, res: Response) {
+    var code = await AuthDatabaseLayer.updateAdminMFA(req);
+    res.status(201).send({
+      status: true,
+      message: Strings.profileUpdated,
+      otp: code,
+    });
+  }
+
+  // Verify Email
+  static async verifyEmail(req: any, res: Response) {
+    var isEmailverified = await AuthDatabaseLayer.verifyEmail(req.body);
+    res.status(201).send({
+      status: true,
+      message: "Email Verified",
+    });
+  }
+
+  // Verify Phone
+  static async verifyPhone(req: any, res: Response) {
+    var isPhoneverified = await AuthDatabaseLayer.verifyPhone(req.body);
+    res.status(201).send({
+      status: true,
+      message: "Phone no Verified",
+    });
+  }
+
 
   // // GET ALL USERS
   static async getAllUsers(req: Request, res: Response) {
@@ -113,8 +156,7 @@ export class AuthDomain {
   }
 
   // // CURRENT_USER
-  static async currentUser(req: Request, res: Response) {
-    //res.send({ currentUser: req.currentUser || null });
-    res.send({ currentUser: true });
+  static async currentUser(req: any, res: Response) {
+    res.send({ currentUser: req.currentUser || null });
   }
 }

@@ -30,4 +30,59 @@ export class Validation {
       .notEmpty()
       .withMessage('You must supply a password'),
   ];
+
+  static updateProfileValidation = [
+    body('userId').trim().notEmpty().withMessage('User Id is required'),
+    body('userName')
+      .trim()
+      .notEmpty()
+      .withMessage('User name must not be empty'),
+  ];
+
+  static mfaValidation = [
+    body('userId').trim().notEmpty().withMessage('User Id is required'),
+    // body('isMfa')
+    //   .exists()
+    //   .withMessage('isMfa is required')
+    //   .isBoolean()
+    //   .withMessage('isMfa must be boolean')
+    //   .custom((value, { req }) => {
+    //     if (value !== true) {
+    //       throw new BadRequestError('Mfa is not true');
+    //     }
+    //     return true;
+    //   }),
+    body('type')
+      .exists()
+      .withMessage('type is required')
+      .isString()
+      .withMessage('type must be string')
+      .isIn(['email', 'phoneNumber'])
+      .withMessage('invalid value for type'),
+    body('value').trim().notEmpty().withMessage('Value must not be empty'),
+  ];
+
+  static verifyEmail = [
+    body('userId').trim().notEmpty().withMessage('user Id is required'),
+    body('code').trim().notEmpty().withMessage('code is required'),
+    body('type')
+      .exists()
+      .withMessage('type is required')
+      .isString()
+      .withMessage('type must be string')
+      .isIn(['email'])
+      .withMessage('require email type'),
+  ];
+
+  static verifyPhone = [
+    body('userId').trim().notEmpty().withMessage('user Id is required'),
+    body('code').trim().notEmpty().withMessage('code is required'),
+    body('type')
+      .exists()
+      .withMessage('type is required')
+      .isString()
+      .withMessage('type must be string')
+      .isIn(['phoneNumber'])
+      .withMessage('require phoneNumber type'),
+  ];
 }
