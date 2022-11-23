@@ -48,7 +48,7 @@ export class MailService {
     transporter.sendMail(mailOptions, function (error: any, info: any) {
       if (error) {
         console.log(error);
-        throw new BadRequestError(error);
+        throw new BadRequestError(error.message);
       } else {
         console.log("Email sent: " + info.response);
         return true;

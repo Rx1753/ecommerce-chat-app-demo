@@ -8,12 +8,12 @@ import { customerAddressRouter } from './routes/customer-address-route';
 import { stateRouter } from './routes/state-route';
 import { countryRouter } from './routes/country-route';
 import { cityRouter } from './routes/city-route';
+import { BusinessUserRouter } from './routes/business-user-auth-route';
 
 const app = express();
 
 // The reason for this that traffic is being prixy to our app through ingress nginx
 app.set('trust proxy', true);
-
 app.use(express.json());
 
 app.use(
@@ -31,6 +31,7 @@ app.use(customerAddressRouter);
 app.use(stateRouter);
 app.use(countryRouter);
 app.use(cityRouter);
+app.use(BusinessUserRouter);
 app.use(errorHandler);
 
 // app.all('*', async () => {

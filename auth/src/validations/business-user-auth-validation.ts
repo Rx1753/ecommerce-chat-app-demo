@@ -1,6 +1,6 @@
 import { body, oneOf } from 'express-validator';
 
-export class CustomerAuthValidation {
+export class BusinessUserAuthValidation {
   static SignupValidation = [
     body('name').trim().notEmpty().withMessage('Please provide a name.'),
     body('password')

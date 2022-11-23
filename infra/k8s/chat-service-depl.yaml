@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: chat-service
-          image: ravinapanchal/chat-service
+          image: nidhi9521/chat-service
           env:
             - name: NATS_CLIENT_ID
               valueFrom:

@@ -7,7 +7,7 @@ import { CustomerAuthValidation } from '../validations/customer-auth-validation'
 const router = express.Router();
 
 // SIGN-UP
-router.post('/api/users/customer/signup',CustomerAuthValidation.SigninValidation,validateRequest,CustomerDomain.signUp);
+router.post('/api/users/customer/signup',CustomerAuthValidation.SignupValidation,validateRequest,CustomerDomain.signUp);
 
 // SIGN-IN
 router.post('/api/users/customer/signin',CustomerAuthValidation.signInValidation,validateRequest,CustomerDomain.signIn);
