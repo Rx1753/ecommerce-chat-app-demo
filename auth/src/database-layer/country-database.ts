@@ -1,4 +1,4 @@
-import { BadRequestError } from '../errors/bad-request-error';
+import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { Country } from '../models/country';
 
 export class CountryDatabaseLayer {

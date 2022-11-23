@@ -5,6 +5,11 @@ import { Customer, CustomerAttrs } from '../models/customer';
 import { invitionCode } from '../models/invition-code';
 import { JwtService } from '../services/jwt';
 import { Password } from '../services/password';
+import { MailService } from '../services/mail-services';
+import shortid from 'shortid';
+import { Request } from 'express';
+import { ParamsDictionary } from 'express-serve-static-core';
+import { ParsedQs } from 'qs';
 
 export class CustomerAuthDatabaseLayer {
 
@@ -136,7 +141,7 @@ export class CustomerAuthDatabaseLayer {
 
         // // Store it on session object
         // req.session = { jwt: userJwt };
-        
+
         return storeData;
 
     }
@@ -194,6 +199,155 @@ export class CustomerAuthDatabaseLayer {
         }
     }
 
+    static async emailVerification(req: any) {
+        console.log('email verify');
+        console.log(req.currentUser);
 
+        if (req.currentUser.email != null && req.currentUser.email != undefined) {
+            const customerData = await Customer.findById(req.currentUser.id);
+            if (customerData && customerData.isEmailVerified == false) {
+                const code = shortid.generate();
+                var createVerificationCode = invitionCode.build({
+                    type: 'email',
+                    email: customerData.email,
+                    userId: req.currentUser.id,
+                    code: code,
+                    expirationDays: 8
+                })
+                await createVerificationCode.save();
+                await MailService.mailTrigger(code, customerData.email, 'Email Verification', "<h1>Hello " + customerData.name + ",</h1><p>here, is your email verfication code,</br> pls enter it in email verification code field <B>" + code + "</B> . </p>");
+                return;
 
+            } else {
+                throw new BadRequestError('Your email is already verified')
+            }
+        } else {
+            throw new BadRequestError('You Login with PhoneNumber')
+        }
+    }
+
+    static async emailCodeVerification(req: any) {
+        const { code } = req.body;
+        const inviteCodeCheck = await invitionCode.findOne({ $and: [{ code: code }, { userId: req.currentUser.id }, { email: req.currentUser.email }] })
+        if (inviteCodeCheck) {
+            const timeStamp: any = inviteCodeCheck?.updated_at;
+            const diff = new Date().getTime() - timeStamp;
+            var diffSecound = Math.ceil((diff / 1000) % 60);
+
+            // console.log(diffDays);
+            // console.log(inviteCodeCheck?.expirationDays!);
+
+            if (300000 < diffSecound) {
+                await Customer.findByIdAndUpdate(req.currentUser.id, { isMFA: true, isEmailVerified: true });
+                return;
+            } else {
+                await invitionCode.findByIdAndDelete(inviteCodeCheck.id);
+                throw new BadRequestError('Ohh No!! Your Verification code is exppired');
+            }
+
+        } else {
+            throw new BadRequestError('Your Code is not matched');
+        }
+
+    }
+
+    static async phoneVerification(req: any) {
+        console.log('phone verify');
+
+        if (req.currentUser.phoneNumber != null && req.currentUser.phoneNumber != undefined) {
+            const customerData = await Customer.findById(req.currentUser.id);
+            if (customerData && customerData.isPhoneVerified == false) {
+                const code = shortid.generate();
+                var createVerificationCode = invitionCode.build({
+                    type: 'phone',
+                    phoneNumber: req.currentUser.phoneNumber,
+                    userId: req.currentUser.id,
+                    code: code,
+                    expirationDays: 8
+                })
+                await createVerificationCode.save();
+                //SMS trigger logic pending
+
+                // return await MailService.mailTrigger(code, customerData.email, 'phone Verification', customerData.name);
+
+            }
+        } else {
+            throw new BadRequestError('You Login with email address')
+        }
+        return;
+    }
+
+    static async phoneCodeVerification(req: any) {
+        const { code } = req.body;
+        const inviteCodeCheck = await invitionCode.findOne({ $and: [{ code: code }, { userId: req.currentUser.id }, { phoneNumber: req.currentUser.phoneNumber }] })
+        if (inviteCodeCheck) {
+            const timeStamp: any = inviteCodeCheck?.updated_at;
+            const diff = new Date().getTime() - timeStamp;
+            var diffSecound = Math.ceil((diff / 1000) % 60);
+
+            // console.log(diffDays);
+            // console.log(inviteCodeCheck?.expirationDays!);
+
+            if (30000 < diffSecound) {
+                await Customer.findByIdAndUpdate(req.currentUser.id, { isMFA: true, isPhoneVerified: true });
+                return;
+            } else {
+                await invitionCode.findByIdAndDelete(inviteCodeCheck.id);
+                throw new BadRequestError('Ohh No!! Your Verification code is exppired');
+            }
+        } else {
+            throw new BadRequestError('Your Code is not matched');
+        }
+
+    }
+    static async forgotPasswordMailTrigger(req: any) {
+        console.log('email verify');
+        console.log(req.currentUser);
+
+        if (req.currentUser.email != null && req.currentUser.email != undefined) {
+
+            const code = shortid.generate();
+            var createVerificationCode = invitionCode.build({
+                type: 'email',
+                email: req.currentUser.email,
+                userId: req.currentUser.id,
+                code: code,
+                expirationDays: 1
+            })
+            await createVerificationCode.save();
+
+            await MailService.mailTrigger(code, req.currentUser.email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
+            return;
+        } else {
+
+            throw new BadRequestError('You Login with PhoneNumber')
+        }
+
+    }
+
+    //forgot password with code verify  
+    static async forgotPasswordCodeVerification(req: any) {
+        const { code, password } = req.body;
+        const inviteCodeCheck = await invitionCode.findOne({ $and: [{ code: code }, { userId: req.currentUser.id }, { email: req.currentUser.email }] })
+        if (inviteCodeCheck) {
+            const timeStamp: any = inviteCodeCheck?.updated_at;
+            const diff = new Date().getTime() - timeStamp;
+            var diffSecound = Math.ceil((diff / 1000) % 60);
+
+            // console.log(diffDays);
+            // console.log(inviteCodeCheck?.expirationDays!);
+
+            if (12000 < diffSecound) {
+                const hased = await Password.toHash(password);
+                await Customer.findByIdAndUpdate(req.currentUser.id, { password: hased });
+                return;
+            } else {
+                await invitionCode.findByIdAndDelete(inviteCodeCheck.id);
+                throw new BadRequestError('Ohh No!! Your Verification code is exppired');
+            }
+        } else {
+            throw new BadRequestError('Your Code is not matched');
+        }
+
+    }
 }

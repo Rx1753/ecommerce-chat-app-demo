@@ -6,7 +6,7 @@ interface invitionCodeAttrs {
     type: string;
     phoneNumber?: Number;
     email?: string;
-    userId?:Number;
+    userId?:string;
     code: String;
     expirationDays: Number;
 }
@@ -17,7 +17,7 @@ interface invitionCodeDoc extends mongoose.Document {
     type: string;
     phoneNumber: Number;
     email: string;
-    userId:Number;
+    userId:string;
     code: String;
     expirationDays: Number;
     created_By:string;
@@ -35,7 +35,7 @@ interface invitionCodeModel extends mongoose.Model<invitionCodeDoc> {
 const invitionCodeSchema = new mongoose.Schema(
     {
         type: { type: String, enum: ['customer','business','admin','email','phoneNumber']},
-        userId: {type: Number },
+        userId: {type: String },
         phoneNumber: { type: Number },
         email:{type:String},
         code: { type: String },

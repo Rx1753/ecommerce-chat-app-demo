@@ -30,6 +30,18 @@ router.put('/api/users/customer/updateuser',verifyCustomerToken,CustomerDomain.u
 // CURRENT_USER
 router.get('/api/users/customer/currentuser', verifyCustomerToken,CustomerDomain.currentLoginUser);
 
+//MailTrigger for emailVerification
+router.get('/api/users/customer/mailverifytrigger',verifyCustomerToken,CustomerDomain.emailVerification);
+
+//verify email code
+router.post('/api/users/customer/mailverifycode',verifyCustomerToken,CustomerDomain.emailCodeVerification);
+
+//forgot password mail trigger
+router.get('/api/users/customer/forgotpassword/mailtrigger',verifyCustomerToken,CustomerDomain.forgotPasswordMailTrigger);
+
+//forgot password with code verify
+router.post('/api/users/customer/forgotpassword/codeverify',verifyCustomerToken,CustomerDomain.forgotPasswordCodeVerification);
+
 // SIGN-OUT
 router.post('/api/users/signout', 
 // AuthDomain.signOut

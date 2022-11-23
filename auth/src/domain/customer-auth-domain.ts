@@ -48,14 +48,37 @@ export class CustomerDomain {
 
     //SIGNIN 
     static async signIn(req: Request, res: Response) {
-        const { email, password } = req.body;
-        const exitstingEmail = await CustomerAuthDatabaseLayer.isExistingEmail(email);
 
-        if (!exitstingEmail) {
+        const { password } = req.body;
+        var email: string, phoneNumber: Number, isEmail = false;
+
+        var exitstingEmail: any, existingPhone: any;
+
+        if (req.body.phoneNumber == null && req.body.phoneNumber == undefined && req.body.email != null && req.body.email != undefined) {
+            console.log('phone not defined,\nSo email signup');
+            email = req.body.email;
+            exitstingEmail = await CustomerAuthDatabaseLayer.isExistingEmail(email)
+            isEmail = true;
+        }
+        if (req.body.phoneNumber != null && req.body.phoneNumber != undefined && req.body.email == null && req.body.email == undefined) {
+            console.log('email not defined,\nSo phone signup');
+            phoneNumber = req.body.phoneNumber;
+            existingPhone = await CustomerAuthDatabaseLayer.isExistingPhone(phoneNumber)
+        }
+        // if (req.body.phoneNumber != null && req.body.phoneNumber != undefined && req.body.email != null && req.body.email != undefined) {
+        //     phoneNumber = phoneNumber;
+        //     email = email;
+        // }
+
+
+        if (isEmail && !exitstingEmail) {
             throw new BadRequestError('Invalid Email');
         }
+        if (isEmail == false && !existingPhone) {
+            throw new BadRequestError('Invalid PhoneNumber');
+        }
         const passwordMatch = await CustomerAuthDatabaseLayer.checkPassword(
-            exitstingEmail.password,
+            isEmail ? exitstingEmail.password : existingPhone.password,
             password
         );
 
@@ -67,8 +90,11 @@ export class CustomerDomain {
             const accessToken = await JwtService.accessToken({ email: exitstingEmail.email, id: exitstingEmail.id, phoneNumber: exitstingEmail.phoneNumber, userType: 'Customer' });
             const newRefreshToken = await CustomerAuthDatabaseLayer.updateRefreshToken(exitstingEmail.id, exitstingEmail.email, exitstingEmail.phoneNumber)
             return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
+        } else if (existingPhone) {
+            const accessToken = await JwtService.accessToken({ email: existingPhone.email, id: existingPhone.id, phoneNumber: existingPhone.phoneNumber, userType: 'Customer' });
+            const newRefreshToken = await CustomerAuthDatabaseLayer.updateRefreshToken(existingPhone.id, existingPhone.email, existingPhone.phoneNumber)
+            return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
         }
-
     }
 
 
@@ -122,11 +148,47 @@ export class CustomerDomain {
         res.status(200).send(currentUser);
     }
 
+    //EmailVerification
+    static async emailVerification(req: Request, res: Response) {
+        const mailTrigger = await CustomerAuthDatabaseLayer.emailVerification(req);
+        res.status(200).send({ mailTrigger: mailTrigger });
+    }
+
+    //mail verification code verify
+    static async emailCodeVerification(req: Request, res: Response) {
+        await CustomerAuthDatabaseLayer.emailCodeVerification(req);
+        res.status(200).send({ emailVerification: true });
+    }
+
+    //Phone Verification
+    static async phoneVerification(req: Request, res: Response) {
+        const mailTrigger = await CustomerAuthDatabaseLayer.phoneVerification(req);
+        res.status(200).send({ mailTrigger: mailTrigger });
+    }
+
+    //phone verification code verify
+    static async phoneCodeVerification(req: Request, res: Response) {
+        await CustomerAuthDatabaseLayer.phoneCodeVerification(req);
+        res.status(200).send({ emailVerification: true });
+    }
+
+    //email trigger for forgot password
+    static async forgotPasswordMailTrigger(req:Request,res:Response){
+        const mailTrigger = await CustomerAuthDatabaseLayer.forgotPasswordMailTrigger(req);
+        res.status(200).send({ mailTrigger: mailTrigger });
+    }
+
+    //forgot password with code verify
+    static async forgotPasswordCodeVerification(req: Request, res: Response) {
+        await CustomerAuthDatabaseLayer.forgotPasswordCodeVerification(req);
+        res.status(200).send({ passwordUpdated: true });
+    }
     //Switch Toogle
     static async inviteOnlyGenralSwitch(req: Request, res: Response) {
         var status = await CustomerAuthDatabaseLayer.inviteOnlyGenralSwitch(req);
         res.status(200).send({ status: status });
     }
+
     //reference Code creation
     static async generateReferalCode(req: Request, res: Response) {
         var createReferalCode = invitionCode.build({
@@ -141,6 +203,3 @@ export class CustomerDomain {
 
 
 }
-
-
-
