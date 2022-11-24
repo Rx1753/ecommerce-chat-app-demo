@@ -23,7 +23,14 @@ spec:
               service:
                 name: auth-srv
                 port:
-                  number: 3000        
+                  number: 3000  
+          - path: /api/store/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: store-srv
+                port:
+                  number: 3002        
           - path: /api/chats/?(.*)
             pathType: Prefix
             backend:

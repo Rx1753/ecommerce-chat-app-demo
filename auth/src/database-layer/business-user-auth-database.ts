@@ -7,11 +7,13 @@ import { Password } from '../services/password';
 import shortid from 'shortid';
 import { invitionCode } from '../models/invition-code';
 import { MailService } from '../services/mail-services';
+import { BusinessUserCreatedPublisher } from '../events/publisher/business-user-publisher';
+import { natsWrapper } from '../nats-wrapper';
 
 export class BusinessUserAuthDatabaseLayer {
 
     static async isExistingEmail(email: String) {
-        const existingEmail = await BusinessUser.findOne({ $and: [{ email }, { isDelete: false }] });
+        const existingEmail:any = await BusinessUser.findOne({ $and: [{ email }, { isDelete: false }] });
         console.log(existingEmail);
         return existingEmail;
     }
@@ -50,6 +52,19 @@ export class BusinessUserAuthDatabaseLayer {
         const data = BusinessUser.build(user);
         data.refreshToken = await JwtService.refreshToken({ email: data.email, id: data._id, phoneNumber: data.phoneNumber, userType: 'BusinessUser', })
         await data.save();
+        await new BusinessUserCreatedPublisher(natsWrapper.client).publish({
+            id: data.id,
+            version: 0,
+            email: data.email,
+            phoneNumber:data.phoneNumber,
+            name: data.name,
+            isMFA: data.isMFA,
+            isEmailVerified: data.isEmailVerified,
+            isPhoneVerified: data.isPhoneVerified,
+            isActive: true,
+            createdBy: '',
+            refreshToken: data.refreshToken
+        })
         return data;
     }
 
@@ -133,7 +148,7 @@ export class BusinessUserAuthDatabaseLayer {
         }
     }
 
-     static async emailCodeVerification(req: any) {
+    static async emailCodeVerification(req: any) {
         const { code } = req.body;
         const inviteCodeCheck = await invitionCode.findOne({ $and: [{ code: code }, { userId: req.currentUser.id }, { email: req.currentUser.email }] })
         if (inviteCodeCheck) {
@@ -143,9 +158,10 @@ export class BusinessUserAuthDatabaseLayer {
 
             // console.log(diffDays);
             // console.log(inviteCodeCheck?.expirationDays!);
+
             console.log(diffSecound);
             console.log('hii');
-            
+
             if (300000 > diffSecound) {
                 await BusinessUser.findByIdAndUpdate(req.currentUser.id, { isMFA: true, isEmailVerified: true });
                 return;
@@ -153,7 +169,6 @@ export class BusinessUserAuthDatabaseLayer {
                 await invitionCode.findByIdAndDelete(inviteCodeCheck.id);
                 throw new BadRequestError('Ohh No!! Your Verification code is exppired');
             }
-
         } else {
             throw new BadRequestError('Your Code is not matched');
         }

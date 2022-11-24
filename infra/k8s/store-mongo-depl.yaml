@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: store-mongo-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: store-mongo
+  template:
+    metadata:
+      labels:
+        app: store-mongo
+    spec:
+      containers:
+        - name: store-mongo
+          image: mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: store-mongo-srv
+spec:
+  selector:
+    app: store-mongo
+  ports:
+    - name: db
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+
+---
+# NODEPORT SERVICE FOR TESTING IN DEV-ENVIRONMENT
+apiVersion: v1
+kind: Service
+metadata:
+  name: store-mongo-node-port-srv
+spec:
+  type: NodePort
+  selector:
+    app: store-mongo
+  ports:
+    - name: store-mongo
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
