@@ -19,3 +19,6 @@ export * from "./nats/enums/subjects";
 export * from "./nats/enums/order-status";
 
 export * from "./nats/events/user-created-event";
+export * from "./nats/events/business-user-created";
+export * from "./nats/events/business-user-role-created";
+export * from "./nats/events/business-user-role-mapping";

@@ -4,4 +4,7 @@ exports.Subjects = void 0;
 var Subjects;
 (function (Subjects) {
     Subjects["UserCreated"] = "user:created";
+    Subjects["BusinessUserCreated"] = "user:businessUserCreated";
+    Subjects["BusinessUserRoleCreated"] = "user:businessUserRoleCreated";
+    Subjects["BusinessUserRoleMappingCreated"] = "user:BusinessUserRoleMappingCreated";
 })(Subjects = exports.Subjects || (exports.Subjects = {}));
