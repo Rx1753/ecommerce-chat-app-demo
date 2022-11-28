@@ -12,6 +12,7 @@ import {
   AdminPermissionsAttrs,
   AdminPermissionsDoc,
 } from '../models/admin-permissions';
+//Added by Ravina Panchal
 
 export class AuthDatabaseLayer {
   static async isSuperAdmin(email: String) {
