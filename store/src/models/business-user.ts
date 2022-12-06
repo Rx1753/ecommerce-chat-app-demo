@@ -9,9 +9,6 @@ export interface BusinessUserAttrs {
     phoneNumber?: number | null;
     name: string;
     createdBy?: string | null; 
-    isMFA?:boolean;
-    isPhoneVerified?: boolean;
-    isEmailVerified?: boolean;
 }
 
 // interface for usermodel pass
@@ -27,36 +24,17 @@ export interface BusinessUserDoc extends mongoose.Document {
     phoneNumber: number;
     name: string;
     password: string;
-    faceId: string;
-    isMFA: boolean;
-    isEmailVerified: boolean;
-    isPhoneVerified: boolean;
-    imageUrl: string;
     isActive: boolean;
     createdBy: BusinessUserDoc; // userId
-    isDelete: boolean;
-    refreshToken: string;
-    broadcastCount: number;
 }
 
 const BusinessUserSchema = new mongoose.Schema({
     email: { type: String || null, },
     phoneNumber: { type: Number || null, },
     name: { type: String },
-    faceId: { type: String, default: null },
-    isSocial: { type: Boolean, default: false },
-    isMFA: { type: Boolean, default: false },
-    isEmailVerified: { type: Boolean, default: false },
-    isPhoneVerified: { type: Boolean, default: false },
-    imageUrl: { type: String, default: null },
-    isDelete: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
-    isApproved: { type: Boolean, default: false },
     createdBy: { type: String || null, default: null, ref: 'BusinessUser' },
     accountType: { type: String, ref: 'AccountType' },
-    refreshToken: { type: String },
-    allowChangePassword: { type: Boolean, default: true},
-    broadcastCount: {type:Number, default:0},
     created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
     updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
 }, {

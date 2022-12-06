@@ -3,7 +3,7 @@ import { app } from './app';
 import { natsWrapper } from './nats-wrapper';
 import { BusinessUserCreatedListener } from './event/listener/business-user-listener';
 
-const port = 3001;
+const port = 3000;
 
 const start = async () => {
   

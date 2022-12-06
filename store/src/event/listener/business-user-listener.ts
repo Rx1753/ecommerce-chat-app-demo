@@ -7,11 +7,10 @@ export class BusinessUserCreatedListener extends Listener<BusinessUserCreatedEve
     queueGroupName=queueGroup;
     subject: Subjects.BusinessUserCreated=Subjects.BusinessUserCreated;
     async onMessage(data:BusinessUserCreatedEvent['data'],msg:Message){
-         const {id,version,email,phoneNumber, name,isMFA,isEmailVerified,isPhoneVerified,isActive,createdBy,refreshToken}=data
+         const {id,version,email,phoneNumber, name,isActive,createdBy}=data
          const ticket = BusinessUser.build({
-            id,email,phoneNumber, name,isMFA,isEmailVerified,isPhoneVerified,createdBy       
+            id,email,phoneNumber, name,createdBy       
          })
-         ticket.refreshToken=refreshToken;
          await ticket.save();
          msg.ack();
     }

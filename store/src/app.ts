@@ -2,6 +2,10 @@ import express from 'express';
 import 'express-async-errors';
 import cookieSession from 'cookie-session';
 import { errorHandler } from '@rx-ecommerce-chat/common_lib';
+import { BusinessCategoryRouter } from './routes/business-category-route';
+import { BusinessSubCategoryRouter } from './routes/business-sub-category-route';
+import { BusinessProfileRouter } from './routes/business-profile-route';
+import { BusinessProfileKycRouter } from './routes/buisness-profile-kyc-route';
 
 const app = express();
 
@@ -18,7 +22,10 @@ app.use(
 );
 
 // Router
-
+app.use(BusinessCategoryRouter);
+app.use(BusinessSubCategoryRouter);
+app.use(BusinessProfileRouter);
+app.use(BusinessProfileKycRouter);
 app.use(errorHandler);
 
 // app.all('*', async () => {

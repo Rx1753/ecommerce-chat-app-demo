@@ -10,13 +10,13 @@ spec:
     - host: ecommerce.chat.dev
       http:
         paths:
-          - path: /api/admin/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: auth-srv
-                port:
-                  number: 3000
+          # - path: /api/admin/?(.*)
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: auth-srv
+          #       port:
+          #         number: 3000
           - path: /api/users/?(.*)
             pathType: Prefix
             backend:
@@ -30,7 +30,7 @@ spec:
               service:
                 name: store-srv
                 port:
-                  number: 3002        
+                  number: 3000        
           - path: /api/chats/?(.*)
             pathType: Prefix
             backend:
