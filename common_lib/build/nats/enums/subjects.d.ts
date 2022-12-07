@@ -7,5 +7,6 @@ export declare enum Subjects {
     StateCreated = "user:stateCreated",
     CountryCreated = "user:countryCreated",
     BusinessRoleTypeCreated = "user:businessRoleTypeCreated",
-    BusinessRoleMappingCreated = "user:BusinessRoleMappingCreated"
+    BusinessRoleMappingCreated = "user:BusinessRoleMappingCreated",
+    StoreCreated = "store:StoreCreated"
 }
