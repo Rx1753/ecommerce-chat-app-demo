@@ -13,6 +13,8 @@ export interface BusinessUserAttrs {
     isMFA?:boolean;
     isPhoneVerified?: boolean;
     isEmailVerified?: boolean;
+    allowChangePassword?:boolean;
+    store?:string;
 }
 
 // interface for usermodel pass
@@ -39,6 +41,7 @@ export interface BusinessUserDoc extends mongoose.Document {
     isDelete: boolean;
     refreshToken: string;
     broadcastCount: number;
+    store:string;
 }
 
 const BusinessUserSchema = new mongoose.Schema({
@@ -60,8 +63,9 @@ const BusinessUserSchema = new mongoose.Schema({
     refreshToken: { type: String },
     allowChangePassword: { type: Boolean, default: true},
     broadcastCount: {type:Number, default:0},
-    created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
-    updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
+    store:{type:String,ref:'Store',default:null},
+    created_at: { type: Number, default: () => Date.now() },
+    updated_at: { type: Number, default: () => Date.now() },
 }, {
     toJSON: {
         transform(doc, ret) {

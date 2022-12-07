@@ -8,10 +8,11 @@ export class BusinessUserCreatedListener extends Listener<BusinessUserCreatedEve
     subject: Subjects.BusinessUserCreated=Subjects.BusinessUserCreated;
     async onMessage(data:BusinessUserCreatedEvent['data'],msg:Message){
          const {id,version,email,phoneNumber, name,isActive,createdBy}=data
-         const ticket = BusinessUser.build({
-            id,email,phoneNumber, name,createdBy       
+         const userData = BusinessUser.build({
+            email,phoneNumber, name,createdBy       
          })
-         await ticket.save();
+         userData._id=id
+         await userData.save();
          msg.ack();
     }
 }

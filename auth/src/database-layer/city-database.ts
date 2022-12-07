@@ -1,6 +1,8 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import { CityCreatedPublisher } from '../events/publisher/city-publisher';
 import { City } from '../models/city';
 import { State } from '../models/state';
+import { natsWrapper } from '../nats-wrapper';
 
 export class CityDatabaseLayer {
 
@@ -11,7 +13,14 @@ export class CityDatabaseLayer {
         if (countryCheck) {
             const data = City.build({ cityName: cityName, stateId: stateId });
             console.log(data);
+            console.log(Date.now());
+            
             await data.save();
+            await new CityCreatedPublisher(natsWrapper.client).publish({
+                id: data.id,
+                cityName: data.cityName,
+                stateId: data.stateId.toString()
+            })
             return data;
         } else {
             throw new BadRequestError('Country id is not valid')

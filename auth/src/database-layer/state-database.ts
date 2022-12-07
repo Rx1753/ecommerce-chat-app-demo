@@ -1,6 +1,8 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import { StateCreatedPublisher } from '../events/publisher/state-publisher';
 import { Country } from '../models/country';
 import { State } from '../models/state';
+import { natsWrapper } from '../nats-wrapper';
 
 export class StateDatabaseLayer {
 
@@ -13,7 +15,13 @@ export class StateDatabaseLayer {
             console.log(data);
             
             await data.save();
+            await new StateCreatedPublisher(natsWrapper.client).publish({
+                id:data.id,
+                stateName:data.stateName,
+                countryId:data.countryId.toString()
+            })
             return data;
+
         } else {
             throw new BadRequestError('Country id is not valid')
         }

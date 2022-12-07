@@ -18,8 +18,8 @@ export interface AccountTypeDoc extends mongoose.Document {
 
 const AccountTypeSchema = new mongoose.Schema({
     accountType: { type: String, required: true, unique: true},
-    created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
-    updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
+    created_at: { type: Number, default: () => Date.now()},
+    updated_at: { type: Number, default: () => Date.now() },
     is_delete: { type: Boolean, default: false }
 }, {
     toJSON: {

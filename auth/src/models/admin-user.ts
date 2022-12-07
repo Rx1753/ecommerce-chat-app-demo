@@ -74,6 +74,8 @@ const adminUserSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'adminPermissions',
     },
+    createdAt: { type: Number, default: () => Date.now() },
+    updatedAt: { type: Number, default: () => Date.now() }
   },
   {
     toJSON: {

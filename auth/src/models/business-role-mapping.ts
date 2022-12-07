@@ -4,8 +4,8 @@ import { BusinessUserDoc } from "./business-user";
 // intetface that describe the prooerti
 // that are required to cretae new user
 export interface BusinessRoleMappingAttrs {
-    businessUserId:string;
-    businessRoleId:string;
+    businessUserId?:string;
+    businessRoleId?:string;
 }
 
 // interface for usermodel pass
@@ -22,8 +22,8 @@ export interface BusinessRoleMappingDoc extends mongoose.Document {
 const BusinessRoleMappingSchema = new mongoose.Schema({
     businessUserId:{type:String,ref:'BusinessUser'},
     businessRoleId:{type:String,ref:'BusinessRoleType'},
-    created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
-    updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
+    created_at: { type: Number, default: () => Date.now() },
+    updated_at: { type: Number, default: () => Date.now() },
     is_delete: { type: Boolean, default: false }
 }, {
     toJSON: {

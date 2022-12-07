@@ -1,6 +1,7 @@
 class PayloadType {
   static AdminType = 'Admin';
   static CustomerType = 'Customer';
+  static Vendor='Vendor';
 }
 
 

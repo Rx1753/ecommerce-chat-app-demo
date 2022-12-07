@@ -36,8 +36,8 @@ const BusinessSubCategorySchema = new mongoose.Schema({
     description: {type: String},
     isActive: { type: Boolean, default: true },
     businessCategoryId:{type:String,ref:'BusinessCategory'},
-    created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
-    updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
+    created_at: { type: Number, default: () => Date.now() },
+    updated_at: { type: Number, default: () => Date.now() },
 }, {
     toJSON: {
         transform(doc, ret) {

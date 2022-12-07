@@ -4,7 +4,6 @@ import { Password } from "../services/password";
 // intetface that describe the prooerties
 // that are required to cretae new user
 export interface BusinessUserAttrs {
-    id: string;
     email?: string | null;
     phoneNumber?: number | null;
     name: string;
@@ -35,8 +34,8 @@ const BusinessUserSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     createdBy: { type: String || null, default: null, ref: 'BusinessUser' },
     accountType: { type: String, ref: 'AccountType' },
-    created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
-    updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
+    created_at: { type: Number, default: () => Date.now() },
+    updated_at: { type: Number, default: () => Date.now() },
 }, {
     toJSON: {
         transform(doc, ret) {

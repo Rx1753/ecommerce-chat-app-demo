@@ -38,3 +38,4 @@ __exportStar(require("./nats/events/country-created"), exports);
 __exportStar(require("./nats/events/state-created"), exports);
 __exportStar(require("./nats/events/business-role-created"), exports);
 __exportStar(require("./nats/events/business-role-mappling-created"), exports);
+__exportStar(require("./nats/events/store-created"), exports);

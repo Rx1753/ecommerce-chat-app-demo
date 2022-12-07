@@ -65,8 +65,8 @@ const BusinessProfileSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: false },
     minOrderAmount: { type: Number, default: 0 },
     welcomeMessage: { type: String, default: "Welcome to My business profile" },
-    createdAt: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
-    updatedAt: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
+    createdAt: { type: Number, default: () => Date.now() },
+    updatedAt: { type: Number, default: () => Date.now() },
 }, {
     toJSON: {
         transform(doc, ret) {

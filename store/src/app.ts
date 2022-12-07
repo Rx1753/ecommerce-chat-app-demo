@@ -6,6 +6,7 @@ import { BusinessCategoryRouter } from './routes/business-category-route';
 import { BusinessSubCategoryRouter } from './routes/business-sub-category-route';
 import { BusinessProfileRouter } from './routes/business-profile-route';
 import { BusinessProfileKycRouter } from './routes/buisness-profile-kyc-route';
+import { StoreRouter } from './routes/store-route';
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(BusinessCategoryRouter);
 app.use(BusinessSubCategoryRouter);
 app.use(BusinessProfileRouter);
 app.use(BusinessProfileKycRouter);
+app.use(StoreRouter);
 app.use(errorHandler);
 
 // app.all('*', async () => {

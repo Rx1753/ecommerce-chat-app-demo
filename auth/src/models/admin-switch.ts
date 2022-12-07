@@ -25,8 +25,8 @@ const adminSwitchesSchema = new mongoose.Schema(
   {
    name:{type:String},
    status:{type:Boolean},
-   created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
-   updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
+   created_at: { type: Number, default: () => Date.now() },
+   updated_at: { type: Number, default: () => Date.now() },
   },
   {
     toJSON: {

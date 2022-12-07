@@ -1,10 +1,6 @@
 import mongoose, { ObjectId } from "mongoose";
 import { Password } from "../services/password";
-// name String
-//   description String
-//   isActive Boolean
-//   createdAt Date
-//   updatedAt Date
+
 // intetface that describe the prooerties
 // that are required to cretae new category
 export interface BusinessCategoryAttrs {
@@ -32,8 +28,8 @@ const BusinessCategorySchema = new mongoose.Schema({
     name: { type: String },
     description: {type: String},
     isActive: { type: Boolean, default: true },
-    created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
-    updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
+    created_at: { type: Number, default: () => Date.now() },
+    updated_at: { type: Number, default: () => Date.now() },
 }, {
     toJSON: {
         transform(doc, ret) {

@@ -1,5 +1,7 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import { CountryCreatedPublisher } from '../events/publisher/country-publisher';
 import { Country } from '../models/country';
+import { natsWrapper } from '../nats-wrapper';
 
 export class CountryDatabaseLayer {
 
@@ -7,6 +9,10 @@ export class CountryDatabaseLayer {
         const { countryName } = req.body;
         const data = Country.build({ countryName: countryName });
         await data.save();
+        await new CountryCreatedPublisher(natsWrapper.client).publish({
+            id:data.id,
+            countryName:data.countryName
+        })
         return data;
     }
 

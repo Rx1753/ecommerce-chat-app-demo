@@ -4,11 +4,11 @@ import { BusinessCategory } from "../models/business-category";
 export class BusinessCategoryDatabaseLayer {
 
     static async createBusinessCategory(req: any) {
-        const { name, description } = req.body;
+        const { name, description,isActive } = req.body;
         const data = BusinessCategory.build({
             name: name, 
             description: description,
-            isActive: true
+            isActive: isActive
         });
         console.log(data);
         await data.save();

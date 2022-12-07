@@ -42,8 +42,8 @@ const invitionCodeSchema = new mongoose.Schema(
         expirationDays: { type: Number, default: 10 },
         isUsed:{type:Boolean,defaul:false},
         created_By:{type:String},
-        created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
-        updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
+        created_at: { type: Number, default: () => Date.now() },
+        updated_at: { type: Number, default: () => Date.now() },
     },
     {
         toJSON: {

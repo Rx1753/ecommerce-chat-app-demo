@@ -19,3 +19,4 @@ export * from "./nats/events/country-created";
 export * from "./nats/events/state-created";
 export * from './nats/events/business-role-created';
 export * from './nats/events/business-role-mappling-created';
+export * from './nats/events/store-created';

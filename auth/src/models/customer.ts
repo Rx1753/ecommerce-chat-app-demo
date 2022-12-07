@@ -80,8 +80,8 @@ const customerSchema = new mongoose.Schema({
     isAllowToChatStranger: { type: Boolean, default: true },
     hideChatPassword: { type: String, default: null },
     refreshToken: { type: String },
-    created_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
-    updated_at: { type: Number, default: () => new Date(+new Date() + 7 * 24 * 60 * 60 * 1000) },
+    created_at: { type: Number, default: () => Date.now() },
+    updated_at: { type: Number, default: () => Date.now() },
 }, {
     toJSON: {
         transform(doc, ret) {

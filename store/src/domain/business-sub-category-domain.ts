@@ -31,5 +31,9 @@ export class BusinessSubCategoryDomain {
         res.status(201).send(BusinessSubCategory);
     }
     
+    static async getBusinessCategoryIdList(req: Request, res: Response) {
+        const BusinessSubCategory =  await BusinessSubCategoryDatabaseLayer.getBusinessCategoryIdList(req,req.params.id);
+        res.status(201).send(BusinessSubCategory);
+    }
 
 }
