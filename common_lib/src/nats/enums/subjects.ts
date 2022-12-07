@@ -5,5 +5,6 @@ export enum Subjects {
   BusinessUserRoleMappingCreated='user:BusinessUserRoleMappingCreated',
   CityCreated="user:cityCreatd",
   StateCreated="user:stateCreated",
-  CountryCreated="user:countryCreated"
+  CountryCreated="user:countryCreated",
+  BusinessRoleTypeCreated="user:businessRoleTypeCreated"
 }
