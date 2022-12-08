@@ -30,16 +30,6 @@ export class BusinessDomain {
             throw new BadRequestError('Phone is Already in use');
         }
 
-        //nats publisher
-        // await new UserCreatedPublisher(natsWrapper.client).publish({
-        //     id: user.id,
-        //     userId: user.id,
-        //     firstName: user.firstName,
-        //     lastName: user.lastName,
-        //     email: user.email,
-        //     type: user.type,
-        // });
-
         var user = await BusinessUserAuthDatabaseLayer.signUpUser(req);
         return res.status(201).send(user);
     }
@@ -109,7 +99,18 @@ export class BusinessDomain {
         }
         res.status(200).send(customer);
     }
+    
 
+    static async userGetWithThirRoles(req: Request, res: Response) {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            throw new BadRequestError('Requested id is not id type');
+        }
+        console.log('id',req.params.id);
+        
+        const customer = await BusinessUserAuthDatabaseLayer.userGetWithThirRoles(req.params.id);
+       
+        res.status(200).send(customer);
+    }
     //Delete user by Id
     static async deleteUserById(req: Request, res: Response) {
 
@@ -127,6 +128,29 @@ export class BusinessDomain {
     //Get User By name 
     static async getUserByName(req: Request, res: Response) {
         const customer = await BusinessUserAuthDatabaseLayer.getUserByName(req.params.name);
+        res.status(200).send(customer);
+    }
+
+    //add user
+    static async createUser(req: Request, res: Response) {
+        const { email, phoneNumber } = req.body;
+        var exitstingPhone;
+        var existingUser
+        if (email != undefined || email != null) {
+            existingUser = await BusinessUserAuthDatabaseLayer.isExistingEmail(email);
+        }
+        if (phoneNumber != undefined || phoneNumber != null) {
+            exitstingPhone = await BusinessUserAuthDatabaseLayer.isExistingPhone(phoneNumber);
+        }
+
+        if (existingUser) {
+            throw new BadRequestError('Email In Use');
+        }
+        if (exitstingPhone) {
+            throw new BadRequestError('Phone is Already in use');
+        }
+
+        const customer = await BusinessUserAuthDatabaseLayer.createUser(req);
         res.status(200).send(customer);
     }
 

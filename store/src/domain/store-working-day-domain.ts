@@ -1,12 +1,12 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { StoreDatabaseLayer } from '../database-layer/store-database';
+import { StoreWorkingDayDatabaseLayer } from '../database-layer/store-working-day-database';
 
-export class StoreDomain {
+export class StoreWorkingDayDomain {
 
     static async createStore(req: Request, res: Response) {
-        const Store = await StoreDatabaseLayer.createStore(req);
+        const Store = await StoreWorkingDayDatabaseLayer.createStore(req);
         res.status(201).send(Store);
     }
 
@@ -14,7 +14,7 @@ export class StoreDomain {
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        await StoreDatabaseLayer.updateStore(req,req.params.id);
+        await StoreWorkingDayDatabaseLayer.updateStore(req,req.params.id);
         res.status(201).send({ updated: true });
     }
 
@@ -22,12 +22,12 @@ export class StoreDomain {
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        await StoreDatabaseLayer.deleteStore(req,req.params.id);
+        await StoreWorkingDayDatabaseLayer.deleteStore(req,req.params.id);
         res.status(201).send({ deleted: true });
     }
 
     static async getStoreId(req: Request, res: Response) {
-        const Store =  await StoreDatabaseLayer.getStoreById(req,req.params.id);
+        const Store =  await StoreWorkingDayDatabaseLayer.getStoreById(req,req.params.id);
         res.status(201).send(Store);
     }
     

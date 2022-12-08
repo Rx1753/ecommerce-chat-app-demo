@@ -25,7 +25,7 @@ export interface BusinessRoleTypeDoc extends mongoose.Document {
 }
 
 const BusinessRoleTypeSchema = new mongoose.Schema({
-    tableName: { type: String, required: true,enum:['product','order','store','businessProfile'] },
+    tableName: { type: String,enum:['product','order','store','businessProfile'] },
     isRead: { type: Boolean, default: false },
     isCreate: { type: Boolean, default: false },
     isDelete: { type: Boolean, default: false },

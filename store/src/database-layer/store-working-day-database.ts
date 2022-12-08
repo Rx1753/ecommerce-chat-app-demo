@@ -8,12 +8,13 @@ import { City } from '../models/city';
 import { Country } from '../models/country';
 import { State } from '../models/state';
 import { Store } from "../models/store";
+import { storeWorkingDay } from '../models/store-working-days';
 import { natsWrapper } from '../nats-wrapper';
 
-export class StoreDatabaseLayer {
+export class StoreWorkingDayDatabaseLayer {
 
     static async createStore(req: any) {
-        const { name, description, imageUrl, BusinessSubCategoryId, BusinessProfileId, email, phoneNumber, cityId, stateId, countryId, lat, lon, welcomeMessage, pinCode, addressLine1 } = req.body;
+        const { storeId, startTime, closeTime,startBreakTime,endBreakTime, day } = req.body;
 
         console.log(req.currentUser.id);
         var permission = false;
@@ -39,54 +40,50 @@ export class StoreDatabaseLayer {
         } else {
             throw new BadRequestError('User is not Valid');
         }
+        var dayAlreadyExisit = false;
         if (permission) {
-            const BusinessSubCategoryCheck = await BusinessSubCategory.findById(BusinessSubCategoryId);
-            const BusinessProfileCheck = await BusinessProfile.findById(BusinessProfileId);
-            const countryCheck = await Country.findById(countryId);
-            const stateCheck = await State.findOne({ $and: [{ id: stateId }, { country_id: countryId }] });
-            const cityCheck = await City.findOne({ $and: [{ id: cityId }, { stateId: stateId }] });
-            if (BusinessProfileCheck && BusinessSubCategoryCheck && countryCheck && stateCheck && cityCheck) {
-                const data = Store.build({
-                    phoneNumber: phoneNumber,
-                    email: email,
-                    businessProfileId: BusinessProfileCheck.id,
-                    businessSubCategoryId: BusinessSubCategoryCheck.id,
-                    description: description,
-                    name: name,
-                    latitude: lat,
-                    longitude: lon,
-                    city: cityCheck.id,
-                    state: stateCheck.id,
-                    country: countryCheck.id,
-                    pinCode: pinCode,
-                    addressLine1: addressLine1,
-                    imageUrl: imageUrl,
-                    welcomeMessage: welcomeMessage,
-                    createdBy: req.currentUser.id
-                });
-                console.log(data);
-                await data.save();
-                await new StoreCreatedPublisher(natsWrapper.client).publish({
-                    id: data.id,
-                    phoneNumber: phoneNumber,
-                    email: email,
-                    businessProfileId: BusinessProfileCheck.id,
-                    businessSubCategoryId: BusinessSubCategoryCheck.id,
-                    description: description,
-                    name: name,
-                    latitude: lat,
-                    longitude: lon,
-                    city: cityCheck.id,
-                    state: stateCheck.id,
-                    country: countryCheck.id,
-                    pinCode: pinCode,
-                    addressLine1: addressLine1,
-                    imageUrl: imageUrl,
-                    welcomeMessage: welcomeMessage,
-                    createdBy: req.currentUser.id
-                })
-                return data;
+            const storeCheck = await Store.findById(storeId);
 
+            if (storeCheck) {
+                const storeData = await storeWorkingDay.find({ storeId: storeId });
+                storeData.forEach((e: any) => {
+                    if (e.day == day) {
+                        dayAlreadyExisit = true;
+                    }
+                })
+                if (dayAlreadyExisit == false) {
+                    const startT=startTime.split(":");
+                    const endT=closeTime.split(":");
+
+
+                    const startB=startBreakTime.split(":");
+                    const endB=endBreakTime.split(":");
+
+                    if(startT[1]<59 && startT[1]>0 && endT[1]<59 && endT[1]>0 && startT[0]<23 && startT[0]>0 && endT[0]<23 && endT[0]>0 ){
+                        if(startT[0]<endT[0]){
+                            if(startB[1]<59 && startB[1]>0 && endB[1]<59 && endB[1]>0 && startB[0]<23 && startB[0]>0 && endB[0]<23 && endB[0]>0 ){
+                                if(startB[0]<endB[0]){
+                                    if(startB[0]>startT[0] && endT[0]<endB[0]){
+                                        const data = storeWorkingDay.build({
+                                            day: day,
+                                            startTime: startTime,
+                                            closeTime: closeTime,
+                                            storeId: storeId,
+                                            startBreakTime:startBreakTime,
+                                            endBreakTime:endBreakTime,
+                                        });
+                                        console.log(data);
+                                        await data.save();
+                                        return data;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    throw new BadRequestError('Time is not Valid');
+                } else {
+                    throw new BadRequestError('Given Day data is already exisit pls update that')
+                }
             } else {
                 throw new BadRequestError('Givien id is not valid');
             }
@@ -101,7 +98,7 @@ export class StoreDatabaseLayer {
         const currentDate = new Date();
         const updated_at = currentDate.getTime();
         var permission = false;
-        const { name, description, imageUrl, BusinessSubCategoryId, BusinessProfileId, email, phoneNumber, cityId, stateId, countryId, lat, lon, welcomeMessage, pinCode, addressLine1 } = req.body;
+        const { storeId, startTime, closeTime, day } = req.body;
         try {
             if (req.currentUser.type == 'Vendor') {
                 const userData = await BusinessUser.findById(req.currentUser.id);
@@ -126,29 +123,14 @@ export class StoreDatabaseLayer {
             }
 
             if (permission) {
-                const BusinessSubCategoryCheck = await BusinessSubCategory.findById(BusinessSubCategoryId);
-                const BusinessProfileCheck = await BusinessProfile.findById(BusinessProfileId);
-                const countryCheck = await Country.findById(countryId);
-                const stateCheck = await State.findOne({ $and: [{ id: stateId }, { country_id: countryId }] });
-                const cityCheck = await City.findOne({ $and: [{ id: cityId }, { stateId: stateId }] });
-                if (BusinessProfileCheck && BusinessSubCategoryCheck && countryCheck && stateCheck && cityCheck) {
-                    await Store.findByIdAndUpdate(id, {
-                        phoneNumber: phoneNumber,
-                        email: email,
-                        businessProfileId: BusinessProfileCheck.id,
-                        businessSubCategoryId: BusinessSubCategoryCheck.id,
-                        description: description,
-                        name: name,
-                        latitude: lat,
-                        longitude: lon,
-                        city: cityCheck.id,
-                        state: stateCheck.id,
-                        country: countryCheck.id,
-                        pinCode: pinCode,
-                        addressLine1: addressLine1,
-                        imageUrl: imageUrl,
-                        welcomeMessage: welcomeMessage,
-                        updateAt: updated_at,
+                const storeCheck = await Store.findById(storeId);
+
+                if (storeCheck) {
+                    await storeWorkingDay.findByIdAndUpdate(id, {
+                        day: day,
+                        startTime: startTime,
+                        closeTime: closeTime,
+                        storeId: storeId
                     })
                     return;
                     //update publisher pending
@@ -182,7 +164,7 @@ export class StoreDatabaseLayer {
                         if (e.businessRoleId.tableName == 'store' && e.businessRoleId.isDelete == true) {
                             permission = true;
                             console.log('user has permission');
-                            
+
                         }
                     })
                 }

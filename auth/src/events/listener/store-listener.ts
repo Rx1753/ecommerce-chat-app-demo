@@ -46,6 +46,8 @@ export class StoreCreatedListener extends Listener<StoreCreatedEvent>{
             welcomeMessage,
             createdBy
         })
+        console.log('hii');
+        
         StoreData._id = id;
         await StoreData.save();
         msg.ack();

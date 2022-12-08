@@ -1,9 +1,35 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: store-mongo-pvc
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500M
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: store-mongo-data
+spec:
+  capacity:
+    storage: 500M
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: ""
+  hostPath:
+    path: /data/store
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: store-mongo-depl
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: store-mongo
@@ -15,32 +41,24 @@ spec:
       containers:
         - name: store-mongo
           image: mongo
+          volumeMounts:
+            - name: "store-mongo-data-dir"
+              mountPath: "/data/db"
+      volumes:
+        - name: "store-mongo-data-dir"
+          persistentVolumeClaim:
+            claimName: "store-mongo-pvc"
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: store-mongo-srv
 spec:
-  selector:
-    app: store-mongo
-  ports:
-    - name: db
-      protocol: TCP
-      port: 27017
-      targetPort: 27017
-
----
-# NODEPORT SERVICE FOR TESTING IN DEV-ENVIRONMENT
-apiVersion: v1
-kind: Service
-metadata:
-  name: store-mongo-node-port-srv
-spec:
   type: NodePort
   selector:
     app: store-mongo
   ports:
-    - name: store-mongo
+    - name: db
       protocol: TCP
       port: 27017
       targetPort: 27017

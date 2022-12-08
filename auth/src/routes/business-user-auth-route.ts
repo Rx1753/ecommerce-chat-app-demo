@@ -1,5 +1,5 @@
 import express, { Request, Response, Router } from 'express';
-import {verifyCustomerToken} from '../middlewares/current-user';
+import {verifyCustomerToken, verifyVendorToken} from '../middlewares/current-user';
 import { validateRequest } from '@rx-ecommerce-chat/common_lib';
 import { BusinessUserAuthValidation } from "../validations/business-user-auth-validation";
 import { BusinessDomain } from '../domain/business-user-auth-domain';
@@ -24,22 +24,28 @@ router.get('/api/users/businessuser/delete/:id', BusinessDomain.deleteUserById);
 router.get('/api/users/businessuser/getuserbyname/:name',BusinessDomain.getUserByName)
 
 //User persnol info update
-router.put('/api/users/businessuser/updateuser',verifyCustomerToken,BusinessDomain.updateUserInfo)
+router.put('/api/users/businessuser/updateuser',verifyVendorToken,BusinessDomain.updateUserInfo)
  
 // CURRENT_USER
-router.get('/api/users/businessuser/currentuser', verifyCustomerToken,BusinessDomain.currentLoginUser);
+router.get('/api/users/businessuser/currentuser', verifyVendorToken,BusinessDomain.currentLoginUser);
 
 //MailTrigger for emailVerification
-router.get('/api/users/businessuser/mailverifytrigger',verifyCustomerToken,BusinessDomain.emailVerification);
+router.get('/api/users/businessuser/mailverifytrigger',verifyVendorToken,BusinessDomain.emailVerification);
 
 //verify email code
-router.post('/api/users/businessuser/mailverifycode',verifyCustomerToken,BusinessDomain.emailCodeVerification);
+router.post('/api/users/businessuser/mailverifycode',verifyVendorToken,BusinessDomain.emailCodeVerification);
 
 //forgot password mail trigger
-router.get('/api/users/businessuser/forgotpassword/mailtrigger',verifyCustomerToken,BusinessDomain.forgotPasswordMailTrigger);
+router.get('/api/users/businessuser/forgotpassword/mailtrigger',verifyVendorToken,BusinessDomain.forgotPasswordMailTrigger);
 
 //forgot password with code verify
-router.post('/api/users/businessuser/forgotpassword/codeverify',verifyCustomerToken,BusinessDomain.forgotPasswordCodeVerification);
+router.post('/api/users/businessuser/forgotpassword/codeverify',verifyVendorToken,BusinessDomain.forgotPasswordCodeVerification);
+
+//add user
+router.post('/api/users/businessuser/adduser',verifyVendorToken,BusinessDomain.createUser);
+
+//getuser and thier roles
+router.get('/api/users/businessuser/getuserrole/:id',BusinessDomain.userGetWithThirRoles);
 
 // SIGN-OUT
 router.post('/api/users/signout', 

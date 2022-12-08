@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { app } from './app';
+import { StoreCreatedListener } from './events/listener/store-listener';
 import { natsWrapper } from './nats-wrapper';
 
 const port = 3000;
@@ -40,6 +41,7 @@ const start = async () => {
     process.on('SIGTERM', () => natsWrapper.client.close());
 
     await mongoose.connect(process.env.MONGO_URI);
+    new StoreCreatedListener(natsWrapper.client).listen();
   } catch (error: any) {
     throw Error(error);
   }

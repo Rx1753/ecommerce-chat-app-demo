@@ -5,6 +5,8 @@ import { BusinessUserCreatedListener } from './event/listener/business-user-list
 import { CityCreatedListener } from './event/listener/city-listener';
 import { StateCreatedListener } from './event/listener/state-listener';
 import { CountryCreatedListener } from './event/listener/country-listener';
+import { BusinessRoleCreatedListener } from './event/listener/business-role-listener';
+import { BusinessRoleMappingListener } from './event/listener/business-role-mapping-listener';
 
 const port = 3000;
 
@@ -46,6 +48,8 @@ const start = async () => {
     new CityCreatedListener(natsWrapper.client).listen();
     new StateCreatedListener(natsWrapper.client).listen();
     new CountryCreatedListener(natsWrapper.client).listen();
+    new BusinessRoleCreatedListener(natsWrapper.client).listen();
+    new BusinessRoleMappingListener(natsWrapper.client).listen();
     await mongoose.connect(process.env.MONGO_URI).then(() => {
       console.log(
         `Connected to MongoDB', ${process.env.MONGO_URI}`

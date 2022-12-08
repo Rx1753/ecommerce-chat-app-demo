@@ -1,6 +1,5 @@
 import { ObjectId } from 'mongodb';
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
-
 import { JwtService } from '../services/jwt';
 import { BusinessUser, BusinessUserAttrs } from '../models/business-user';
 import { Password } from '../services/password';
@@ -13,6 +12,8 @@ import { PayloadType } from '../services/string-values';
 import { Store } from '../models/store';
 import { BusinessRoleType, BusinessRoleTypeAttrs } from '../models/business-role-type';
 import { BusinessRoleMapping, BusinessRoleMappingAttrs } from '../models/business-role-mapping';
+import { BusinessRoleMappingCreatedPublisher } from '../events/publisher/business-role-mapping-publisher';
+import { BusinessRoleTypeCreatedPublisher } from '../events/publisher/business-role-publisher';
 
 export class BusinessUserAuthDatabaseLayer {
 
@@ -62,9 +63,6 @@ export class BusinessUserAuthDatabaseLayer {
             email: data.email,
             phoneNumber: data.phoneNumber,
             name: data.name,
-            isMFA: data.isMFA,
-            isEmailVerified: data.isEmailVerified,
-            isPhoneVerified: data.isPhoneVerified,
             isActive: true,
             createdBy: data.id.toString(),
             refreshToken: data.refreshToken
@@ -284,11 +282,8 @@ export class BusinessUserAuthDatabaseLayer {
     }
 
     static async createUser(req: any) {
-        const { name, email, password, phoneNumber, isAllowChangePassword, storeId, refralCode, isWaiting } = req.body;
-        const { tableName1, isRead1, isCreate1, isDelete1, isUpdate1 } = req.body;
-        const { tableName2, isRead2, isCreate2, isDelete2, isUpdate2 } = req.body;
-        const { tableName3, isRead3, isCreate3, isDelete3, isUpdate3 } = req.body;
-        const { tableName4, isRead4, isCreate4, isDelete4, isUpdate4 } = req.body;
+        const { name, email, password, phoneNumber, isAllowChangePassword, storeId } = req.body;
+
         var user: BusinessUserAttrs;
         user = { name, password };
         if (req.body.phoneNumber == null && req.body.phoneNumber == undefined && req.body.email != null && req.body.email != undefined) {
@@ -315,63 +310,93 @@ export class BusinessUserAuthDatabaseLayer {
             throw new BadRequestError('store id is not valid');
         }
         const userData = BusinessUser.build(user);
+
+        userData.createdBy = req.currentUser.id;
+        console.log(req.body.rolesArray);
+        const roleData = req.body.rolesArray;
+        const roleDataArr: string[] = [];
+        roleData.forEach((e: any) => {
+            if (!roleDataArr.includes(e.tableName)) {
+                roleDataArr.push(e.tableName);
+            } else {
+                throw new BadRequestError('Repeating table is not possible');
+            }
+        });
+
+
+        await Promise.all(roleData.map(async (e: any) => {
+            const roleMapData = await BusinessUserAuthDatabaseLayer.checkRoleMapping(e.tableName, e.isCreate, e.isUpdate, e.isDelete, e.isRead, userData.id);
+            console.log(roleMapData);
+        }));
+        userData.refreshToken = await JwtService.refreshToken({ email: userData.email, id: userData._id, phoneNumber: userData.phoneNumber, type: PayloadType.Vendor, })
         await userData.save();
+        await new BusinessUserCreatedPublisher(natsWrapper.client).publish({
+            id: userData.id,
+            version: 0,
+            email: userData.email,
+            phoneNumber: userData.phoneNumber,
+            name: userData.name,
+            isActive: true,
+            createdBy: req.currentUser.id,
+            refreshToken: userData.refreshToken
+        })
+        return userData;
+    }
 
-        //Mapping logic for first table
-        // var roleMapping1: BusinessRoleMappingAttrs;
-        // roleMapping1 = { businessRoleId: userData.id };
-        // const table1Check = await BusinessRoleType.findOne({ $and: [{ tableName: tableName1 }, { isCreate: isCreate1 }, { isUpdate: isUpdate1 }, { isDelete: isDelete1 }, { isRead: isRead1 }] })
-        // if (!table1Check) {
-        //     const role1 = BusinessRoleType.build({ tableName: tableName1, isRead: isRead1, isCreate: isCreate1, isDelete: isDelete1, isUpdate: isUpdate1 });
-        //     await role1.save();
-        //     roleMapping1.businessRoleId = role1.id;
-        // } else {
-        //     roleMapping1.businessRoleId = table1Check.id;
-        // }
-        // const roleMappingData1=BusinessRoleMapping.build(roleMapping1);
-        // await roleMappingData1.save();
+    static async checkRoleMapping(tableName: string, isCreate: boolean, isUpdate: boolean, isDelete: boolean, isRead: boolean, id: string) {
+        var roleMapping: BusinessRoleMappingAttrs;
+        roleMapping = { businessUserId: id };
+        try {
+            const tableCheck = await BusinessRoleType.findOne({ $and: [{ tableName: tableName }, { isCreate: isCreate }, { isUpdate: isUpdate }, { isDelete: isDelete }, { isRead: isRead }] })
+            if (!tableCheck) {
+                const role = BusinessRoleType.build({ tableName: tableName, isRead: isRead, isCreate: isCreate, isDelete: isDelete, isUpdate: isUpdate });
+                console.log(role);
+                await role.save();
 
 
-        // //Mapping logic for secound table
-        // var roleMapping2: BusinessRoleMappingAttrs;
-        // roleMapping2 = { businessRoleId: userData.id };
-        // const table2Check = await BusinessRoleType.findOne({ $and: [{ tableName: tableName2 }, { isCreate: isCreate2 }, { isUpdate: isUpdate2 }, { isDelete: isDelete2 }, { isRead: isRead2 }] })
-        // if (!table2Check) {
-        //     const role2 = BusinessRoleType.build({ tableName: tableName2, isRead: isRead2, isCreate: isCreate2, isDelete: isDelete1, isUpdate: isUpdate1 });
-        //     await role2.save();
-        //     roleMapping2.businessRoleId = role2.id;
-        // } else {
-        //     roleMapping2.businessRoleId = table2Check.id;
-        // }
-        // const roleMappingData2=BusinessRoleMapping.build(roleMapping2);
-        // await roleMappingData2.save();
+                await new BusinessRoleTypeCreatedPublisher(natsWrapper.client).publish({
+                    id: role.id,
+                    tableName: role.tableName,
+                    isRead: role.isRead,
+                    isCreate: role.isCreate,
+                    isDelete: role.isDelete,
+                    isUpdate: role.isUpdate
+                })
+                roleMapping.businessRoleId = role.id;
+            } else {
+                roleMapping.businessRoleId = tableCheck.id;
+            }
+            const roleMappingData = BusinessRoleMapping.build(roleMapping);
+            await roleMappingData.save();
 
-        // //Mapping logic for third table
-        // var roleMapping3: BusinessRoleMappingAttrs;
-        // roleMapping3 = { businessRoleId: userData.id };
-        // const table3Check = await BusinessRoleType.findOne({ $and: [{ tableName: tableName3 }, { isCreate: isCreate3 }, { isUpdate: isUpdate3 }, { isDelete: isDelete3 }, { isRead: isRead3 }] })
-        // if (!table3Check) {
-        //     const role3 = BusinessRoleType.build({ tableName: tableName3, isRead: isRead3, isCreate: isCreate3, isDelete: isDelete3, isUpdate: isUpdate3 });
-        //     await role3.save();
-        //     roleMapping3.businessRoleId = role3.id;
-        // } else {
-        //     roleMapping3.businessRoleId = table3Check.id;
-        // }
-        // const roleMappingData3=BusinessRoleMapping.build(roleMapping3);
-        // await roleMappingData3.save();
+            await new BusinessRoleMappingCreatedPublisher(natsWrapper.client).publish({
+                id: roleMappingData.id,
+                businessUserId: roleMappingData.businessUserId.toString(),
+                businessRoleId: roleMappingData.businessRoleId.toString()
+            })
+            return roleMappingData;
 
-        // //Mapping logic for fourth table
-        // var roleMapping4: BusinessRoleMappingAttrs;
-        // roleMapping4 = { businessRoleId: userData.id };
-        // const table4Check = await BusinessRoleType.findOne({ $and: [{ tableName: tableName4 }, { isCreate: isCreate4 }, { isUpdate: isUpdate4 }, { isDelete: isDelete4 }, { isRead: isRead4 }] })
-        // if (!table4Check) {
-        //     const role4 = BusinessRoleType.build({ tableName: tableName4, isRead: isRead4, isCreate: isCreate4, isDelete: isDelete4, isUpdate: isUpdate4 });
-        //     await role4.save();
-        //     roleMapping4.businessRoleId = role4.id;
-        // } else {
-        //     roleMapping4.businessRoleId = table4Check.id;
-        // }
-        // const roleMappingData4=BusinessRoleMapping.build(roleMapping4);
-        // await roleMappingData4.save();
+        }
+        catch (err: any) {
+            throw new BadRequestError(err.message);
+        }
+    }
+
+    static async userGetWithThirRoles(id: any) {
+
+        const userData = await BusinessUser.findById(id);
+
+
+        if (userData) {
+            if (userData.id.toString() == userData.createdBy) {
+                return { "role": 'business user', 'userData': userData };
+            } else {
+                const userRoleMapping = await BusinessRoleMapping.find({ businessUserId: id },{ 'businessUserId': 0,  'is_delete': 0 }).populate('businessRoleId');
+                return { "role": userRoleMapping, 'userData': userData };
+            }
+        } else {
+            throw new BadRequestError('user Data not found based on given id');
+        }
+
     }
 }
