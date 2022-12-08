@@ -7,9 +7,6 @@ export interface BusinessUserCreatedEvent{
         email: string;
         phoneNumber: number;
         name: string;
-        isMFA: boolean;
-        isEmailVerified: boolean;
-        isPhoneVerified: boolean;
         isActive: boolean;
         createdBy: string; 
         refreshToken: string;
