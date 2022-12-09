@@ -6,7 +6,6 @@ import { ProductDoc } from "./product";
 export interface ProductItemAttrs {
     name: string;
     description: string;
-    isActive: boolean;
     imageUrl: string;
     mrpPrice: number;
     quantity: number;
