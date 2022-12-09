@@ -99,7 +99,7 @@ export class StoreDatabaseLayer {
 
     static async updateStore(req: any, id: string) {
         const currentDate = new Date();
-        const updated_at = currentDate.getTime();
+        const updatedAt = currentDate.getTime();
         var permission = false;
         const { name, description, imageUrl, BusinessSubCategoryId, BusinessProfileId, email, phoneNumber, cityId, stateId, countryId, lat, lon, welcomeMessage, pinCode, addressLine1 } = req.body;
         try {
@@ -148,7 +148,7 @@ export class StoreDatabaseLayer {
                         addressLine1: addressLine1,
                         imageUrl: imageUrl,
                         welcomeMessage: welcomeMessage,
-                        updateAt: updated_at,
+                        updateAt: updatedAt,
                     })
                     return;
                     //update publisher pending

@@ -22,8 +22,8 @@ export interface CityDoc extends mongoose.Document {
 const citySchema = new mongoose.Schema({
     cityName: { type: String, required: true, unique: true},
     stateId: { type: String, ref: 'state'},
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
+    createdAt: { type: Number, default: () => Date.now() },
+    updatedAt: { type: Number, default: () => Date.now() },
     is_delete: { type: Boolean, default: false }
 }, {
     toJSON: {
@@ -31,8 +31,8 @@ const citySchema = new mongoose.Schema({
             ret.cityId = ret._id;
             delete ret._id;
             delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
+            delete ret.createdAt;
+            delete ret.updatedAt;
         },
 
     }

@@ -30,8 +30,8 @@ const BusinessRoleTypeSchema = new mongoose.Schema({
     isCreate: { type: Boolean, default: false },
     isDelete: { type: Boolean, default: false },
     isUpdate: { type: Boolean, default: false },
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
+    createdAt: { type: Number, default: () => Date.now() },
+    updatedAt: { type: Number, default: () => Date.now() },
     is_delete: { type: Boolean, default: false }
 }, {
     toJSON: {
@@ -39,8 +39,8 @@ const BusinessRoleTypeSchema = new mongoose.Schema({
             ret.BusinessRoleTypeId = ret._id;
             delete ret._id;
             delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
+            delete ret.createdAt;
+            delete ret.updatedAt;
         },
 
     }

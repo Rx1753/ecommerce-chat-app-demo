@@ -26,16 +26,16 @@ const storeHolidaySchema = new mongoose.Schema({
     storeId: { type: String, ref: 'store'},
     startDate:{type:Date},
     endDate:{type:Date},
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
+    createdAt: { type: Number, default: () => Date.now() },
+    updatedAt: { type: Number, default: () => Date.now() },
 }, {
     toJSON: {
         transform(doc, ret) {
             ret.storeHolidayId = ret._id;
             delete ret._id;
             delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
+            delete ret.createdAt;
+            delete ret.updatedAt;
         },
 
     }

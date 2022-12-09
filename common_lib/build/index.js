@@ -39,3 +39,5 @@ __exportStar(require("./nats/events/state-created"), exports);
 __exportStar(require("./nats/events/business-role-created"), exports);
 __exportStar(require("./nats/events/business-role-mappling-created"), exports);
 __exportStar(require("./nats/events/store-created"), exports);
+__exportStar(require("./nats/events/business-category-created"), exports);
+__exportStar(require("./nats/events/business-sub-category-created"), exports);

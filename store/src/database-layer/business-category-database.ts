@@ -1,5 +1,7 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import { BusinessCategoryCreatedPublisher } from '../event/publisher/business-category-publisher';
 import { BusinessCategory } from "../models/business-category";
+import { natsWrapper } from '../nats-wrapper';
 
 export class BusinessCategoryDatabaseLayer {
 
@@ -12,14 +14,21 @@ export class BusinessCategoryDatabaseLayer {
         });
         console.log(data);
         await data.save();
+        await new BusinessCategoryCreatedPublisher(natsWrapper.client).publish({
+            name:data.name,
+            description:data.description,
+            isActive:data.isActive,
+            id:data.id.toString()
+        })
         return data;
+
     }
 
     static async updateBusinessCategory(req: any, id: string) {
         const currentDate = new Date();
-        const updated_at = currentDate.getTime();
+        const updatedAt = currentDate.getTime();
         try {
-            await BusinessCategory.findByIdAndUpdate(id, { name: req.body.name, description: req.body.description,isActive:req.body.isActive, update_at: updated_at });
+            await BusinessCategory.findByIdAndUpdate(id, { name: req.body.name, description: req.body.description,isActive:req.body.isActive, update_at: updatedAt });
             return;
         }
         catch (err: any) {

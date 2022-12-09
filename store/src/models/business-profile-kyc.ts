@@ -18,8 +18,8 @@ interface BusinessProfileKycModel extends mongoose.Model<BusinessProfileKycDoc> 
 
 // interface for single category properties
 export interface BusinessProfileKycDoc extends mongoose.Document {
-    created_at: Date;
-    updated_at: Date;
+    createdAt: Date;
+    updatedAt: Date;
     documentUrl: string,
     documentType: string,
     businessProfileId:BusinessProfileDoc,
@@ -33,16 +33,16 @@ const BusinessProfileKycSchema = new mongoose.Schema({
     businessProfileId:{type:String,ref:'BusinessProfile'},
     isApproved:{type:Boolean,default:false},
     uploadedBy:{type:String,ref:'BusinessUser'},
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
+    createdAt: { type: Number, default: () => Date.now() },
+    updatedAt: { type: Number, default: () => Date.now() },
 }, {
     toJSON: {
         transform(doc, ret) {
             ret.BusinessProfileKycId = ret._id;
             delete ret._id;
             delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
+            delete ret.createdAt;
+            delete ret.updatedAt;
         },
     }
 });
@@ -53,8 +53,8 @@ BusinessProfileKycSchema.pre('save', async function (done) {
 
 BusinessProfileKycSchema.pre('update', async function (done) {
     const currentDate = new Date();
-    const updated_at = currentDate.getTime();
-    this.set('updated_at', updated_at);
+    const updatedAt = currentDate.getTime();
+    this.set('updatedAt', updatedAt);
     done();
 })
 

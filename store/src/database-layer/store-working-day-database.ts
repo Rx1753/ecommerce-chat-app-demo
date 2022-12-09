@@ -1,20 +1,13 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
-import { StoreCreatedPublisher } from '../event/publisher/store-publisher';
-import { BusinessProfile } from '../models/business-profile';
 import { BusinessRoleMapping } from '../models/business-role-mapping';
-import { BusinessSubCategory } from '../models/business-sub-category';
 import { BusinessUser } from '../models/business-user';
-import { City } from '../models/city';
-import { Country } from '../models/country';
-import { State } from '../models/state';
 import { Store } from "../models/store";
 import { storeWorkingDay } from '../models/store-working-days';
-import { natsWrapper } from '../nats-wrapper';
 
 export class StoreWorkingDayDatabaseLayer {
 
-    static async createStore(req: any) {
-        const { storeId, startTime, closeTime,startBreakTime,endBreakTime, day } = req.body;
+    static async createStoreWorkingDay(req: any) {
+        const { storeId, startTime, closeTime, startBreakTime, endBreakTime, day } = req.body;
 
         console.log(req.currentUser.id);
         var permission = false;
@@ -52,29 +45,54 @@ export class StoreWorkingDayDatabaseLayer {
                     }
                 })
                 if (dayAlreadyExisit == false) {
-                    const startT=startTime.split(":");
-                    const endT=closeTime.split(":");
 
+                    if (startTime.includes(":") && closeTime.includes(":") && startBreakTime.includes(":") && startBreakTime.includes(":")) {
 
-                    const startB=startBreakTime.split(":");
-                    const endB=endBreakTime.split(":");
+                        const startT = startTime.split(":");
+                        const endT = closeTime.split(":");
 
-                    if(startT[1]<59 && startT[1]>0 && endT[1]<59 && endT[1]>0 && startT[0]<23 && startT[0]>0 && endT[0]<23 && endT[0]>0 ){
-                        if(startT[0]<endT[0]){
-                            if(startB[1]<59 && startB[1]>0 && endB[1]<59 && endB[1]>0 && startB[0]<23 && startB[0]>0 && endB[0]<23 && endB[0]>0 ){
-                                if(startB[0]<endB[0]){
-                                    if(startB[0]>startT[0] && endT[0]<endB[0]){
-                                        const data = storeWorkingDay.build({
-                                            day: day,
-                                            startTime: startTime,
-                                            closeTime: closeTime,
-                                            storeId: storeId,
-                                            startBreakTime:startBreakTime,
-                                            endBreakTime:endBreakTime,
-                                        });
-                                        console.log(data);
-                                        await data.save();
-                                        return data;
+                        const startB = startBreakTime.split(":");
+                        const endB = endBreakTime.split(":");
+                        var breakFlag = false;
+                        if (startB[0] == 0 && startB[1] == 0 && endB[0] == 0 && endB[1] == 0) {
+                            breakFlag = true;
+                        }
+
+                        if (startT.length == 2 && startB.length == 2 && endT.length == 2 && endB.length == 2) {
+                            console.log('1');
+
+                            if (Number(startT[1]) <= 59 && Number(startT[1]) >= 0 && Number(endT[1]) <= 59 && Number(endT[1]) >= 0 && Number(startT[0]) <= 23 && Number(startT[0]) >= 0 && Number(endT[0]) <= 23 && Number(endT[0]) >= 0) {
+                                console.log('2');
+
+                                if (Number(startT[0]) < Number(endT[0]) || (Number(startT[0]) == Number(endT[0]) && Number(startT[1]) < Number(endT[1]))) { //4<12 12<4
+                                    console.log('3');
+
+                                    if ((Number(startB[1]) <= 59 && Number(startB[1]) >= 0 && Number(endB[1]) <= 59 && Number(endB[1]) >= 0 && Number(startB[0]) <= 23 && Number(startB[0]) >= 0 && Number(endB[0]) <= 23 && Number(endB[0]) >= 0) || breakFlag) {
+                                        console.log('4');
+
+                                        if ((Number(startB[0]) < Number(endB[0]) || (Number(startB[0]) == Number(endB[0]) && Number(startB[1]) < Number(endB[1]))) || breakFlag) {
+                                            console.log('5');
+
+                                            if (((Number(startB[0]) > Number(startT[0]) && Number(endT[0]) > Number(endB[0])) || (Number(startB[0]) == Number(startT[0]) && Number(endT[0]) == Number(endB[0]) && (Number(startT[1]) < Number(endT[1]) && Number(endT[1]) > Number(startB[1]) && Number(startB[1]) < Number(endB[1]) && Number(endT[1]) > Number(endB[1])))) || breakFlag) {
+                                                console.log('6');
+
+                                                try {
+                                                    const data = storeWorkingDay.build({
+                                                        day: day,
+                                                        startTime: startTime,
+                                                        closeTime: closeTime,
+                                                        storeId: storeId,
+                                                        startBreakTime: startBreakTime,
+                                                        endBreakTime: endBreakTime,
+                                                    });
+                                                    console.log(data);
+                                                    await data.save();
+                                                    return data;
+                                                } catch (e: any) {
+                                                    throw new BadRequestError(e.message);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -91,14 +109,13 @@ export class StoreWorkingDayDatabaseLayer {
             throw new BadRequestError('Permission is not for current login user');
         }
 
-
     }
 
-    static async updateStore(req: any, id: string) {
+    static async updateStoreWorkingDay(req: any, id: string) {
         const currentDate = new Date();
-        const updated_at = currentDate.getTime();
+        const updatedAt = currentDate.getTime();
         var permission = false;
-        const { storeId, startTime, closeTime, day } = req.body;
+        const { startTime, closeTime, startBreakTime, endBreakTime } = req.body;
         try {
             if (req.currentUser.type == 'Vendor') {
                 const userData = await BusinessUser.findById(req.currentUser.id);
@@ -123,17 +140,46 @@ export class StoreWorkingDayDatabaseLayer {
             }
 
             if (permission) {
-                const storeCheck = await Store.findById(storeId);
 
-                if (storeCheck) {
-                    await storeWorkingDay.findByIdAndUpdate(id, {
-                        day: day,
-                        startTime: startTime,
-                        closeTime: closeTime,
-                        storeId: storeId
-                    })
-                    return;
-                    //update publisher pending
+
+                if (startTime.includes(":") && closeTime.includes(":") && startBreakTime.includes(":") && startBreakTime.includes(":")) {
+
+                    const startT = startTime.split(":");
+                    const endT = closeTime.split(":");
+
+                    const startB = startBreakTime.split(":");
+                    const endB = endBreakTime.split(":");
+
+                    if (startT.length == 2 && startB.length == 2 && endT.length == 2 && endB.length == 2) {
+                        if (Number(startT[1]) <= 59 && Number(startT[1]) >= 0 && Number(endT[1]) <= 59 && Number(endT[1]) >= 0 && Number(startT[0]) <= 23 && Number(startT[0]) >= 0 && Number(endT[0]) <= 23 && Number(endT[0]) >= 0) {
+
+                            if (Number(startT[0]) < Number(endT[0]) || (Number(startT[0]) == Number(endT[0]) && Number(startT[1]) < Number(endT[1]))) { //4<12 12<4
+
+                                if (Number(startB[1]) <= 59 && Number(startB[1]) >= 0 && Number(endB[1]) <= 59 && Number(endB[1]) >= 0 && Number(startB[0]) <= 23 && Number(startB[0]) >= 0 && Number(endB[0]) <= 23 && Number(endB[0]) >= 0) {
+
+                                    if (Number(startB[0]) < Number(endB[0]) || (Number(startB[0]) == Number(endB[0]) && Number(startB[1]) < Number(endB[1]))) {
+
+                                        if ((Number(startB[0]) > Number(startT[0]) && Number(endT[0]) > Number(endB[0])) || (Number(startB[0]) == Number(startT[0]) && Number(endT[0]) == Number(endB[0]) && (Number(startT[1]) < Number(endT[1]) && Number(endT[1]) > Number(startB[1]) && Number(startB[1]) < Number(endB[1]) && Number(endT[1]) > Number(endB[1])))) {
+
+                                            await storeWorkingDay.findByIdAndUpdate(id, {
+                                                startTime: startTime,
+                                                closeTime: closeTime,
+                                                startBreakTime: startBreakTime,
+                                                endBreakTime: endBreakTime,
+                                            })
+                                            return;
+                                            //update publisher pending
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        throw new BadRequestError('Time is not Valid');
+                    } else {
+                        throw new BadRequestError('Given Day data is already exisit pls update that')
+                    }
+
                 } else {
                     throw new BadRequestError('Givien id is not valid');
                 }
@@ -147,7 +193,7 @@ export class StoreWorkingDayDatabaseLayer {
         }
     }
 
-    static async deleteStore(req: any, id: string) {
+    static async deleteStoreWorkingDay(req: any, id: string) {
 
         var permission = false;
 
@@ -177,7 +223,7 @@ export class StoreWorkingDayDatabaseLayer {
 
         if (permission) {
             try {
-                await Store.findByIdAndDelete(id);
+                await storeWorkingDay.findByIdAndDelete(id);
                 //delete listener pensding
                 return;
             } catch (err: any) {
@@ -189,8 +235,8 @@ export class StoreWorkingDayDatabaseLayer {
         }
     }
 
-    static async getStoreById(req: any, id: string) {
-        const data = await Store.findById(id);
+    static async getStoreWorkingDayById(req: any, id: string) {
+        const data = await storeWorkingDay.findById(id);
         return data;
     }
 

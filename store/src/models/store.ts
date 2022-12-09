@@ -36,8 +36,8 @@ interface StoreModel extends mongoose.Model<StoreDoc> {
 
 // interface for single user properties
 export interface StoreDoc extends mongoose.Document {
-    created_at: Date;
-    updated_at: Date;
+    createdAt: Date;
+    updatedAt: Date;
     phoneNumber: number;
     email: string;
     imageUrl:string;
@@ -97,8 +97,8 @@ const StoreSchema = new mongoose.Schema({
             ret.StoreId = ret._id;
             delete ret._id;
             delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
+            delete ret.createdAt;
+            delete ret.updatedAt;
         },
 
     }
@@ -109,8 +109,8 @@ StoreSchema.pre('save', async function (done) {
 
 StoreSchema.pre('update', async function (done) {
     const currentDate = new Date();
-    const updated_at = currentDate.getTime();
-    this.set('updated_at', updated_at);
+    const updatedAt = currentDate.getTime();
+    this.set('updatedAt', updatedAt);
     done();
 })
 

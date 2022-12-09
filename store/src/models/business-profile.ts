@@ -25,8 +25,8 @@ interface BusinessProfileModel extends mongoose.Model<BusinessProfileDoc> {
 
 // interface for single user properties
 export interface BusinessProfileDoc extends mongoose.Document {
-    created_at: Date;
-    updated_at: Date;
+    createdAt: Date;
+    updatedAt: Date;
     phoneNumber: number;
     name: string;
     followers: number,
@@ -73,8 +73,8 @@ const BusinessProfileSchema = new mongoose.Schema({
             ret.BusinessProfileId = ret._id;
             delete ret._id;
             delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
+            delete ret.createdAt;
+            delete ret.updatedAt;
         },
 
     }
@@ -85,8 +85,8 @@ BusinessProfileSchema.pre('save', async function (done) {
 
 BusinessProfileSchema.pre('update', async function (done) {
     const currentDate = new Date();
-    const updated_at = currentDate.getTime();
-    this.set('updated_at', updated_at);
+    const updatedAt = currentDate.getTime();
+    this.set('updatedAt', updatedAt);
     done();
 })
 

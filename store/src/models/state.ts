@@ -17,8 +17,8 @@ interface StateModel extends mongoose.Model<StateDoc> {
 export interface StateDoc extends mongoose.Document {
     stateName: string;
     country_id: CountryDoc;
-    created_at: Date;
-    updated_at: Date;
+    createdAt: Date;
+    updatedAt: Date;
 
 }
 
@@ -26,16 +26,16 @@ const stateSchema = new mongoose.Schema({
     stateName: { type: String, required: true, unique: true },
     countryId: { type: String, ref: 'country' },
     isDelete: { type: Boolean, default: false },
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
+    createdAt: { type: Number, default: () => Date.now() },
+    updatedAt: { type: Number, default: () => Date.now() },
 }, {
     toJSON: {
         transform(doc, ret) {
             ret.stateId = ret._id;
             delete ret._id;
             delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
+            delete ret.createdAt;
+            delete ret.updatedAt;
         },
 
     }

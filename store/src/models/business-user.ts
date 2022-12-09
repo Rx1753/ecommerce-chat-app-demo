@@ -18,8 +18,8 @@ interface BusinessUserModel extends mongoose.Model<BusinessUserDoc> {
 // interface for single user properties
 export interface BusinessUserDoc extends mongoose.Document {
     email: string;
-    created_at: Date;
-    updated_at: Date;
+    createdAt: Date;
+    updatedAt: Date;
     phoneNumber: number;
     name: string;
     password: string;
@@ -34,8 +34,8 @@ const BusinessUserSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     createdBy: { type: String || null, default: null, ref: 'BusinessUser' },
     accountType: { type: String, ref: 'AccountType' },
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
+    createdAt: { type: Number, default: () => Date.now() },
+    updatedAt: { type: Number, default: () => Date.now() },
 }, {
     toJSON: {
         transform(doc, ret) {
@@ -45,8 +45,8 @@ const BusinessUserSchema = new mongoose.Schema({
             delete ret.password;
             delete ret.isActive;
             delete ret.isDelete;
-            delete ret.created_at;
-            delete ret.updated_at;
+            delete ret.createdAt;
+            delete ret.updatedAt;
         },
 
     }
@@ -61,8 +61,8 @@ BusinessUserSchema.pre('save', async function (done) {
 })
 BusinessUserSchema.pre('update', async function (done) {
     const currentDate = new Date();
-    const updated_at = currentDate.getTime();
-    this.set('updated_at', updated_at);
+    const updatedAt = currentDate.getTime();
+    this.set('updatedAt', updatedAt);
     done();
 })
 

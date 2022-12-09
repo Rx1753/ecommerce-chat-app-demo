@@ -1,0 +1,62 @@
+import mongoose, { ObjectId } from "mongoose";
+
+// intetface that describe the prooerties
+// that are required to cretae new category
+export interface BusinessCategoryAttrs {
+    name:string,
+    description:string,
+    isActive:boolean,
+}
+
+// interface for categorymodel pass
+interface BusinessCategoryModel extends mongoose.Model<BusinessCategoryDoc> {
+    build(attrs: BusinessCategoryAttrs): BusinessCategoryDoc;
+}
+
+// interface for single category properties
+export interface BusinessCategoryDoc extends mongoose.Document {
+    
+    created_at: Date;
+    updatedAt: Date;
+    name: string;
+    description:string;
+    isActive:boolean;
+}
+
+const BusinessCategorySchema = new mongoose.Schema({
+    name: { type: String },
+    description: {type: String},
+    isActive: { type: Boolean, default: true },
+    createdAt: { type: Number, default: () => Date.now() },
+    updatedAt: { type: Number, default: () => Date.now() },
+}, {
+    toJSON: {
+        transform(doc, ret) {
+            ret.BusinesscategoryId = ret._id;
+            delete ret._id;
+            delete ret.__v;
+            delete ret.isActive;
+            delete ret.createdAt;
+            delete ret.updatedAt;
+        },
+
+    }
+});
+
+BusinessCategorySchema.pre('save', async function (done) {
+ 
+})
+BusinessCategorySchema.pre('update', async function (done) {
+    const currentDate = new Date();
+    const updatedAt = currentDate.getTime();
+    this.set('updatedAt', updatedAt);
+    done();
+})
+
+BusinessCategorySchema.statics.build = (attrs: BusinessCategoryAttrs) => {
+    return new BusinessCategory(attrs);
+}
+
+const BusinessCategory = mongoose.model<BusinessCategoryDoc, BusinessCategoryModel>('BusinessCategory', BusinessCategorySchema);
+
+export { BusinessCategory };

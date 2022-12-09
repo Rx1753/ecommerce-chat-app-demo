@@ -27,6 +27,9 @@ export class StoreDomain {
     }
 
     static async getStoreId(req: Request, res: Response) {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            throw new BadRequestError('Requested id is not id type');
+        }
         const Store =  await StoreDatabaseLayer.getStoreById(req,req.params.id);
         res.status(201).send(Store);
     }

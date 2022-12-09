@@ -22,8 +22,8 @@ export interface BusinessRoleMappingDoc extends mongoose.Document {
 const BusinessRoleMappingSchema = new mongoose.Schema({
     businessUserId:{type:String,ref:'BusinessUser'},
     businessRoleId:{type:String,ref:'BusinessRoleType'},
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
+    createdAt: { type: Number, default: () => Date.now() },
+    updatedAt: { type: Number, default: () => Date.now() },
     is_delete: { type: Boolean, default: false }
 }, {
     toJSON: {
@@ -31,8 +31,8 @@ const BusinessRoleMappingSchema = new mongoose.Schema({
             ret.BusinessRoleMappingId = ret._id;
             delete ret._id;
             delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
+            delete ret.createdAt;
+            delete ret.updatedAt;
         },
 
     }

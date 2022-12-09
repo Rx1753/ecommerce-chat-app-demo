@@ -31,9 +31,9 @@ export class BusinessProfileDatabaseLayer {
 
     static async updateBusinessProfile(req: any, id: string) {
         const currentDate = new Date();
-        const updated_at = currentDate.getTime();
+        const updatedAt = currentDate.getTime();
         try {
-            await BusinessProfile.findOneAndUpdate({ $and: [{ id: id }, { 'BusinessUsers.BusinessUserId': req.currentUser.id }] }, { name: req.body.name, description: req.body.description, tagLine: req.body.tagLine, phoneNumber: req.body.phoneNumber, coverPhoto: req.body.coverPhoto, latitude: req.body.latitude, longitude: req.body.longitude, welcomeMessage: req.body.welcomeMessage, update_at: updated_at });
+            await BusinessProfile.findOneAndUpdate({ $and: [{ id: id }, { 'BusinessUsers.BusinessUserId': req.currentUser.id }] }, { name: req.body.name, description: req.body.description, tagLine: req.body.tagLine, phoneNumber: req.body.phoneNumber, coverPhoto: req.body.coverPhoto, latitude: req.body.latitude, longitude: req.body.longitude, welcomeMessage: req.body.welcomeMessage, update_at: updatedAt });
             return;
         }
         catch (err: any) {

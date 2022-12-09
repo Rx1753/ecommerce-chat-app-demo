@@ -1,12 +1,14 @@
 import express from 'express';
 import 'express-async-errors';
 import cookieSession from 'cookie-session';
-import { errorHandler } from '@rx-ecommerce-chat/common_lib';
+import { errorHandler, NotFoundError } from '@rx-ecommerce-chat/common_lib';
 import { BusinessCategoryRouter } from './routes/business-category-route';
 import { BusinessSubCategoryRouter } from './routes/business-sub-category-route';
 import { BusinessProfileRouter } from './routes/business-profile-route';
 import { BusinessProfileKycRouter } from './routes/buisness-profile-kyc-route';
 import { StoreRouter } from './routes/store-route';
+import { StoreWorkingDayRouter } from './routes/store-working-day-route';
+import { StoreHolidayRouter } from './routes/store-holiday-route';
 
 const app = express();
 
@@ -28,10 +30,12 @@ app.use(BusinessSubCategoryRouter);
 app.use(BusinessProfileRouter);
 app.use(BusinessProfileKycRouter);
 app.use(StoreRouter);
+app.use(StoreWorkingDayRouter);
+app.use(StoreHolidayRouter);
 app.use(errorHandler);
 
-// app.all('*', async () => {
-//   throw new NotFoundError();
-// });
+app.all('*', async () => {
+  throw new NotFoundError();
+});
 
 export { app };

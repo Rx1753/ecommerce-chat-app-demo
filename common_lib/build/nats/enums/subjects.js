@@ -13,4 +13,6 @@ var Subjects;
     Subjects["BusinessRoleTypeCreated"] = "user:businessRoleTypeCreated";
     Subjects["BusinessRoleMappingCreated"] = "user:BusinessRoleMappingCreated";
     Subjects["StoreCreated"] = "store:StoreCreated";
+    Subjects["BusinessCategoryCreated"] = "store:BusinessCategoryCreated";
+    Subjects["BusinessSubCategoryCreated"] = "store:BusinessSubCategoryCreated";
 })(Subjects = exports.Subjects || (exports.Subjects = {}));

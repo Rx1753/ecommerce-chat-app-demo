@@ -24,9 +24,9 @@ export class BusinessProfileKycDatabaseLayer {
 
     static async updateBusinessProfileKyc(req: any, id: string) {
         const currentDate = new Date();
-        const updated_at = currentDate.getTime();
+        const updatedAt = currentDate.getTime();
         try {
-            const data = await BusinessProfileKyc.findByIdAndUpdate(id, { isApproved: req.body.isApproved, update_at: updated_at });
+            const data = await BusinessProfileKyc.findByIdAndUpdate(id, { isApproved: req.body.isApproved, update_at: updatedAt });
             await BusinessProfile.findByIdAndUpdate(data?.businessProfileId, { isKYCApproved: req.body.isApproved });
             return;
         }
