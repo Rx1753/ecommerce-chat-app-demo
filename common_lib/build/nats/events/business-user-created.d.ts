@@ -9,6 +9,7 @@ export interface BusinessUserCreatedEvent {
         name: string;
         isActive: boolean;
         createdBy: string;
+        storeId: string | null;
         refreshToken: string;
     };
 }

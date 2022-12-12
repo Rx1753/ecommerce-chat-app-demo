@@ -65,7 +65,8 @@ export class BusinessUserAuthDatabaseLayer {
             name: data.name,
             isActive: true,
             createdBy: data.id.toString(),
-            refreshToken: data.refreshToken
+            refreshToken: data.refreshToken,
+            storeId: null
         })
         return data;
     }
@@ -338,7 +339,8 @@ export class BusinessUserAuthDatabaseLayer {
             name: userData.name,
             isActive: true,
             createdBy: req.currentUser.id,
-            refreshToken: userData.refreshToken
+            refreshToken: userData.refreshToken,
+            storeId: userData.store
         })
         return userData;
     }
@@ -391,12 +393,48 @@ export class BusinessUserAuthDatabaseLayer {
             if (userData.id.toString() == userData.createdBy) {
                 return { "role": 'business user', 'userData': userData };
             } else {
-                const userRoleMapping = await BusinessRoleMapping.find({ businessUserId: id },{ 'businessUserId': 0,  'is_delete': 0 }).populate('businessRoleId');
+                const userRoleMapping = await BusinessRoleMapping.find({ businessUserId: id }, { 'businessUserId': 0, 'is_delete': 0 }).populate('businessRoleId');
                 return { "role": userRoleMapping, 'userData': userData };
             }
         } else {
             throw new BadRequestError('user Data not found based on given id');
         }
 
+    }
+    static async roleMapping(req: any, id: any) {
+        console.log('check');
+
+        const dataPop = await BusinessRoleMapping.find().populate('businessUserId');
+
+        const data = await BusinessUser.aggregate([
+            {
+                $lookup: {
+                    from: 'businessuserusers',
+                    localField: 'businessUserId',
+                    foreignField: 'id',
+                    as: 'userDataId'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'businessroletypes',
+                    localField: 'businessRoleId',
+                    foreignField: 'id',
+                    as: 'roleId'
+                }
+            },
+            // {
+            //     $project:
+            //     {
+            //         userDataId: 1,
+            //         roleId: 1,
+            //         _id: 0
+            //     }
+            // }
+        ])
+
+        console.log('data', dataPop);
+
+        return data;
     }
 }

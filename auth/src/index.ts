@@ -39,7 +39,7 @@ const start = async () => {
 
     process.on('SIGINT', () => natsWrapper.client.close());
     process.on('SIGTERM', () => natsWrapper.client.close());
-
+    mongoose.set('strictQuery', false)
     await mongoose.connect(process.env.MONGO_URI);
     new StoreCreatedListener(natsWrapper.client).listen();
   } catch (error: any) {

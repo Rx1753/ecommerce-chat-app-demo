@@ -47,6 +47,8 @@ router.post('/api/users/businessuser/adduser',verifyVendorToken,BusinessDomain.c
 //getuser and thier roles
 router.get('/api/users/businessuser/getuserrole/:id',BusinessDomain.userGetWithThirRoles);
 
+//get user roles based on id 
+router.get('/api/users/businessuser/role/:id',BusinessDomain.roleMapping);
 // SIGN-OUT
 router.post('/api/users/signout', 
 // AuthDomain.signOut

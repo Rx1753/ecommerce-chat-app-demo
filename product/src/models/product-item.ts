@@ -10,6 +10,8 @@ export interface ProductItemAttrs {
     mrpPrice: number;
     quantity: number;
     productId: string;
+    createdBy:string;
+    
 }
 
 // interface for categorymodel pass
@@ -28,6 +30,7 @@ export interface ProductItemDoc extends mongoose.Document {
     mrpPrice: number;
     quantity: number;
     productId: ProductDoc;
+    createdBy: string;
 }
 
 const ProductItemSchema = new mongoose.Schema({
@@ -38,6 +41,7 @@ const ProductItemSchema = new mongoose.Schema({
     mrpPrice: { type: Number },
     quantity: { type: Number },
     productId: { type: String, ref: 'Product' },
+    createdBy:{type:String,},
     createdAt: { type: Number, default: () => Date.now() },
     updatedAt: { type: Number, default: () => Date.now() },
 }, {

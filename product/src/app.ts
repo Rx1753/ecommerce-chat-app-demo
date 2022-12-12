@@ -4,6 +4,9 @@ import cookieSession from 'cookie-session';
 import { errorHandler } from '@rx-ecommerce-chat/common_lib';
 import { ProductCategoryRouter } from './routes/product-category-route';
 import { ProductSubCategoryRouter } from './routes/product-sub-category-route';
+import { ProductRouter } from './routes/product-route';
+import { ProductItemRouter } from './routes/product-item-route';
+import { AddOnsRouter } from './routes/add-ons-route';
 
 const app = express();
 
@@ -22,6 +25,9 @@ app.use(
 // Router
 app.use(ProductCategoryRouter);
 app.use(ProductSubCategoryRouter);
+app.use(ProductRouter);
+app.use(ProductItemRouter);
+app.use(AddOnsRouter);
 app.use(errorHandler);
 
 // app.all('*', async () => {

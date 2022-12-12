@@ -99,16 +99,16 @@ export class BusinessDomain {
         }
         res.status(200).send(customer);
     }
-    
+
 
     static async userGetWithThirRoles(req: Request, res: Response) {
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        console.log('id',req.params.id);
-        
+        console.log('id', req.params.id);
+
         const customer = await BusinessUserAuthDatabaseLayer.userGetWithThirRoles(req.params.id);
-       
+
         res.status(200).send(customer);
     }
     //Delete user by Id
@@ -202,4 +202,8 @@ export class BusinessDomain {
         res.status(200).send({ passwordUpdated: true });
     }
 
+    static async roleMapping(req: Request, res: Response) {
+        const data = await BusinessUserAuthDatabaseLayer.roleMapping(req, req.params.id);
+        res.status(200).send(data);
+    }
 }

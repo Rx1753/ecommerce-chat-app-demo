@@ -6,11 +6,11 @@ import { ProductDoc } from "./product";
 export interface AddOnsAttrs {
     name: string;
     description: string;
-    isActive: boolean;
     imageUrl: string;
     mrpPrice: number;
     quantity: number;
     productId: string;
+    createdBy:string;
 }
 
 // interface for categorymodel pass
@@ -28,7 +28,7 @@ export interface AddOnsDoc extends mongoose.Document {
     imageUrl: string;
     mrpPrice: number;
     quantity: number;
-    productId: ProductDoc;
+    productId: ProductDoc; createdBy:string;
 }
 
 const AddOnsSchema = new mongoose.Schema({
@@ -39,6 +39,7 @@ const AddOnsSchema = new mongoose.Schema({
     mrpPrice: { type: Number },
     quantity: { type: Number },
     productId: { type: String, ref: 'Product' },
+    createdBy:{type:String},
     createdAt: { type: Number, default: () => Date.now() },
     updatedAt: { type: Number, default: () => Date.now() },
 }, {

@@ -6,7 +6,6 @@ import { StoreDoc } from "./store";
 // intetface that describe the prooerties
 // that are required to cretae new category
 export interface ProductAttrs {
-
     name: string;
     description: string;
     productSubCategoryId: string;
@@ -22,9 +21,8 @@ export interface ProductAttrs {
     isInvoiceAvailable?: boolean;
     calculateOnBasePrice?: boolean;
     isCancellation?: boolean;
-    relatableProducts?: [{
-        productId: string
-    }],
+    relatableProducts?: string[],
+    createdBy:string,
 }
 
 // interface for categorymodel pass
@@ -52,9 +50,8 @@ export interface ProductDoc extends mongoose.Document {
     isInvoiceAvailable: boolean;
     calculateOnBasePrice: boolean;
     isCancellation: boolean;
-    relatableProducts: [{
-        productId: ProductDoc
-    }],
+    relatableProducts: ProductDoc[];
+    createdBy:string;
 }
 
 const ProductSchema = new mongoose.Schema({
@@ -72,12 +69,12 @@ const ProductSchema = new mongoose.Schema({
     isInvoiceAvailable: { type: Boolean, default: false },
     calculateOnBasePrice: { type: Boolean, default: true },
     isCancellation: { type: Boolean, default: false },
-    storeId:{type:String,ref:'store'},
-    relatableProducts: [{
-        productId: { type: String, ref: 'Product' }
-    }],
-
+    storeId:{type:String,ref:'Store'},
+    relatableProducts: [
+         { type: String, ref: 'Product' }
+    ],
     productSubCategoryId: { type: String, ref: 'ProductSubCategory' },
+    createdBy:{type:String,ref:'user'},
     createdAt: { type: Number, default: () => Date.now() },
     updatedAt: { type: Number, default: () => Date.now() },
 }, {
@@ -90,7 +87,6 @@ const ProductSchema = new mongoose.Schema({
             delete ret.createdAt;
             delete ret.updatedAt;
         },
-
     }
 });
 

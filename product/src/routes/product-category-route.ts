@@ -1,3 +1,4 @@
+import { validateRequest } from '@rx-ecommerce-chat/common_lib';
 import express, { Request, Response, Router } from 'express';
 import { ProductCategoryDomain } from '../domain/product-category-domain';
 import { ProductCategoryValidation } from '../validations/product-category-validation';
@@ -7,10 +8,10 @@ const router = express.Router();
 //ADMIN Middleware check pending
 
 // ProductCategory create
-router.post('/api/product/productcategory/create',ProductCategoryValidation.ProductCategoryCreateValidation,ProductCategoryDomain.createProductCategory);
+router.post('/api/product/productcategory/create',ProductCategoryValidation.ProductCategoryCreateValidation,validateRequest,ProductCategoryDomain.createProductCategory);
 
 // ProductCategory update
-router.put('/api/product/productcategory/update/:id',ProductCategoryValidation.ProductCategoryCreateValidation,ProductCategoryDomain.updateProductCategory)
+router.put('/api/product/productcategory/update/:id',ProductCategoryValidation.ProductCategoryCreateValidation,validateRequest,ProductCategoryDomain.updateProductCategory)
  
 // delete ProductCategory
 router.delete('/api/product/productcategory/delete/:id',ProductCategoryDomain.deleteProductCategory);

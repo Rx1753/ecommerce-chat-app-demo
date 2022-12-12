@@ -22,7 +22,7 @@ export class ProductItemDomain {
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        await ProductItemDatabaseLayer.deleteProductItem(req.params.id);
+        await ProductItemDatabaseLayer.deleteProductItem(req,req.params.id);
         res.status(201).send({ deleted: true });
     }
 
@@ -30,6 +30,13 @@ export class ProductItemDomain {
         const ProductItem =  await ProductItemDatabaseLayer.getProductItemList(req);
         res.status(201).send(ProductItem);
     }
-   
+    
+    static async getProductItemListProductId(req: Request, res: Response) {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            throw new BadRequestError('Requested id is not id type');
+        }
+        const ProductItem =  await ProductItemDatabaseLayer.getProductItemListProductId(req,req.params.id);
+        res.status(201).send(ProductItem);
+    }
 
 }

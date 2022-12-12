@@ -1,7 +1,11 @@
 import mongoose from 'mongoose';
 import { app } from './app';
 import { BusinessCategoryCreatedListener } from './event/listener/business-category-listener';
+import { BusinessRoleCreatedListener } from './event/listener/business-role-listener';
+import { BusinessRoleMappingListener } from './event/listener/business-role-mapping-listener';
 import { BusinessSubCategoryCreatedListener } from './event/listener/business-sub-category-listener';
+import { BusinessUserCreatedListener } from './event/listener/business-user-listener';
+import { StoreCreatedListener } from './event/listener/store-listener';
 import { natsWrapper } from './nats-wrapper';
 
 const port = 3000;
@@ -40,10 +44,14 @@ const start = async () => {
 
     process.on('SIGINT', () => natsWrapper.client.close());
     process.on('SIGTERM', () => natsWrapper.client.close());
-
-    await mongoose.connect(process.env.MONGO_URI);
+    mongoose.set('strictQuery', false)
+    await mongoose.connect(process.env.MONGO_URI,);
     new BusinessCategoryCreatedListener(natsWrapper.client).listen();
     new BusinessSubCategoryCreatedListener(natsWrapper.client).listen();
+    new StoreCreatedListener(natsWrapper.client).listen();
+    new BusinessUserCreatedListener(natsWrapper.client).listen();
+    new BusinessRoleCreatedListener(natsWrapper.client).listen();
+    new BusinessRoleMappingListener(natsWrapper.client).listen();
   } catch (error: any) {
     throw Error(error);
   }

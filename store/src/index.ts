@@ -50,6 +50,7 @@ const start = async () => {
     new CountryCreatedListener(natsWrapper.client).listen();
     new BusinessRoleCreatedListener(natsWrapper.client).listen();
     new BusinessRoleMappingListener(natsWrapper.client).listen();
+    mongoose.set('strictQuery', false)
     await mongoose.connect(process.env.MONGO_URI).then(() => {
       console.log(
         `Connected to MongoDB', ${process.env.MONGO_URI}`
