@@ -1,10 +1,12 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import mongoose from 'mongoose';
+import { ProductCreatedPublisher } from '../event/publisher/product-publisher';
 import { BusinessRoleMapping } from '../models/business-role-mapping';
 import { BusinessUser } from '../models/business-user';
 import { Product } from "../models/product";
 import { ProductSubCategory } from '../models/product-sub-category';
 import { Store } from '../models/store';
+import { natsWrapper } from '../nats-wrapper';
 
 export class ProductDatabaseLayer {
 
@@ -78,7 +80,27 @@ export class ProductDatabaseLayer {
                         createdBy: req.currentUser.id
                     })
                     await data.save();
+                    var rProduct: string[] = [];
+                    data.relatableProducts.forEach((e: any) => {
+                        rProduct.push(e.toString());
+                    })
+                    await new ProductCreatedPublisher(natsWrapper.client).publish({
+                        id: data.id,
+                        name: data.name,
+                        description: data.description,
+                        productSubCategoryId: data.productSubCategoryId.toString(),
+                        imageUrl: data.imageUrl,
+                        storeId: data.storeId.toString(),
+                        brandName: data.brandName,
+                        basePrice: data.basePrice,
+                        mrpPrice: data.mrpPrice,
+                        quantity: data.quantity,
+                        createdBy: data.createdBy,
+                        calculateOnBasePrice: data.calculateOnBasePrice,
+                        relatableProducts: rProduct
+                    });
                     return data;
+
                 } catch (error: any) {
                     throw new BadRequestError(error.message);
                 }
@@ -222,7 +244,7 @@ export class ProductDatabaseLayer {
 
     static async getProductWithAddOnsAndProductItem(req: any) {
         const productData = await Product.aggregate([
-            { "$addFields": { "pId": { "$toString": "$_id" }}},
+            { "$addFields": { "pId": { "$toString": "$_id" } } },
             {
                 $lookup:
                 {

@@ -2,6 +2,7 @@ import express from 'express';
 import 'express-async-errors';
 import cookieSession from 'cookie-session';
 import { errorHandler } from '@rx-ecommerce-chat/common_lib';
+import { cartRouter } from './routes/cart-route';
 const app = express();
 
 // The reason for this that traffic is being prixy to our app through ingress nginx
@@ -17,6 +18,7 @@ app.use(
 );
 
 // Router
+app.use(cartRouter);
 app.use(errorHandler);
 
 // app.all('*', async () => {

@@ -1,4 +1,5 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import { isThrowStatement } from 'typescript';
 import { CityCreatedPublisher } from '../events/publisher/city-publisher';
 import { City } from '../models/city';
 import { State } from '../models/state';
@@ -8,25 +9,27 @@ export class CityDatabaseLayer {
 
     static async createCity(req: any) {
         const { cityName, stateId } = req.body;
+        try {
+            const countryCheck = await State.findOne({ $and: [{ _id: stateId }, { isDelete: false }] });
+            if (countryCheck) {
+                const data = City.build({ cityName: cityName, stateId: stateId });
+                console.log(data);
+                console.log(Date.now());
 
-        const countryCheck = await State.findOne({ $and: [{ _id: stateId }, { isDelete: false }] });
-        if (countryCheck) {
-            const data = City.build({ cityName: cityName, stateId: stateId });
-            console.log(data);
-            console.log(Date.now());
-            
-            await data.save();
-            await new CityCreatedPublisher(natsWrapper.client).publish({
-                id: data.id,
-                cityName: data.cityName,
-                stateId: data.stateId.toString()
-            })
-            return data;
-        } else {
-            throw new BadRequestError('Country id is not valid')
+                await data.save();
+                await new CityCreatedPublisher(natsWrapper.client).publish({
+                    id: data.id,
+                    cityName: data.cityName,
+                    stateId: data.stateId.toString()
+                })
+                return data;
+            } else {
+                throw new BadRequestError('Country id is not valid')
+            }
+        } catch (error: any) {
+            throw new BadRequestError(error.message);
         }
 
-       
     }
 
     static async updateCity(req: any, id: string) {

@@ -87,11 +87,11 @@ export class CustomerDomain {
         }
 
         if (exitstingEmail) {
-            const accessToken = await JwtService.accessToken({ email: exitstingEmail.email, id: exitstingEmail.id, phoneNumber: exitstingEmail.phoneNumber, userType: 'Customer' });
+            const accessToken = await JwtService.accessToken({ email: exitstingEmail.email, id: exitstingEmail.id, phoneNumber: exitstingEmail.phoneNumber, type: 'Customer' });
             const newRefreshToken = await CustomerAuthDatabaseLayer.updateRefreshToken(exitstingEmail.id, exitstingEmail.email, exitstingEmail.phoneNumber)
             return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
         } else if (existingPhone) {
-            const accessToken = await JwtService.accessToken({ email: existingPhone.email, id: existingPhone.id, phoneNumber: existingPhone.phoneNumber, userType: 'Customer' });
+            const accessToken = await JwtService.accessToken({ email: existingPhone.email, id: existingPhone.id, phoneNumber: existingPhone.phoneNumber, type: 'Customer' });
             const newRefreshToken = await CustomerAuthDatabaseLayer.updateRefreshToken(existingPhone.id, existingPhone.email, existingPhone.phoneNumber)
             return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
         }

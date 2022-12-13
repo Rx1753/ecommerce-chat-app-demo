@@ -17,7 +17,8 @@ export class StoreDatabaseLayer {
 
         console.log(req.currentUser.id);
         var permission = false;
-
+        console.log('hii');
+        
         if (req.currentUser.type == 'Vendor') {
             const userData = await BusinessUser.findById(req.currentUser.id);
             if (userData) {
@@ -43,8 +44,9 @@ export class StoreDatabaseLayer {
             const BusinessSubCategoryCheck = await BusinessSubCategory.findById(BusinessSubCategoryId);
             const BusinessProfileCheck = await BusinessProfile.findById(BusinessProfileId);
             const countryCheck = await Country.findById(countryId);
-            const stateCheck = await State.findOne({ $and: [{ id: stateId }, { country_id: countryId }] });
-            const cityCheck = await City.findOne({ $and: [{ id: cityId }, { stateId: stateId }] });
+            const stateCheck = await State.findById( stateId );
+            const cityCheck = await City.findById(cityId);
+
             if (BusinessProfileCheck && BusinessSubCategoryCheck && countryCheck && stateCheck && cityCheck) {
                 const data = Store.build({
                     phoneNumber: phoneNumber,

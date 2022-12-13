@@ -20,7 +20,7 @@ export const verifyToken = (
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.session?.jwt && !req.headers['token']) {
+  if (!req.session?.jwt || !req.headers['token']) {
     console.log('token not wrote');    
     throw new BadRequestError('Token/Session not provided');
   }

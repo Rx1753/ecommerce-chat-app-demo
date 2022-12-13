@@ -1,12 +1,14 @@
+import { validateRequest } from '@rx-ecommerce-chat/common_lib';
 import express, { Request, Response, Router } from 'express';
 import { CountryDomain } from '../domain/country-domain';
+import { CountryValidation } from '../validations/county-validation';
 
 const router = express.Router();
 
 //ADMIN Middleware check pending
 
 // Country create
-router.post('/api/users/country/create',CountryDomain.createCountry);
+router.post('/api/users/country/create',CountryValidation.CountryCreateValidation,validateRequest,CountryDomain.createCountry);
 
 // Country update
 router.put('/api/users/country/update/:id',CountryDomain.updateCountry)

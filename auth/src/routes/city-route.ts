@@ -1,12 +1,13 @@
 import express, { Request, Response, Router } from 'express';
 import { CityDomain } from '../domain/city-domain';
+import { CityValidation } from '../validations/city-validation';
 
 const router = express.Router();
 
 //ADMIN Middleware check pending
 
 // Country create
-router.post('/api/users/city/create',CityDomain.createCity);
+router.post('/api/users/city/create',CityValidation.CityCreateValidation,CityDomain.createCity);
 
 // Country update
 router.put('/api/users/city/update/:id',CityDomain.updateCity)

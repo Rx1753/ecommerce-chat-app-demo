@@ -31,7 +31,11 @@ export class BusinessDomain {
         }
 
         var user = await BusinessUserAuthDatabaseLayer.signUpUser(req);
-        return res.status(201).send(user);
+        const accessToken = await JwtService.accessToken({ email: user.email, id: user.id, phoneNumber: user.phoneNumber, type: PayloadType.Vendor });
+        req.session = { jwt: accessToken };
+        console.log('session',req.session);
+        
+        return res.status(201).send({ user: user, accessToken: accessToken });
     }
 
     //SIGNIN 
@@ -73,10 +77,14 @@ export class BusinessDomain {
         if (exitstingEmail) {
             const accessToken = await JwtService.accessToken({ email: exitstingEmail.email, id: exitstingEmail.id, phoneNumber: exitstingEmail.phoneNumber, type: PayloadType.Vendor });
             const newRefreshToken = await BusinessUserAuthDatabaseLayer.updateRefreshToken(exitstingEmail.id, exitstingEmail.email, exitstingEmail.phoneNumber)
+            req.session = { jwt: accessToken };
+            console.log('session',req.session);
             return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
         } else if (existingPhone) {
             const accessToken = await JwtService.accessToken({ email: existingPhone.email, id: existingPhone.id, phoneNumber: existingPhone.phoneNumber, type: PayloadType.Vendor });
             const newRefreshToken = await BusinessUserAuthDatabaseLayer.updateRefreshToken(existingPhone.id, existingPhone.email, existingPhone.phoneNumber)
+            req.session = { jwt: accessToken };
+              console.log('session',req.session);
             return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
         }
     }

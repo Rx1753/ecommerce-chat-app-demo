@@ -67,7 +67,7 @@ export const verifyCustomerToken = (
   try {
     const payload = jwt.verify(token, process.env.JWT_KEY!) as UserPayload;
     if(payload.type != 'Customer'){
-      throw new BadRequestError('Unauthorized Vendor');
+      throw new BadRequestError('Unauthorized Customer');
     } 
     req.currentUser = payload;
   } catch (error: any) {

@@ -7,13 +7,17 @@ export class CountryDatabaseLayer {
 
     static async createCountry(req: any) {
         const { countryName } = req.body;
-        const data = Country.build({ countryName: countryName });
-        await data.save();
-        await new CountryCreatedPublisher(natsWrapper.client).publish({
-            id:data.id,
-            countryName:data.countryName
-        })
-        return data;
+        try {
+            const data = Country.build({ countryName: countryName });
+            await data.save();
+            await new CountryCreatedPublisher(natsWrapper.client).publish({
+                id: data.id,
+                countryName: data.countryName
+            })
+            return data;
+        } catch (error: any) {
+            throw new BadRequestError(error.message);
+        }
     }
 
     static async updateCountry(req: any, id: string) {
@@ -31,7 +35,7 @@ export class CountryDatabaseLayer {
 
     static async deleteCountry(id: string) {
         try {
-            await Country.findByIdAndUpdate(id,{isDelete:true});
+            await Country.findByIdAndUpdate(id, { isDelete: true });
             return;
         } catch (err: any) {
             console.log(err.message);
@@ -40,7 +44,7 @@ export class CountryDatabaseLayer {
     }
 
     static async getCountryList(req: any) {
-        const data = await Country.find({isDelete:false});
+        const data = await Country.find({ isDelete: false });
         return data;
     }
 

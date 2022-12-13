@@ -3,6 +3,9 @@ import { app } from './app';
 import { BusinessRoleCreatedListener } from './event/listener/business-role-listener';
 import { BusinessRoleMappingListener } from './event/listener/business-role-mapping-listener';
 import { BusinessUserCreatedListener } from './event/listener/business-user-listener';
+import { CustomerCreatedListener } from './event/listener/customer-listener';
+import { ProductItemCreatedListener } from './event/listener/product-item-listener';
+import { ProductCreatedListener } from './event/listener/product-listener';
 import { StoreCreatedListener } from './event/listener/store-listener';
 import { natsWrapper } from './nats-wrapper';
 
@@ -50,6 +53,9 @@ const start = async () => {
     new BusinessRoleMappingListener(natsWrapper.client).listen()
     new BusinessUserCreatedListener(natsWrapper.client).listen()
     new StoreCreatedListener(natsWrapper.client).listen()
+    new CustomerCreatedListener(natsWrapper.client).listen()
+    new ProductCreatedListener(natsWrapper.client).listen()
+    new ProductItemCreatedListener(natsWrapper.client).listen()
 
   } catch (error: any) {
     throw Error(error);

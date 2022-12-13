@@ -8,22 +8,25 @@ export class StateDatabaseLayer {
 
     static async createState(req: any) {
         const { stateName, countryId } = req.body;
+        try {
+            const countryCheck = await Country.findOne({ $and: [{ _id: countryId }, { isDelete: false }] });
+            if (countryCheck) {
+                const data = State.build({ stateName: stateName, countryId: countryCheck._id });
+                console.log(data);
 
-        const countryCheck = await Country.findOne({ $and: [{ _id: countryId }, { isDelete: false }] });
-        if (countryCheck) {
-            const data = State.build({ stateName: stateName, countryId: countryCheck._id });
-            console.log(data);
-            
-            await data.save();
-            await new StateCreatedPublisher(natsWrapper.client).publish({
-                id:data.id,
-                stateName:data.stateName,
-                countryId:data.countryId.toString()
-            })
-            return data;
+                await data.save();
+                await new StateCreatedPublisher(natsWrapper.client).publish({
+                    id: data.id,
+                    stateName: data.stateName,
+                    countryId: data.countryId.toString()
+                })
+                return data;
 
-        } else {
-            throw new BadRequestError('Country id is not valid')
+            } else {
+                throw new BadRequestError('Country id is not valid')
+            }
+        } catch (error: any) {
+            throw new BadRequestError(error.message);
         }
     }
 

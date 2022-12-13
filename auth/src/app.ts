@@ -9,18 +9,19 @@ import { stateRouter } from './routes/state-route';
 import { countryRouter } from './routes/country-route';
 import { cityRouter } from './routes/city-route';
 import { BusinessUserRouter } from './routes/business-user-auth-route';
+import bodyParser from "body-parser";
 
 const app = express();
 
 // The reason for this that traffic is being prixy to our app through ingress nginx
 app.set('trust proxy', true);
 app.use(express.json());
-
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cookieSession({
     signed: false, // Disable encrypction in cookie
-    // secure : true, // use cookie only on https connection
-    secure: process.env.NODE_ENV !== 'test',
+    secure : true, // use cookie only on https connection
+    // secure: process.env.NODE_ENV !== 'test',
   })
 );
 

@@ -104,6 +104,7 @@ export class AuthDatabaseLayer {
     };
     var newAccessToken = await JwtService.accessToken(payload);
     var newRefreshToken = await JwtService.refreshToken(payload);
+
     //update refresh token
     const adminUser = await AdminUser.findByIdAndUpdate(id, {
       refreshToken: newRefreshToken,

@@ -1,5 +1,5 @@
 import express, { Request, Response, Router } from 'express';
-import {verifyCustomerToken, verifyVendorToken} from '../middlewares/current-user';
+import {verifyCustomerToken, verifyToken, verifyVendorToken} from '../middlewares/current-user';
 import { validateRequest } from '@rx-ecommerce-chat/common_lib';
 import { BusinessUserAuthValidation } from "../validations/business-user-auth-validation";
 import { BusinessDomain } from '../domain/business-user-auth-domain';
@@ -27,7 +27,7 @@ router.get('/api/users/businessuser/getuserbyname/:name',BusinessDomain.getUserB
 router.put('/api/users/businessuser/updateuser',verifyVendorToken,BusinessDomain.updateUserInfo)
  
 // CURRENT_USER
-router.get('/api/users/businessuser/currentuser', verifyVendorToken,BusinessDomain.currentLoginUser);
+router.get('/api/users/businessuser/currentuser', verifyToken,BusinessDomain.currentLoginUser);
 
 //MailTrigger for emailVerification
 router.get('/api/users/businessuser/mailverifytrigger',verifyVendorToken,BusinessDomain.emailVerification);

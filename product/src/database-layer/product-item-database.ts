@@ -1,8 +1,10 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import { ProductItemCreatedPublisher } from '../event/publisher/product-item-publisher';
 import { BusinessRoleMapping } from '../models/business-role-mapping';
 import { BusinessUser } from '../models/business-user';
 import { Product } from '../models/product';
 import { ProductItem } from "../models/product-item";
+import { natsWrapper } from '../nats-wrapper';
 
 export class ProductItemDatabaseLayer {
 
@@ -60,6 +62,16 @@ export class ProductItemDatabaseLayer {
                         createdBy: req.currentUser.id
                     })
                     await data.save();
+                    await new ProductItemCreatedPublisher(natsWrapper.client).publish({
+                        id: data.id,
+                        name: data.name,
+                        description: data.description,
+                        imageUrl: data.imageUrl,
+                        mrpPrice: data.mrpPrice,
+                        quantity: data.quantity,
+                        productId: data.productId.toString(),
+                        createdBy: data.createdBy
+                    })
                     return data;
                 } catch (error: any) {
                     throw new BadRequestError(error.message);

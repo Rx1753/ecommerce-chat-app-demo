@@ -30,6 +30,7 @@ export interface CustomerDoc extends mongoose.Document {
     name: string;
     password: string;
     faceId: string;
+    isReadReceipt:boolean;
     isMFA: boolean;
     isEmailVerified: boolean;
     isPhoneVerified: boolean;
@@ -44,6 +45,13 @@ export interface CustomerDoc extends mongoose.Document {
     referalId: CustomerDoc; // userId
     isDelete: boolean;
     refreshToken: string;
+    isAddressVisible:boolean;
+    isEmailVisible:boolean;
+    isAllowToAddGroup:boolean;
+    allowFriendsToAddGroup:boolean;
+    isAllowToRecieveBrodcast:boolean;
+    isLastSeenActive:boolean;
+    isAllowToChatStranger:boolean;
 }
 
 const customerSchema = new mongoose.Schema({
