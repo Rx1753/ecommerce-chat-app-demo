@@ -15,4 +15,7 @@ var Subjects;
     Subjects["StoreCreated"] = "store:StoreCreated";
     Subjects["BusinessCategoryCreated"] = "store:BusinessCategoryCreated";
     Subjects["BusinessSubCategoryCreated"] = "store:BusinessSubCategoryCreated";
+    Subjects["ProductCreated"] = "Product:productCreated";
+    Subjects["ProductItemCreated"] = "Product:ProductItemCreated";
+    Subjects["CustomerCreated"] = "user:CustomerCreated";
 })(Subjects = exports.Subjects || (exports.Subjects = {}));

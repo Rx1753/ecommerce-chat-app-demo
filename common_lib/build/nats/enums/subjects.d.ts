@@ -10,5 +10,8 @@ export declare enum Subjects {
     BusinessRoleMappingCreated = "user:BusinessRoleMappingCreated",
     StoreCreated = "store:StoreCreated",
     BusinessCategoryCreated = "store:BusinessCategoryCreated",
-    BusinessSubCategoryCreated = "store:BusinessSubCategoryCreated"
+    BusinessSubCategoryCreated = "store:BusinessSubCategoryCreated",
+    ProductCreated = "Product:productCreated",
+    ProductItemCreated = "Product:ProductItemCreated",
+    CustomerCreated = "user:CustomerCreated"
 }

@@ -22,3 +22,6 @@ export * from './nats/events/business-role-mappling-created';
 export * from './nats/events/store-created';
 export * from './nats/events/business-category-created';
 export * from './nats/events/business-sub-category-created';
+export * from './nats/events/product-created';
+export * from './nats/events/product-item-created';
+export * from './nats/events/customer-created';
