@@ -25,3 +25,4 @@ export * from './nats/events/business-sub-category-created';
 export * from './nats/events/product-created';
 export * from './nats/events/product-item-created';
 export * from './nats/events/customer-created';
+export * from './nats/events/invition-code-created';

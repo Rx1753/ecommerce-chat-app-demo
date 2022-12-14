@@ -13,5 +13,6 @@ export declare enum Subjects {
     BusinessSubCategoryCreated = "store:BusinessSubCategoryCreated",
     ProductCreated = "Product:productCreated",
     ProductItemCreated = "Product:ProductItemCreated",
-    CustomerCreated = "user:CustomerCreated"
+    CustomerCreated = "user:CustomerCreated",
+    InvitionCodeCreated = "user:InvitionCodeCreated"
 }

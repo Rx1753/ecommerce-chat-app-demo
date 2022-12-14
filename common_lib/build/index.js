@@ -44,3 +44,4 @@ __exportStar(require("./nats/events/business-sub-category-created"), exports);
 __exportStar(require("./nats/events/product-created"), exports);
 __exportStar(require("./nats/events/product-item-created"), exports);
 __exportStar(require("./nats/events/customer-created"), exports);
+__exportStar(require("./nats/events/invition-code-created"), exports);
