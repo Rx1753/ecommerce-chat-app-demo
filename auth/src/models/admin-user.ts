@@ -6,20 +6,12 @@ import { AdminPermissionsDoc } from './admin-permissions';
 // that are required to create user
 export interface AdminUserAttrs {
   userName: string;
-  email: string;
+  email?: string | null;
   password: string;
-  phone: number;
-  isMfa: boolean;
-  isEmailVerified: boolean;
-  isMobileVerified: boolean;
-  imageUrl: string;
-  isSuperAdmin: boolean;
-  //permissionId :
-  createdBy: string;
-  updatedBy: string;
-  isActive: boolean;
-  refreshToken: string;
-  permissionId: ObjectId;
+  phoneNumber?: number | null;
+  createdBy?: string | null;
+  permissionId?: {_id:string}[];
+  allowChangePassword:boolean;
 }
 
 // An interface that describe the properties
@@ -28,7 +20,7 @@ interface AdminUserDoc extends mongoose.Document {
   userName: string;
   email: string;
   password: string;
-  phone: number;
+  phoneNumber: number;
   isMfa: boolean;
   isEmailVerified: boolean;
   isMobileVerified: boolean;
@@ -41,7 +33,8 @@ interface AdminUserDoc extends mongoose.Document {
   refreshToken: string;
   createdAt: Date;
   updatedAt: Date;
-  permissionId: ObjectId;
+  permissionId: {_id:AdminPermissionsDoc}[];
+  allowChangePassword:boolean;
 }
 
 // An interface that describe the properties
@@ -60,20 +53,24 @@ const adminUserSchema = new mongoose.Schema(
     userName: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
-    phone: { type: Number },
+    phoneNumber: { type: Number },
     isMfa: { type: Boolean, default: false },
     isEmailVerified: { type: Boolean, default: false },
     isMobileVerified: { type: Boolean, default: false },
     imageUrl: { type: String, default: '' },
     isSuperAdmin: { type: Boolean, default: false },
-    createdBy: { type: String, default: '' },
+    createdBy: { type: String, default: null },
     updatedBy: { type: String, default: '' },
     isActive: { type: Boolean, default: false },
     refreshToken: { type: String },
-    permissionId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'adminPermissions',
-    },
+    allowChangePassword:{type:Boolean,default:true},
+    permissionId: [{
+      _id:
+      {
+        type: String,
+        ref: 'adminPermissions',
+      }
+    }],
     createdAt: { type: Number, default: () => Date.now() },
     updatedAt: { type: Number, default: () => Date.now() }
   },

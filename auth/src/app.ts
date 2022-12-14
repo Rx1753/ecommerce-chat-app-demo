@@ -2,7 +2,7 @@ import express from 'express';
 import 'express-async-errors';
 import cookieSession from 'cookie-session';
 import { errorHandler } from '@rx-ecommerce-chat/common_lib';
-import { adminAuthRouter } from './routes/admin-auth-router';
+import { adminAuthRouter } from './routes/admin-router';
 import { customerRouter } from './routes/customer-auth';
 import { customerAddressRouter } from './routes/customer-address-route';
 import { stateRouter } from './routes/state-route';

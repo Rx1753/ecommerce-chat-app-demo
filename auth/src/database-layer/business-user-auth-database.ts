@@ -34,7 +34,7 @@ export class BusinessUserAuthDatabaseLayer {
     }
 
     static async signUpUser(req: any) {
-        const { name, email, password, phoneNumber, refralCode, isWaiting } = req.body;
+        const { name, email, password, phoneNumber} = req.body;
 
         var user: BusinessUserAttrs;
 

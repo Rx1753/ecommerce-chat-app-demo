@@ -11,34 +11,31 @@ import { verifyAdminToken } from '../middlewares/current-user';
 const router = express.Router();
 
 // Add permissions
-router.post('/api/users/permissions',AuthDomain.addPermissions);
+// router.post('/api/users/permissions',AuthDomain.addPermissions);
 
-// SIGN-UP
-router.post('/api/users/signup',verifyAdminToken,Validation.signUpValidation,validateRequest,AuthDomain.signUp);
+// // SIGN-UP
+// router.post('/api/users/signup',verifyAdminToken,Validation.signUpValidation,validateRequest,AuthDomain.signUp);
 
-// SIGN-IN
-router.post('/api/users/signin',Validation.signInValidation,validateRequest,AuthDomain.signIn);
-
-// Update Profile
-//router.post('/api/users/updateProfile',verifyAdminToken,AuthDomain.updateProfile);
+// // SIGN-IN
+// router.post('/api/users/signin',Validation.signInValidation,validateRequest,AuthDomain.signIn);
 
 
-// /*
-// Require Auth Verification
-// */
-//All User List
-router.get('/api/users/getAllUsers', AuthDomain.getAllUsers);
+// // /*
+// // Require Auth Verification
+// // */
+// //All User List
+// router.get('/api/users/getAllUsers', AuthDomain.getAllUsers);
 
-//Single User Detail
-router.get('/api/users/user/:id', AuthDomain.getUserById);
+// //Single User Detail
+// router.get('/api/users/user/:id', AuthDomain.getUserById);
 
-//Delete Single User
-router.delete('/api/users/user/:id', AuthDomain.deleteUserById);
+// //Delete Single User
+// router.delete('/api/users/user/:id', AuthDomain.deleteUserById);
 
-// SIGN-OUT
-router.post('/api/users/signout', AuthDomain.signOut);
+// // SIGN-OUT
+// router.post('/api/users/signout', AuthDomain.signOut);
 
-// CURRENT_USER
-router.get('/api/users/currentuser', verifyAdminToken, AuthDomain.currentUser);
+// // CURRENT_USER
+// router.get('/api/users/currentuser', verifyAdminToken, AuthDomain.currentUser);
 
 export { router as adminAuthRouter };

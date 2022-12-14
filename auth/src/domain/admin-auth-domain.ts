@@ -1,11 +1,41 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { Request, Response } from 'express';
+import { Auth } from 'googleapis';
+import mongoose from 'mongoose';
 import { AuthDatabaseLayer } from '../database-layer/admin-auth-database';
 import { AdminPermissionsAttrs } from '../models/admin-permissions';
 import { AdminUserAttrs } from '../models/admin-user';
-import { Strings } from '../services/string-values';
+import { JwtService } from '../services/jwt';
+import { PayloadType, Strings } from '../services/string-values';
 
 export class AuthDomain {
+
+  static async addAdmin(req: Request, res: Response) {
+    const { email, phoneNumber } = req.body;
+    var exitstingPhone:any;
+    var existingUser:any;
+
+    if (email != undefined || email != null) {
+      existingUser = await AuthDatabaseLayer.isExistingEmail(email);
+    }
+
+    if (phoneNumber != undefined || phoneNumber != null) {
+      exitstingPhone = await AuthDatabaseLayer.isExistingPhone(phoneNumber);
+    }
+
+    if (existingUser) {
+      throw new BadRequestError('Email In Use');
+    }
+
+    if (exitstingPhone) {
+      throw new BadRequestError('Phone is Already in use');
+    }
+
+    var user = await AuthDatabaseLayer.addAdminUser(req);
+    return res.status(201).send(user);
+  }
+
+  ///--------------------
   // Add Permissions
   static async addPermissions(req: Request, res: Response) {
     const data: AdminPermissionsAttrs = req.body;
@@ -13,15 +43,15 @@ export class AuthDomain {
     if (isPermissionAdded) {
       return res
         .status(201)
-        .send({ status: true, message: Strings.permissionAdded,permissionId : isPermissionAdded.id });
+        .send({ status: true, message: Strings.permissionAdded, permissionId: isPermissionAdded.id });
     }
   }
 
   // SIGNUP
   static async signUp(req: any, res: Response) {
     const { email, permissionId } = req.body;
-     var superAdmin = await AuthDatabaseLayer.isSuperAdmin(req.currentUser.email);
-     if (superAdmin) { 
+    var superAdmin = await AuthDatabaseLayer.isSuperAdmin(req.currentUser.email);
+    if (superAdmin) {
       const existingUser = await AuthDatabaseLayer.isExistingUser(email);
       if (existingUser) {
         throw new BadRequestError(Strings.emailInUse);
@@ -42,47 +72,67 @@ export class AuthDomain {
       throw new BadRequestError('UnAuthorized User');
     }
   }
+  //-------------------
 
   // SIGNIN
   static async signIn(req: Request, res: Response) {
-    const { email, password } = req.body;
-    var adminUser = await AuthDatabaseLayer.verifyEmailAndPassword(
-      email,
+
+    const { password } = req.body;
+    var email: string, phoneNumber: Number, isEmail = false;
+
+    var exitstingEmail: any, existingPhone: any;
+
+    if (req.body.phoneNumber == null && req.body.phoneNumber == undefined && req.body.email != null && req.body.email != undefined) {
+      console.log('phone not defined,\nSo email signup');
+      email = req.body.email;
+      exitstingEmail = await AuthDatabaseLayer.isExistingEmail(email)
+      console.log('exitstingEmail',exitstingEmail);
+      
+      isEmail = true;
+    }
+    if (req.body.phoneNumber != null && req.body.phoneNumber != undefined && req.body.email == null && req.body.email == undefined) {
+      console.log('email not defined,\nSo phone signup');
+      phoneNumber = req.body.phoneNumber;
+      existingPhone = await AuthDatabaseLayer.isExistingPhone(phoneNumber)
+      console.log('existingPhone',existingPhone);
+      
+    }
+
+
+    if (isEmail && !exitstingEmail) {
+      throw new BadRequestError('Invalid Email');
+    }
+    if (isEmail == false && !existingPhone) {
+      throw new BadRequestError('Invalid PhoneNumber');
+    }
+    
+    const passwordMatch = await AuthDatabaseLayer.checkPassword(
+      isEmail ? exitstingEmail.password : existingPhone.password,
       password
     );
-    if (adminUser) {
-      var { newAccessToken, newRefreshToken } =
-        await AuthDatabaseLayer.updateRefreshToken(
-          adminUser.id,
-          adminUser.email
-        );
-      // Store it on session object
-      req.session = { jwt: newAccessToken };
-      return res.status(200).json({
-        success: true,
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-        message: Strings.loginSuccess,
-      });
+    console.log(passwordMatch);
+    
+
+    if (!passwordMatch) {
+      throw new BadRequestError('Invalid Password');
+    }
+
+    if (exitstingEmail) {
+      const accessToken = await JwtService.accessToken({ email: exitstingEmail.email, id: exitstingEmail.id, phoneNumber: exitstingEmail.phoneNumber, type: PayloadType.AdminType });
+      const newRefreshToken = await AuthDatabaseLayer.updateRefreshToken(exitstingEmail.id, exitstingEmail.email, exitstingEmail.phoneNumber)
+      req.session = { jwt: accessToken };
+      console.log('session', req.session);
+      return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
+    } else if (existingPhone) {
+      const accessToken = await JwtService.accessToken({ email: existingPhone.email, id: existingPhone.id, phoneNumber: existingPhone.phoneNumber, type: PayloadType.AdminType });
+      const newRefreshToken = await AuthDatabaseLayer.updateRefreshToken(existingPhone.id, existingPhone.email, existingPhone.phoneNumber)
+      req.session = { jwt: accessToken };
+      console.log('session', req.session);
+      return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
     }
   }
 
-  // // Update Profile
-  // static async updateProfile(req: Request, res: Response) {
-  //   const { email } = req.body;
-  //   const existingUser = await AuthDatabaseLayer.isExistingUser(email);
-  //   if (existingUser) {
-  //     throw new BadRequestError('Email In Use');
-  //   }
-  //   const data: AdminUserAttrs = req.body;
-  //   var jwtToken = await AuthDatabaseLayer.signUpUser(data);
-  //   req.session = { jwt: jwtToken };
-  //   return res
-  //     .status(201)
-  //     .send({ status: true, message: Strings.registrationSuccess });
-  // }
 
-  // // GET ALL USERS
   static async getAllUsers(req: Request, res: Response) {
     var users = await AuthDatabaseLayer.getAllUsers();
     res.status(200).send(users);
@@ -90,6 +140,9 @@ export class AuthDomain {
 
   // //Get Single user detail
   static async getUserById(req: Request, res: Response) {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      throw new BadRequestError('Requested id is not id type');
+    }
     const user = await AuthDatabaseLayer.getUserById(req.params.id);
     if (!user) {
       throw new BadRequestError(Strings.userDoesNotExist);
@@ -99,7 +152,10 @@ export class AuthDomain {
 
   // //Delete user by Id
   static async deleteUserById(req: Request, res: Response) {
-    const deletedCount = await AuthDatabaseLayer.deleteUserById(req.params.id);
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      throw new BadRequestError('Requested id is not id type');
+    }
+    const deletedCount = await AuthDatabaseLayer.deleteUserById(req, req.params.id);
     res.status(200).json({
       success: true,
       message: `Deleted a count of ${deletedCount} user.`,
@@ -115,6 +171,14 @@ export class AuthDomain {
   // // CURRENT_USER
   static async currentUser(req: Request, res: Response) {
     //res.send({ currentUser: req.currentUser || null });
-    res.send({ currentUser: true });
+    if (req.currentUser?.id) {
+
+      const data = await AuthDatabaseLayer.getCurrentUser(req.currentUser.id);
+      res.send(data);
+    }else{
+      throw new BadRequestError('Token/session not founded')
+    }
   }
+
+
 }

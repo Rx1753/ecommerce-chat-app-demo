@@ -23,7 +23,7 @@ interface AdminPermissionsModel extends mongoose.Model<AdminPermissionsDoc> {
 // Schema
 const adminPermissionSchema = new mongoose.Schema(
   {
-    tableName: { type: String, required: true },
+    tableName: { type: String, required: true, enum:['product','store','business profile','business user','customer user','coupon','deal','category','order']},
     isCreate: { type: Boolean, required: true, default: true },
     isDelete: { type: Boolean, required: true, default: true },
     isUpdate: { type: Boolean, required: true, default: true },

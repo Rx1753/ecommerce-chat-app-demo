@@ -83,25 +83,29 @@ export const verifyAdminToken = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log('middleware');
+  
   if (!req.session?.jwt && !req.headers['token']) {
+    console.log('token not wrote');    
     throw new BadRequestError('Token/Session not provided');
   }
+
 
   var token;
   if (req.session?.jwt) {
     token = req.session?.jwt;
   } else {
-    const accessToken = (req.headers.authorization as String).split(' ')[1];
-    token = accessToken;
+    token = req.headers['token'];
   }
 
   try {
     const payload = jwt.verify(token, process.env.JWT_KEY!) as UserPayload;
+    console.log('payload',payload);
+    
     if(payload.type != 'Admin'){
       throw new BadRequestError('Unauthorized Admin');
     } 
     req.currentUser = payload;
-    console.log(`verifyAdminToken :: ${req.currentUser.email}`)
   } catch (error: any) {
     if (error instanceof TokenExpiredError) {
       throw new BadRequestError(error.message);
@@ -111,6 +115,7 @@ export const verifyAdminToken = (
   }
   next();
 };
+
 
 export const verifyVendorToken = (
   req: Request,
