@@ -12,8 +12,8 @@ export class AuthDomain {
 
   static async addAdmin(req: Request, res: Response) {
     const { email, phoneNumber } = req.body;
-    var exitstingPhone:any;
-    var existingUser:any;
+    var exitstingPhone: any;
+    var existingUser: any;
 
     if (email != undefined || email != null) {
       existingUser = await AuthDatabaseLayer.isExistingEmail(email);
@@ -86,32 +86,33 @@ export class AuthDomain {
       console.log('phone not defined,\nSo email signup');
       email = req.body.email;
       exitstingEmail = await AuthDatabaseLayer.isExistingEmail(email)
-      console.log('exitstingEmail',exitstingEmail);
-      
+      console.log('exitstingEmail', exitstingEmail);
+
       isEmail = true;
     }
     if (req.body.phoneNumber != null && req.body.phoneNumber != undefined && req.body.email == null && req.body.email == undefined) {
       console.log('email not defined,\nSo phone signup');
       phoneNumber = req.body.phoneNumber;
       existingPhone = await AuthDatabaseLayer.isExistingPhone(phoneNumber)
-      console.log('existingPhone',existingPhone);
-      
+      console.log('existingPhone', existingPhone);
+
     }
 
 
     if (isEmail && !exitstingEmail) {
       throw new BadRequestError('Invalid Email');
     }
+
     if (isEmail == false && !existingPhone) {
       throw new BadRequestError('Invalid PhoneNumber');
     }
-    
+
     const passwordMatch = await AuthDatabaseLayer.checkPassword(
       isEmail ? exitstingEmail.password : existingPhone.password,
       password
     );
     console.log(passwordMatch);
-    
+
 
     if (!passwordMatch) {
       throw new BadRequestError('Invalid Password');
@@ -132,7 +133,6 @@ export class AuthDomain {
     }
   }
 
-
   static async getAllUsers(req: Request, res: Response) {
     var users = await AuthDatabaseLayer.getAllUsers();
     res.status(200).send(users);
@@ -151,33 +151,46 @@ export class AuthDomain {
   }
 
   // //Delete user by Id
-  static async deleteUserById(req: Request, res: Response) {
+  static async statusChangeId(req: Request, res: Response) {
     if (!mongoose.isValidObjectId(req.params.id)) {
       throw new BadRequestError('Requested id is not id type');
     }
-    const deletedCount = await AuthDatabaseLayer.deleteUserById(req, req.params.id);
-    res.status(200).json({
-      success: true,
-      message: `Deleted a count of ${deletedCount} user.`,
-    });
+    const deletedCount = await AuthDatabaseLayer.statusChangeId(req, req.params.id);
+    res.status(200).send({ 'status change': 'success' });
   }
 
   // // SIGN-OUT
   static async signOut(req: Request, res: Response) {
     req.session = null;
-    res.send({});
+    res.status(200).send({});
   }
 
   // // CURRENT_USER
   static async currentUser(req: Request, res: Response) {
-    //res.send({ currentUser: req.currentUser || null });
     if (req.currentUser?.id) {
-
       const data = await AuthDatabaseLayer.getCurrentUser(req.currentUser.id);
-      res.send(data);
-    }else{
+      res.status(200).send(data);
+    } else {
       throw new BadRequestError('Token/session not founded')
     }
+  }
+
+
+  static async getAdminByName(req: Request, res: Response) {
+    const adminData = await AuthDatabaseLayer.getAdminByName(req.params.name);
+    res.status(200).send(adminData);
+  }
+
+
+  static async forgotPassword(req: Request, res: Response) {
+    await AuthDatabaseLayer.forgotPasswordMailTrigger(req.params.name);
+    res.status(200).send();
+  }
+
+  
+  static async forgotPasswordCodeVerification(req: Request, res: Response) {
+    await AuthDatabaseLayer.forgotPasswordCodeVerification(req.params.name);
+    res.status(200).send();
   }
 
 

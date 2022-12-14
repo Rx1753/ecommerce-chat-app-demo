@@ -48,3 +48,11 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: .
+    - image: nidhi9521/expiration
+      context: expiration
+      docker:
+        dockerfile: Dockerfile
+      sync: 
+        manual:
+          - src: 'src/**/*.ts'
+            dest: .

@@ -46,10 +46,6 @@ interface AdminUserModel extends mongoose.Model<AdminUserDoc> {
 // Schema
 const adminUserSchema = new mongoose.Schema(
   {
-    // _id: {
-    //   type: String,
-    //   default: () => uuidv4().replace(/\-/g, ''),
-    // },
     userName: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
@@ -59,7 +55,7 @@ const adminUserSchema = new mongoose.Schema(
     isMobileVerified: { type: Boolean, default: false },
     imageUrl: { type: String, default: '' },
     isSuperAdmin: { type: Boolean, default: false },
-    createdBy: { type: String, default: null },
+    createdBy: { type: String, default: null, ref:'adminUser' },
     updatedBy: { type: String, default: '' },
     isActive: { type: Boolean, default: false },
     refreshToken: { type: String },

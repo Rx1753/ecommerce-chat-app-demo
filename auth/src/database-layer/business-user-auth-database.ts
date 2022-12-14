@@ -139,10 +139,9 @@ export class BusinessUserAuthDatabaseLayer {
                     email: customerData.email,
                     userId: req.currentUser.id,
                     code: code,
-                    expirationDays: 8
                 })
                 await createVerificationCode.save();
-                await MailService.mailTrigger(code, customerData.email, 'Email Verification', "<h1>Hello " + customerData.name + ",</h1><p>here, is your email verfication code,</br> pls enter it in email verification code field <B>" + code + "</B> . </p>");
+                await MailService.mailTrigger(customerData.email, 'Email Verification', "<h1>Hello,</h1><p>here, is your email verfication code,</br> pls enter it in email verification code field <B>" + code + "</B> . </p>");
                 return;
 
             } else {
@@ -192,7 +191,6 @@ export class BusinessUserAuthDatabaseLayer {
                     phoneNumber: req.currentUser.phoneNumber,
                     userId: req.currentUser.id,
                     code: code,
-                    expirationDays: 8
                 })
                 await createVerificationCode.save();
                 //SMS trigger logic pending
@@ -242,11 +240,10 @@ export class BusinessUserAuthDatabaseLayer {
                 email: req.currentUser.email,
                 userId: req.currentUser.id,
                 code: code,
-                expirationDays: 1
             })
             await createVerificationCode.save();
 
-            await MailService.mailTrigger(code, req.currentUser.email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
+            await MailService.mailTrigger(req.currentUser.email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
             return;
         } else {
 

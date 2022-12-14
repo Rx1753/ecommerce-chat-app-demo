@@ -8,6 +8,11 @@ import {
   AdminPermissions,
   AdminPermissionsAttrs,
 } from '../models/admin-permissions';
+import { MailService } from '../services/mail-services';
+import shortid from 'shortid';
+import { invitionCode } from '../models/invition-code';
+import { natsWrapper } from '../nats-wrapper';
+import { InviteCodeCreatedPublisher } from '../events/publisher/invite-code-publisher';
 
 export class AuthDatabaseLayer {
 
@@ -68,6 +73,12 @@ export class AuthDatabaseLayer {
         user.createdBy = req.currentUser.id;
         const adminData = AdminUser.build(user);
         await adminData.save();
+
+        if (user.email != null) {
+          await MailService.mailTrigger(req.currentUser.email, 'Admin Credentials', "<h1>Hello,</h1><p>here, is your admin credentials,</br> pls enter it when you login to application as admin <B> Email:" + user.email + "</br>Password:" + user.password + "</B> . </p>")
+        } else {
+          //TODO sms trigger
+        }
 
         return user;
 
@@ -146,7 +157,7 @@ export class AuthDatabaseLayer {
   }
 
   static async isExistingPhone(phoneNumber: Number) {
-    const existingPhone:any = await AdminUser.findOne({ $and: [{ phoneNumber: phoneNumber }, { isActive: true }] });
+    const existingPhone: any = await AdminUser.findOne({ $and: [{ phoneNumber: phoneNumber }, { isActive: true }] });
     return existingPhone;
   }
   static async signUpUser(data: AdminUserAttrs) {
@@ -209,15 +220,79 @@ export class AuthDatabaseLayer {
     return data;
   }
 
-  static async deleteUserById(req: any, id: string) {
+  static async statusChangeId(req: any, id: string) {
     const adminData = await AdminUser.findById({ _id: req.currentUser.id });
 
     if (adminData?.isSuperAdmin == true) {
-      await AdminUser.findByIdAndUpdate({ _id: id }, { $set: { isActive: false } });
+      const data=await AdminUser.findById({ _id: id });
+      if(data){
+        await AdminUser.findByIdAndUpdate(id,{isActive:!data.isActive});
+      }
       const user = await AdminUser.findById(id);
       return user;
     } else {
       throw new BadRequestError('you are not superAdmin so you don\'t have rights to create admin');
     }
   }
+
+
+  static async getAdminByName(name: any) {
+    console.log('name', name);
+
+    var data = await AdminUser.findOne({ userName: { $regex: name + '.*', $options: 'i' } }).populate('permissionId._id', 'createdBy');
+    if (data) {
+      return data;
+    } else {
+      return {};
+    }
+
+  }
+
+  static async forgotPasswordMailTrigger(req: any) {
+    console.log('forgot password mail trigger');
+
+
+    if (req.body.email != null && req.body.email != undefined) {
+      const emailData = await AdminUser.findOne({ email: req.body.email });
+      if (emailData && emailData.allowChangePassword == true) {
+        const code = shortid.generate();
+        var createVerificationCode = invitionCode.build({
+          type: 'email',
+          email: req.body.email,
+          code: code,
+        })
+
+        await createVerificationCode.save();
+        await new InviteCodeCreatedPublisher(natsWrapper.client).publish({
+          id: createVerificationCode.id,
+          type: createVerificationCode.type,
+          code: createVerificationCode.code,
+          email: createVerificationCode.email
+        })
+
+        await MailService.mailTrigger(req.currentUser.email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
+        return;
+      } else {
+
+        throw new BadRequestError('You Login with PhoneNumber')
+      }
+    } else {
+      throw new BadRequestError('Givien email has no rights to change password')
+    }
+
+  }
+
+  //forgot password with code verify  
+  static async forgotPasswordCodeVerification(req: any) {
+    const { code, password } = req.body;
+    const inviteCodeCheck = await invitionCode.findOne({ code: code })
+    if (inviteCodeCheck) {
+      const hased = await Password.toHash(password);
+      await AdminUser.findOneAndUpdate({ email: inviteCodeCheck.email }, { password: hased });
+      return;
+    } else {
+      throw new BadRequestError('Your Code is not matched');
+    }
+  }
+
 }

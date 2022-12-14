@@ -13,7 +13,7 @@ const referesh_token =
 
 
 export class MailService {
-  static async mailTrigger(code: string, email: string, subject: string,html:string) {
+  static async mailTrigger( email: string, subject: string,html:string) {
     const oAuth2Client = new google.auth.OAuth2(
       clientId,
       clientSecreat,

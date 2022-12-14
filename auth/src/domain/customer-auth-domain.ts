@@ -195,7 +195,6 @@ export class CustomerDomain {
             type: 'email',
             email: 'abc@gmail.com',
             code: '123456',
-            expirationDays: 8
         })
         await createReferalCode.save();
         return createReferalCode;

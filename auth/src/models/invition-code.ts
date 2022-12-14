@@ -8,7 +8,7 @@ interface invitionCodeAttrs {
     email?: string;
     userId?:string;
     code: String;
-    expirationDays: Number;
+    expirationDays?: Number;
 }
 
 // An interface that describe the properties
@@ -19,10 +19,10 @@ interface invitionCodeDoc extends mongoose.Document {
     email: string;
     userId:string;
     code: String;
-    expirationDays: Number;
     created_By:string;
     created_at: Number;
     updated_at: Number;
+    expirationDays: Number;
 }
 
 // An interface that describe the properties
@@ -39,8 +39,8 @@ const invitionCodeSchema = new mongoose.Schema(
         phoneNumber: { type: Number },
         email:{type:String},
         code: { type: String },
-        expirationDays: { type: Number, default: 10 },
         isUsed:{type:Boolean,defaul:false},
+        expirationDays: { type: Number, default: 10 },
         created_By:{type:String},
         created_at: { type: Number, default: () => Date.now() },
         updated_at: { type: Number, default: () => Date.now() },
