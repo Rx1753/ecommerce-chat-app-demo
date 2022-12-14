@@ -14,5 +14,6 @@ export declare enum Subjects {
     ProductCreated = "Product:productCreated",
     ProductItemCreated = "Product:ProductItemCreated",
     CustomerCreated = "user:CustomerCreated",
-    InvitionCodeCreated = "user:InvitionCodeCreated"
+    InvitionCodeCreated = "user:InvitionCodeCreated",
+    ExpirationComplete = "expire:ExpirationComplete"
 }

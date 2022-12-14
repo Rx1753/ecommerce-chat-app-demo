@@ -34,3 +34,4 @@ export * from './nats/events/product-created';
 export * from './nats/events/product-item-created';
 export * from './nats/events/customer-created';
 export * from './nats/events/invition-code-created';
+export * from './nats/events/expiration-completed';

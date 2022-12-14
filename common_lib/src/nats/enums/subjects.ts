@@ -15,5 +15,5 @@ export enum Subjects {
   ProductItemCreated="Product:ProductItemCreated",
   CustomerCreated="user:CustomerCreated",
   InvitionCodeCreated="user:InvitionCodeCreated",
-
+  ExpirationComplete="expire:ExpirationComplete",
 }

@@ -19,4 +19,5 @@ var Subjects;
     Subjects["ProductItemCreated"] = "Product:ProductItemCreated";
     Subjects["CustomerCreated"] = "user:CustomerCreated";
     Subjects["InvitionCodeCreated"] = "user:InvitionCodeCreated";
+    Subjects["ExpirationComplete"] = "expire:ExpirationComplete";
 })(Subjects = exports.Subjects || (exports.Subjects = {}));
