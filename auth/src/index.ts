@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { app } from './app';
+import { ExpirationCompleteListener } from './events/listener/expiration-complete-listener';
 import { StoreCreatedListener } from './events/listener/store-listener';
 import { natsWrapper } from './nats-wrapper';
 
@@ -42,6 +43,7 @@ const start = async () => {
     mongoose.set('strictQuery', false)
     await mongoose.connect(process.env.MONGO_URI);
     new StoreCreatedListener(natsWrapper.client).listen();
+    new ExpirationCompleteListener(natsWrapper.client).listen();
   } catch (error: any) {
     throw Error(error);
   }

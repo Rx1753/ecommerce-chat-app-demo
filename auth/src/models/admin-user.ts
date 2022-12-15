@@ -57,7 +57,7 @@ const adminUserSchema = new mongoose.Schema(
     isSuperAdmin: { type: Boolean, default: false },
     createdBy: { type: String, default: null, ref:'adminUser' },
     updatedBy: { type: String, default: '' },
-    isActive: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
     refreshToken: { type: String },
     allowChangePassword:{type:Boolean,default:true},
     permissionId: [{

@@ -15,7 +15,7 @@ export class CountryDomain {
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        await CountryDatabaseLayer.updateCountry(req,req.params.id);
+        await CountryDatabaseLayer.updateCountry(req, req.params.id);
         res.status(201).send({ updated: true });
     }
 
@@ -28,7 +28,12 @@ export class CountryDomain {
     }
 
     static async getCountryList(req: Request, res: Response) {
-        const address =  await CountryDatabaseLayer.getCountryList(req);
+        const address = await CountryDatabaseLayer.getCountryList(req);
+        res.status(201).send(address);
+    }
+    
+    static async getCountryNameBasedSerch(req: Request, res: Response) {
+        const address = await CountryDatabaseLayer.getCountryNameBasedSerch(req.params.name);
         res.status(201).send(address);
     }
 

@@ -30,6 +30,10 @@ export class StateDomain {
         const State =  await StateDatabaseLayer.getStateList(req);
         res.status(201).send(State);
     }
+    static async getStateNameBasedSerch(req: Request, res: Response) {
+        const State =  await StateDatabaseLayer.getStateNameBasedSerch(req.params.name);
+        res.status(201).send(State);
+    }
     
     static async getStateCountryId(req: Request,res:Response){
         if (!mongoose.isValidObjectId(req.params.id)) {

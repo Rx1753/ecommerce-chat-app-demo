@@ -48,4 +48,13 @@ export class CountryDatabaseLayer {
         return data;
     }
 
+    static async getCountryNameBasedSerch(name: string) {
+        const data = await Country.find({ countryName: { $regex: name + '.*', $options: 'i' } })
+        if (data) {
+            return data;
+        } else {
+            return [];
+        }
+    }
+
 }

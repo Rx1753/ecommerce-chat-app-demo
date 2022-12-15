@@ -14,7 +14,7 @@ export class InvitionCodeCreatedListener extends Listener<InvitionCodeCreatedEve
   async onMessage(data: InvitionCodeCreatedEvent['data'], msg: Message
   ) {
 
-    console.log('Waiting Delay:', 20000);
+    console.log('Waiting Delay:', 80000);
     await expirationQueue.add({
       orderId: data.id,
     },

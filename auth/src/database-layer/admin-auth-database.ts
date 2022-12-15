@@ -27,6 +27,7 @@ export class AuthDatabaseLayer {
 
       const adminData = await AdminUser.findById({ _id: req.currentUser.id });
 
+
       if (adminData?.isSuperAdmin == true) {
 
         const { userName, email, password, phoneNumber, isAllowChangePassword, storeId } = req.body;
@@ -71,6 +72,7 @@ export class AuthDatabaseLayer {
 
         user.permissionId = permissionRoleId;
         user.createdBy = req.currentUser.id;
+
         const adminData = AdminUser.build(user);
         await adminData.save();
 
@@ -224,9 +226,9 @@ export class AuthDatabaseLayer {
     const adminData = await AdminUser.findById({ _id: req.currentUser.id });
 
     if (adminData?.isSuperAdmin == true) {
-      const data=await AdminUser.findById({ _id: id });
-      if(data){
-        await AdminUser.findByIdAndUpdate(id,{isActive:!data.isActive});
+      const data = await AdminUser.findById({ _id: id });
+      if (data) {
+        await AdminUser.findByIdAndUpdate(id, { isActive: !data.isActive });
       }
       const user = await AdminUser.findById(id);
       return user;
@@ -239,11 +241,11 @@ export class AuthDatabaseLayer {
   static async getAdminByName(name: any) {
     console.log('name', name);
 
-    var data = await AdminUser.findOne({ userName: { $regex: name + '.*', $options: 'i' } }).populate('permissionId._id', 'createdBy');
+    var data = await AdminUser.find({ userName: { $regex: name + '.*', $options: 'i' } }).populate('permissionId._id', 'createdBy');
     if (data) {
       return data;
     } else {
-      return {};
+      return [];
     }
 
   }
@@ -252,32 +254,44 @@ export class AuthDatabaseLayer {
     console.log('forgot password mail trigger');
 
 
-    if (req.body.email != null && req.body.email != undefined) {
+    try {
+      const { email } = req.body;
+      console.log(email);
+
+
       const emailData = await AdminUser.findOne({ email: req.body.email });
-      if (emailData && emailData.allowChangePassword == true) {
-        const code = shortid.generate();
-        var createVerificationCode = invitionCode.build({
-          type: 'email',
-          email: req.body.email,
-          code: code,
-        })
+      console.log('emailData');
 
-        await createVerificationCode.save();
-        await new InviteCodeCreatedPublisher(natsWrapper.client).publish({
-          id: createVerificationCode.id,
-          type: createVerificationCode.type,
-          code: createVerificationCode.code,
-          email: createVerificationCode.email
-        })
+      if (emailData) {
+        if (emailData.allowChangePassword == true) {
+          const code = shortid.generate();
+          var createVerificationCode = invitionCode.build({
+            type: 'email',
+            email: req.body.email,
+            code: code,
+          })
 
-        await MailService.mailTrigger(req.currentUser.email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
-        return;
-      } else {
+          await createVerificationCode.save();
+          await new InviteCodeCreatedPublisher(natsWrapper.client).publish({
+            id: createVerificationCode.id,
+            type: createVerificationCode.type,
+            code: createVerificationCode.code,
+            email: createVerificationCode.email
+          })
 
-        throw new BadRequestError('You Login with PhoneNumber')
+          await MailService.mailTrigger(req.body.email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
+          return;
+
+        } else {
+          throw new BadRequestError('Given email has no rights to change password')
+        }
       }
-    } else {
-      throw new BadRequestError('Givien email has no rights to change password')
+      else {
+        throw new BadRequestError('Given email is not existing in our system')
+      }
+    } catch (e: any) {
+      throw new BadRequestError(e.message)
+
     }
 
   }
@@ -288,8 +302,18 @@ export class AuthDatabaseLayer {
     const inviteCodeCheck = await invitionCode.findOne({ code: code })
     if (inviteCodeCheck) {
       const hased = await Password.toHash(password);
-      await AdminUser.findOneAndUpdate({ email: inviteCodeCheck.email }, { password: hased });
-      return;
+      const data = await AdminUser.findOneAndUpdate({ email: inviteCodeCheck.email }, { password: hased });
+      if (data) {
+        console.log('password updated');
+        const accessToken = await JwtService.accessToken({ email: data.email, id: data.id, phoneNumber: data.phoneNumber, type: PayloadType.AdminType });
+        const newRefreshToken = await AuthDatabaseLayer.updateRefreshToken(data.id, data.email, data.phoneNumber)
+        req.session = { jwt: accessToken };
+        console.log('session', req.session);
+        return { accessToken: accessToken, refreshToken: newRefreshToken }
+      }else{
+        throw new BadRequestError('Something wrong');
+      }
+
     } else {
       throw new BadRequestError('Your Code is not matched');
     }

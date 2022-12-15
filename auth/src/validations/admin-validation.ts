@@ -67,10 +67,10 @@ export class Validation {
     ),
   ];
   static forgotPasswordValidation = [
-    body('email').isEmail().withMessage('email must be valid').optional()
+    body('email').isEmail().withMessage('email must be valid')
   ];
   static forgotCodeValidation = [
-    body('code').isEmail().withMessage('Code must be write').optional(),
-    body('password').isEmail().withMessage('password must be write').optional(),
+    body('code').notEmpty().withMessage('Code must be write'),
+    body('password').notEmpty().withMessage('password must be write')
   ]
 }

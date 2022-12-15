@@ -73,4 +73,17 @@ export class CityDatabaseLayer {
         return data;
     }
 
+    static async getCityNameBasedSerch(name:string){
+        const data = await City.find({ cityName: { $regex: name + '.*', $options: 'i' } }).populate({
+            path: 'stateId', populate: {
+                path: 'countryId'
+            }
+        });
+        if(data){
+        return data;
+        }else{
+            return [];
+        }
+    }
+
 }

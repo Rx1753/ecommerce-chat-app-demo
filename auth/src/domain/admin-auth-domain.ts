@@ -2,6 +2,7 @@ import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { Request, Response } from 'express';
 import { Auth } from 'googleapis';
 import mongoose from 'mongoose';
+import { createVariableDeclaration } from 'typescript';
 import { AuthDatabaseLayer } from '../database-layer/admin-auth-database';
 import { AdminPermissionsAttrs } from '../models/admin-permissions';
 import { AdminUserAttrs } from '../models/admin-user';
@@ -183,14 +184,14 @@ export class AuthDomain {
 
 
   static async forgotPassword(req: Request, res: Response) {
-    await AuthDatabaseLayer.forgotPasswordMailTrigger(req.params.name);
+    await AuthDatabaseLayer.forgotPasswordMailTrigger(req);
     res.status(200).send();
   }
 
-  
+
   static async forgotPasswordCodeVerification(req: Request, res: Response) {
-    await AuthDatabaseLayer.forgotPasswordCodeVerification(req.params.name);
-    res.status(200).send();
+    const data = await AuthDatabaseLayer.forgotPasswordCodeVerification(req);
+    res.status(200).send(data);
   }
 
 

@@ -14,7 +14,7 @@ export class CityDomain {
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        await CityDatabaseLayer.updateCity(req,req.params.id);
+        await CityDatabaseLayer.updateCity(req, req.params.id);
         res.status(201).send({ updated: true });
     }
 
@@ -27,15 +27,21 @@ export class CityDomain {
     }
 
     static async getCityList(req: Request, res: Response) {
-        const city =  await CityDatabaseLayer.getCityList(req);
+        const city = await CityDatabaseLayer.getCityList(req);
         res.status(201).send(city);
     }
-    
-    static async getCityStateId(req: Request,res:Response){
+
+    static async getCityStateId(req: Request, res: Response) {
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        const city =  await CityDatabaseLayer.getCityStateId(req,req.params.id);
+        const city = await CityDatabaseLayer.getCityStateId(req, req.params.id);
+        res.status(201).send(city);
+    }
+
+    static async getCityNameBasedSerch(req: Request, res: Response) {
+
+        const city = await CityDatabaseLayer.getCityNameBasedSerch(req.params.name);
         res.status(201).send(city);
     }
 

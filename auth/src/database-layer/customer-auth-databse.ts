@@ -238,7 +238,7 @@ export class CustomerAuthDatabaseLayer {
                         expirationDays: 8
                     })
                     await createVerificationCode.save();
-                    await MailService.mailTrigger(code, customerData.email, 'Email Verification', "<h1>Hello " + customerData.name + ",</h1><p>here, is your email verfication code,</br> pls enter it in email verification code field <B>" + code + "</B> . </p>");
+                    await MailService.mailTrigger( customerData.email, 'Email Verification', "<h1>Hello ,</h1><p>here, is your email verfication code,</br> pls enter it in email verification code field <B>" + code + "</B> . </p>");
                     return;
 
                 } else {
@@ -352,7 +352,7 @@ export class CustomerAuthDatabaseLayer {
                 })
                 await createVerificationCode.save();
 
-                await MailService.mailTrigger(code, req.currentUser.email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
+                await MailService.mailTrigger( req.currentUser.email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
                 return;
             } else {
 

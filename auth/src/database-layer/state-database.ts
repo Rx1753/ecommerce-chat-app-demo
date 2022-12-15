@@ -62,5 +62,13 @@ export class StateDatabaseLayer {
         const data = await State.find({ $and: [{ countryId: id }, { isDelete: false }] }).populate('countryId');
         return data;
     }
+    static async getStateNameBasedSerch(name: string) {
+        const data = await State.find({ stateName: { $regex: name + '.*', $options: 'i' } }).populate('countryId');
+        if (data) {
+            return data;
+        } else {
+            return [];
+        }
+    }
 
 }
