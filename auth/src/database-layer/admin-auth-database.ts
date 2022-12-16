@@ -13,6 +13,8 @@ import shortid from 'shortid';
 import { invitionCode } from '../models/invition-code';
 import { natsWrapper } from '../nats-wrapper';
 import { InviteCodeCreatedPublisher } from '../events/publisher/invite-code-publisher';
+import { AdminPermissionCreatedPublisher } from '../events/publisher/admin-permission-publisher';
+import { AdminCreatedPublisher } from '../events/publisher/admin-publisher';
 
 export class AuthDatabaseLayer {
 
@@ -76,13 +78,22 @@ export class AuthDatabaseLayer {
         const adminData = AdminUser.build(user);
         await adminData.save();
 
+        await new AdminCreatedPublisher(natsWrapper.client).publish({
+          id: adminData.id,
+          userName: adminData.userName,
+          allowChangePassword: adminData.allowChangePassword,
+          phoneNumber: adminData.phoneNumber,
+          permissionId: permissionRoleId,
+          email: adminData.email
+        })
+
         if (user.email != null) {
-          await MailService.mailTrigger(req.currentUser.email, 'Admin Credentials', "<h1>Hello,</h1><p>here, is your admin credentials,</br> pls enter it when you login to application as admin <B> Email:" + user.email + "</br>Password:" + user.password + "</B> . </p>")
+          // await MailService.mailTrigger(req.currentUser.email, 'Admin Credentials', "<h1>Hello,</h1><p>here, is your admin credentials,</br> pls enter it when you login to application as admin <B> Email:" + user.email + "</br>Password:" + user.password + "</B> . </p>")
         } else {
           //TODO sms trigger
         }
 
-        return user;
+        return adminData;
 
       } else {
         throw new BadRequestError('you are not superAdmin so you don\'t have rights to create admin');
@@ -104,6 +115,14 @@ export class AuthDatabaseLayer {
       if (!tableCheck) {
         const role = AdminPermissions.build({ tableName: tableName, isRead: isRead, isCreate: isCreate, isDelete: isDelete, isUpdate: isUpdate });
         await role.save();
+        await new AdminPermissionCreatedPublisher(natsWrapper.client).publish({
+          id: role.id,
+          tableName: role.tableName,
+          isCreate: role.isCreate,
+          isDelete: role.isDelete,
+          isUpdate: role.isUpdate,
+          isRead: role.isRead
+        })
         return { _id: role.id.toString() }
       } else {
 
@@ -162,6 +181,7 @@ export class AuthDatabaseLayer {
     const existingPhone: any = await AdminUser.findOne({ $and: [{ phoneNumber: phoneNumber }, { isActive: true }] });
     return existingPhone;
   }
+
   static async signUpUser(data: AdminUserAttrs) {
     const hashPassword = await Password.toHash(data.password);
     const user = AdminUser.build(data);
@@ -201,8 +221,6 @@ export class AuthDatabaseLayer {
   }
 
   // update refresh token in admin user
-
-
   static async updateRefreshToken(id: string, email: string, phoneNumber: Number) {
     const refreshToken = await JwtService.refreshToken({ email: email, id: id, phoneNumber: phoneNumber, type: PayloadType.AdminType });
     const admin = await AdminUser.findByIdAndUpdate(id, { refreshToken: refreshToken });
@@ -217,31 +235,34 @@ export class AuthDatabaseLayer {
     var data = await AdminUser.findOne({ _id: id }).populate('permissionId._id');
     return data;
   }
+
   static async getCurrentUser(id: any) {
     var data = await AdminUser.findOne({ _id: id }).populate('permissionId._id');
     return data;
   }
 
-  static async statusChangeId(req: any, id: string) {
-    const adminData = await AdminUser.findById({ _id: req.currentUser.id });
+  static async statusChangeId(req: any, id: any) {
 
-    if (adminData?.isSuperAdmin == true) {
-      const data = await AdminUser.findById({ _id: id });
-      if (data) {
-        await AdminUser.findByIdAndUpdate(id, { isActive: !data.isActive });
+    const adminData = await AdminUser.findOne({ _id: req.currentUser.id });
+
+    if (adminData) {
+      if (adminData.isSuperAdmin == true) {
+        const data = await AdminUser.findById({ _id: id });
+        if (data) {
+          var status=data.isActive ? false : true;
+          await AdminUser.findByIdAndUpdate(id, { isActive: status });
+        }
+        return;
       }
-      const user = await AdminUser.findById(id);
-      return user;
     } else {
       throw new BadRequestError('you are not superAdmin so you don\'t have rights to create admin');
     }
   }
 
-
   static async getAdminByName(name: any) {
     console.log('name', name);
 
-    var data = await AdminUser.find({ userName: { $regex: name + '.*', $options: 'i' } }).populate('permissionId._id', 'createdBy');
+    var data = await AdminUser.find({ userName: { $regex: name + '.*', $options: 'i' } }).populate('permissionId._id');
     if (data) {
       return data;
     } else {
@@ -310,13 +331,47 @@ export class AuthDatabaseLayer {
         req.session = { jwt: accessToken };
         console.log('session', req.session);
         return { accessToken: accessToken, refreshToken: newRefreshToken }
-      }else{
+      } else {
         throw new BadRequestError('Something wrong');
       }
 
     } else {
       throw new BadRequestError('Your Code is not matched');
     }
+  }
+
+  static async updateAdminRoles(req: any) {
+
+    const roleData = req.body.rolesArray;
+    const roleDataArr: string[] = [];
+
+    roleData.forEach((e: any) => {
+      if (!roleDataArr.includes(e.tableName)) {
+        roleDataArr.push(e.tableName);
+      } else {
+        throw new BadRequestError('Repeating table is not possible');
+      }
+    });
+    
+    var permissionRoleId: { _id: string }[] = [];
+
+    await Promise.all(roleData.map(async (e: any) => {
+      const roleMapData = await AuthDatabaseLayer.checkRoleMapping(e.tableName, e.isCreate, e.isUpdate, e.isDelete, e.isRead);
+      permissionRoleId.push(roleMapData);
+    }));
+    const adminUserData = await AdminUser.findById(req.body.id).populate('permissionId._id');
+    
+    if(adminUserData){
+      await Promise.all(adminUserData.permissionId.map((e:any)=>{
+        if(!roleDataArr.includes(e._id.tableName)){
+          permissionRoleId.push(e);
+        }
+      }))
+    }
+    await AdminUser.findByIdAndUpdate(req.body.id, { permissionId: permissionRoleId });
+    const adminData =await AdminUser.findById(req.body.id).populate('permissionId._id');
+    return adminData;
+
   }
 
 }

@@ -11,34 +11,39 @@ import { verifyAdminToken } from '../middlewares/current-user';
 const router = express.Router();
 
 // SIGN-IN
-router.post('/api/users/admin/login',Validation.signInValidation,validateRequest,AuthDomain.signIn);
+router.post('/api/users/admin/login', Validation.signInValidation, validateRequest, AuthDomain.signIn);
 
 //add user
-router.post('/api/users/addadmin',Validation.addAdminValidation,verifyAdminToken,validateRequest,AuthDomain.addAdmin);
+router.post('/api/users/admin/addadmin', Validation.addAdminValidation, verifyAdminToken, validateRequest, AuthDomain.addAdmin);
 
 // CURRENT_USER
-router.get('/api/users/admin/currentuser', verifyAdminToken,validateRequest, AuthDomain.currentUser);
+router.get('/api/users/admin/currentuser', verifyAdminToken, validateRequest, AuthDomain.currentUser);
+
+//Delete Single User
+router.put('/api/users/admin/statuschange/:id', verifyAdminToken, validateRequest, AuthDomain.statusChangeId);
+
 // /*
 // Require Auth Verification
 // */
+
+
 //All User List
-router.post('/api/users/admin/forgotpassword/mailtrigger',Validation.forgotPasswordValidation,validateRequest,AuthDomain.forgotPassword);
+router.post('/api/users/admin/forgotpassword/mailtrigger', Validation.forgotPasswordValidation, validateRequest, AuthDomain.forgotPassword);
 
-router.post('/api/users/admin/forgotpassword/codeverify',Validation.forgotCodeValidation,validateRequest,AuthDomain.forgotPasswordCodeVerification);
+router.post('/api/users/admin/forgotpassword/codeverify', Validation.forgotCodeValidation, validateRequest, AuthDomain.forgotPasswordCodeVerification);
 
-router.get('/api/users/getalladmin', AuthDomain.getAllUsers);
+router.put('/api/users/admin/updatepermission', Validation.updateRoleValidation, verifyAdminToken, validateRequest, AuthDomain.updateAdminRoles);
+
+router.get('/api/users/admin/getalladmin', AuthDomain.getAllUsers);
 
 //Single User Detail
-router.get('/api/users/admin/:id', AuthDomain.getUserById);
-
-//Delete Single User
-router.put('/api/users/admin/status/:id',verifyAdminToken,validateRequest, AuthDomain.statusChangeId);
+router.get('/api/users/admin/getadmindetail/:id', AuthDomain.getUserById);
 
 // SIGN-OUT
 router.post('/api/users/admin/signout', AuthDomain.signOut);
 
 //get admin by name serch
-router.get('/api/users/admin/getadminbyname/:name',AuthDomain.getAdminByName);
+router.get('/api/users/admin/getadminbyname/:name', AuthDomain.getAdminByName);
 
 
 

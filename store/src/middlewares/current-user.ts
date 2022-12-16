@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { TokenExpiredError } from 'jsonwebtoken';
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import { AdminUser } from '../models/admin-user';
 
 interface UserPayload {
   id: string;
@@ -79,30 +80,38 @@ export const verifyCustomerToken = (
   }
   next();
 };
-export const verifyAdminToken = (
+export const verifyAdminToken = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  console.log('middleware');
+
   if (!req.session?.jwt && !req.headers['token']) {
+    console.log('token not wrote');
     throw new BadRequestError('Token/Session not provided');
   }
+
 
   var token;
   if (req.session?.jwt) {
     token = req.session?.jwt;
   } else {
-    const accessToken = (req.headers.authorization as String).split(' ')[1];
-    token = accessToken;
+    token = req.headers['token'];
   }
 
   try {
     const payload = jwt.verify(token, process.env.JWT_KEY!) as UserPayload;
-    if(payload.type != 'Admin'){
+ 
+
+    if (payload.type != 'Admin') {
       throw new BadRequestError('Unauthorized Admin');
-    } 
+    }
+    const data = await AdminUser.findOne({ $and: [{ _id: payload.id }, { isActive: true }] })
+    if(!data){
+      throw new BadRequestError('token/session you login is no more authorized');
+    }
     req.currentUser = payload;
-    console.log(`verifyAdminToken :: ${req.currentUser.email}`)
   } catch (error: any) {
     if (error instanceof TokenExpiredError) {
       throw new BadRequestError(error.message);

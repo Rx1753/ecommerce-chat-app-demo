@@ -1,5 +1,6 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { BusinessSubCategoryCreatedPublisher } from '../event/publisher/business-sub-category-publisher';
+import { AdminUser } from '../models/admin-user';
 import { BusinessCategory } from '../models/business-category';
 import { BusinessSubCategory } from "../models/business-sub-category";
 import { natsWrapper } from '../nats-wrapper';
@@ -51,8 +52,15 @@ export class BusinessSubCategoryDatabaseLayer {
 
     static async deleteBusinessSubCategory(id: string) {
         try {
-            await BusinessSubCategory.findByIdAndDelete(id);
-            return;
+            const data=await BusinessSubCategory.findById(id);
+            if(data){
+                const status=data.isActive ? false : true;
+                await BusinessSubCategory.findByIdAndUpdate(id,{isActive:status});
+                
+                return;
+            }else{
+                throw new BadRequestError('Data not found for given id');
+            }
         } catch (err: any) {
             console.log(err.message);
             throw new BadRequestError(err.message)
@@ -65,10 +73,32 @@ export class BusinessSubCategoryDatabaseLayer {
         return data;
     }
     
+    static async getBusinessSubCategoryActiveList(req: any) {
+        const data = await BusinessSubCategory.find({isActive:true})
+            .populate('businessCategoryId');
+        return data;
+    }
+    
     static async getBusinessCategoryIdList(req: any,id:any) {
         const data = await BusinessSubCategory.find({businessCategoryId:id})
             .populate('businessCategoryId');
         return data;
     }
 
+    static async categoryCheck(req:any):Promise<any>{
+        const data = await AdminUser.findById(req.currentUser.id).populate('permissionId._id');
+        var dataPermission:any;
+        if(data?.permissionId){
+            data.permissionId.map((e:any)=>{
+                if(e._id.tableName=="category"){
+                 dataPermission= e._id;
+                }
+            })
+        }
+        if(dataPermission){
+            return dataPermission;
+        }else{
+            throw new BadRequestError('Not wrights of category table')
+        }
+    }
 }

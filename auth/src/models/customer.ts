@@ -70,7 +70,7 @@ const customerSchema = new mongoose.Schema({
     imageUrl: { type: String, default: null },
     //currentPlan:{type:String},
     isDelete: { type: Boolean, default: false },
-    isActive: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
     isApproved: { type: Boolean, default: false },
     inviteCode: { type: String, required: true, unique: true },
     referalType:{type:String,enum:['Admin','CustomerUser']},

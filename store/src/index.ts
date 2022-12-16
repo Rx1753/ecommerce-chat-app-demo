@@ -7,6 +7,8 @@ import { StateCreatedListener } from './event/listener/state-listener';
 import { CountryCreatedListener } from './event/listener/country-listener';
 import { BusinessRoleCreatedListener } from './event/listener/business-role-listener';
 import { BusinessRoleMappingListener } from './event/listener/business-role-mapping-listener';
+import { AdminPermissioCreatedListener } from './event/listener/admin-permission-listener';
+import { AdminCreatedListener } from './event/listener/admin-listener';
 
 const port = 3000;
 
@@ -44,12 +46,16 @@ const start = async () => {
 
     process.on('SIGINT', () => natsWrapper.client!.close());
     process.on('SIGTERM', () => natsWrapper.client!.close());
+
     new BusinessUserCreatedListener(natsWrapper.client).listen();
     new CityCreatedListener(natsWrapper.client).listen();
     new StateCreatedListener(natsWrapper.client).listen();
     new CountryCreatedListener(natsWrapper.client).listen();
     new BusinessRoleCreatedListener(natsWrapper.client).listen();
     new BusinessRoleMappingListener(natsWrapper.client).listen();
+    new AdminCreatedListener(natsWrapper.client).listen();
+    new AdminPermissioCreatedListener(natsWrapper.client).listen();
+
     mongoose.set('strictQuery', false)
     await mongoose.connect(process.env.MONGO_URI).then(() => {
       console.log(

@@ -7,7 +7,7 @@ import { natsWrapper } from './nats-wrapper';
 const port = 3000;
 
 const start = async () => {
-  
+
   if (!process.env.JWT_KEY) {
     throw new Error('JWT_KEY must be defined');
   }
@@ -40,18 +40,21 @@ const start = async () => {
 
     process.on('SIGINT', () => natsWrapper.client.close());
     process.on('SIGTERM', () => natsWrapper.client.close());
+    
     mongoose.set('strictQuery', false)
     await mongoose.connect(process.env.MONGO_URI);
+    
     new StoreCreatedListener(natsWrapper.client).listen();
     new ExpirationCompleteListener(natsWrapper.client).listen();
+
   } catch (error: any) {
     throw Error(error);
   }
 
-  app.listen(port,()=>{
-    console.log('listen at',port);
-    
+  app.listen(port, () => {
+    console.log('listen at', port);
   });
+
 };
 
 start();

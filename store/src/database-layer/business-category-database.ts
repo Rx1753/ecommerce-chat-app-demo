@@ -1,5 +1,6 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { BusinessCategoryCreatedPublisher } from '../event/publisher/business-category-publisher';
+import { AdminUser } from '../models/admin-user';
 import { BusinessCategory } from "../models/business-category";
 import { natsWrapper } from '../nats-wrapper';
 
@@ -39,8 +40,15 @@ export class BusinessCategoryDatabaseLayer {
 
     static async deleteBusinessCategory(id: string) {
         try {
-            await BusinessCategory.findByIdAndDelete(id);
-            return;
+            const data=await BusinessCategory.findById(id);
+            if(data){
+                const status=data.isActive ? false : true;
+                await BusinessCategory.findByIdAndUpdate(id,{isActive:status});
+                
+                return;
+            }else{
+                throw new BadRequestError('Data not found for given id');
+            }
         } catch (err: any) {
             console.log(err.message);
             throw new BadRequestError(err.message)
@@ -50,6 +58,28 @@ export class BusinessCategoryDatabaseLayer {
     static async getBusinessCategoryList(req: any) {
         const data = await BusinessCategory.find();
         return data;
+    }
+
+    static async getBusinessCategoryActiveList(req: any) {
+        const data = await BusinessCategory.find({isActive:true});
+        return data;
+    }
+
+    static async categoryCheck(req:any):Promise<any>{
+        const data = await AdminUser.findById(req.currentUser.id).populate('permissionId._id');
+        var dataPermission:any;
+        if(data?.permissionId){
+            data.permissionId.map((e:any)=>{
+                if(e._id.tableName=="category"){
+                 dataPermission= e._id;
+                }
+            })
+        }
+        if(dataPermission){
+            return dataPermission;
+        }else{
+            throw new BadRequestError('Not wrights of category table')
+        }
     }
 
 }

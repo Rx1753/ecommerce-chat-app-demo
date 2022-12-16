@@ -6,30 +6,54 @@ import { BusinessCategoryDatabaseLayer } from '../database-layer/business-catego
 export class BusinessCategoryDomain {
 
     static async createBusinessCategory(req: Request, res: Response) {
-        const BusinessCategory = await BusinessCategoryDatabaseLayer.createBusinessCategory(req);
-        res.status(201).send(BusinessCategory);
+        const permission = await BusinessCategoryDatabaseLayer.categoryCheck(req);
+        if (permission.isCreate == true) {
+            const BusinessCategory = await BusinessCategoryDatabaseLayer.createBusinessCategory(req);
+            res.status(201).send(BusinessCategory);
+        } else {
+            throw new BadRequestError('You don\'t have rights to create category');
+        }
+
     }
 
     static async updateBusinessCategory(req: Request, res: Response) {
+
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        await BusinessCategoryDatabaseLayer.updateBusinessCategory(req,req.params.id);
-        res.status(201).send({ updated: true });
+
+        const permission = await BusinessCategoryDatabaseLayer.categoryCheck(req);
+        if (permission.isUpdate == true) {
+            await BusinessCategoryDatabaseLayer.updateBusinessCategory(req, req.params.id);
+            res.status(201).send({ updated: true });
+        } else {
+            throw new BadRequestError('You don\'t have rights to update category');
+        }
     }
 
     static async deleteBusinessCategory(req: Request, res: Response) {
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        await BusinessCategoryDatabaseLayer.deleteBusinessCategory(req.params.id);
-        res.status(201).send({ deleted: true });
+        const permission = await BusinessCategoryDatabaseLayer.categoryCheck(req);
+        if (permission.isDelete == true) {
+            await BusinessCategoryDatabaseLayer.deleteBusinessCategory(req.params.id);
+            res.status(201).send({ deleted: true });
+        } else {
+            throw new BadRequestError('You don\'t have rights to delete category');
+        }
     }
 
     static async getBusinessCategoryList(req: Request, res: Response) {
-        const BusinessCategory =  await BusinessCategoryDatabaseLayer.getBusinessCategoryList(req);
+        const BusinessCategory = await BusinessCategoryDatabaseLayer.getBusinessCategoryList(req);
         res.status(201).send(BusinessCategory);
     }
     
+
+    static async getBusinessCategoryActiveList(req: Request, res: Response) {
+        const BusinessCategory = await BusinessCategoryDatabaseLayer.getBusinessCategoryActiveList(req);
+        res.status(201).send(BusinessCategory);
+    }
+
 
 }

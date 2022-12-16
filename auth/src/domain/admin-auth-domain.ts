@@ -155,8 +155,7 @@ export class AuthDomain {
   static async statusChangeId(req: Request, res: Response) {
     if (!mongoose.isValidObjectId(req.params.id)) {
       throw new BadRequestError('Requested id is not id type');
-    }
-    const deletedCount = await AuthDatabaseLayer.statusChangeId(req, req.params.id);
+    } await AuthDatabaseLayer.statusChangeId(req, req.params.id);
     res.status(200).send({ 'status change': 'success' });
   }
 
@@ -176,23 +175,24 @@ export class AuthDomain {
     }
   }
 
-
   static async getAdminByName(req: Request, res: Response) {
     const adminData = await AuthDatabaseLayer.getAdminByName(req.params.name);
     res.status(200).send(adminData);
   }
-
 
   static async forgotPassword(req: Request, res: Response) {
     await AuthDatabaseLayer.forgotPasswordMailTrigger(req);
     res.status(200).send();
   }
 
-
   static async forgotPasswordCodeVerification(req: Request, res: Response) {
     const data = await AuthDatabaseLayer.forgotPasswordCodeVerification(req);
     res.status(200).send(data);
   }
 
+  static async updateAdminRoles(req:Request,res:Response){
+    const data = await AuthDatabaseLayer.updateAdminRoles(req);
+    res.status(200).send(data);
+  }
 
 }

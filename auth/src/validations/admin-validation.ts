@@ -45,6 +45,7 @@ export class Validation {
       .matches(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im)
       .withMessage('phone number must be valid')
       .optional(),
+    body('rolesArray').notEmpty().withMessage('pls write Roles of the admin'),
     oneOf(
       [body('email').notEmpty(), body('phoneNumber').notEmpty()],
       'One Of field is Require Email or PhoneNumber'
@@ -72,5 +73,10 @@ export class Validation {
   static forgotCodeValidation = [
     body('code').notEmpty().withMessage('Code must be write'),
     body('password').notEmpty().withMessage('password must be write')
+  ];
+
+  static updateRoleValidation=[
+    body('id').notEmpty().withMessage('pls provide id of admin you want to update'),
+    body('rolesArray').notEmpty().withMessage('pls write Roles of the admin'),
   ]
 }
