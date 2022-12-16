@@ -27,3 +27,5 @@ export * from './nats/events/product-item-created';
 export * from './nats/events/customer-created';
 export * from './nats/events/invition-code-created';
 export * from './nats/events/expiration-completed';
+export * from './nats/events/admin-permission-created';
+export * from './nats/events/admin-user-created';

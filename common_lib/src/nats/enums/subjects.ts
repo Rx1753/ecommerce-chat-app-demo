@@ -16,4 +16,6 @@ export enum Subjects {
   CustomerCreated="user:CustomerCreated",
   InvitionCodeCreated="user:InvitionCodeCreated",
   ExpirationComplete="expire:ExpirationComplete",
+  AdminUserCreated="user:AdminUserCreated",
+  AdminPermissionCreated="user:AdminPermissionCreated",
 }
