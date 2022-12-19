@@ -17,5 +17,8 @@ export declare enum Subjects {
     InvitionCodeCreated = "user:InvitionCodeCreated",
     ExpirationComplete = "expire:ExpirationComplete",
     AdminUserCreated = "user:AdminUserCreated",
-    AdminPermissionCreated = "user:AdminPermissionCreated"
+    AdminPermissionCreated = "user:AdminPermissionCreated",
+    AdminUserUpdated = "user:AdminUserUpdated",
+    BusinessCategoryUpdated = "user:BusinessCategoryUpdated",
+    BusinessSubCategoryUpdated = "user:BusinessSubCategoryUpdated"
 }

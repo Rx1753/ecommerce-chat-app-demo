@@ -18,4 +18,7 @@ export enum Subjects {
   ExpirationComplete="expire:ExpirationComplete",
   AdminUserCreated="user:AdminUserCreated",
   AdminPermissionCreated="user:AdminPermissionCreated",
+  AdminUserUpdated="user:AdminUserUpdated",
+  BusinessCategoryUpdated="user:BusinessCategoryUpdated",
+  BusinessSubCategoryUpdated="user:BusinessSubCategoryUpdated",
 }

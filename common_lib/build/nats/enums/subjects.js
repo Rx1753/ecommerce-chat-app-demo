@@ -22,4 +22,7 @@ var Subjects;
     Subjects["ExpirationComplete"] = "expire:ExpirationComplete";
     Subjects["AdminUserCreated"] = "user:AdminUserCreated";
     Subjects["AdminPermissionCreated"] = "user:AdminPermissionCreated";
+    Subjects["AdminUserUpdated"] = "user:AdminUserUpdated";
+    Subjects["BusinessCategoryUpdated"] = "user:BusinessCategoryUpdated";
+    Subjects["BusinessSubCategoryUpdated"] = "user:BusinessSubCategoryUpdated";
 })(Subjects = exports.Subjects || (exports.Subjects = {}));
