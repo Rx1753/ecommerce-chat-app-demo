@@ -29,3 +29,6 @@ export * from './nats/events/invition-code-created';
 export * from './nats/events/expiration-completed';
 export * from './nats/events/admin-permission-created';
 export * from './nats/events/admin-user-created';
+export * from './nats/events/admin-user-updated';
+export * from './nats/events/business-category-updated';
+export * from './nats/events/business-sub-category-updated';

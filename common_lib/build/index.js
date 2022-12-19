@@ -48,3 +48,6 @@ __exportStar(require("./nats/events/invition-code-created"), exports);
 __exportStar(require("./nats/events/expiration-completed"), exports);
 __exportStar(require("./nats/events/admin-permission-created"), exports);
 __exportStar(require("./nats/events/admin-user-created"), exports);
+__exportStar(require("./nats/events/admin-user-updated"), exports);
+__exportStar(require("./nats/events/business-category-updated"), exports);
+__exportStar(require("./nats/events/business-sub-category-updated"), exports);
