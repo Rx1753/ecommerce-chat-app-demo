@@ -12,7 +12,7 @@ const router = express.Router();
 router.post('/api/store/businesscategory/create',BusinessCategoryValidation.BusinessCategoryCreateValidation,verifyAdminToken,validateRequest,BusinessCategoryDomain.createBusinessCategory);
 
 // businesscategory update
-router.put('/api/store/businesscategory/update/:id',BusinessCategoryValidation.BusinessCategoryCreateValidation,verifyAdminToken,validateRequest,BusinessCategoryDomain.updateBusinessCategory)
+router.put('/api/store/businesscategory/update/:id',BusinessCategoryValidation.BusinessCategoryUpdateValidation,verifyAdminToken,validateRequest,BusinessCategoryDomain.updateBusinessCategory)
  
 // delete businesscategory
 router.put('/api/store/businesscategory/delete/:id',verifyAdminToken,BusinessCategoryDomain.deleteBusinessCategory);
@@ -20,6 +20,8 @@ router.put('/api/store/businesscategory/delete/:id',verifyAdminToken,BusinessCat
 // get all businesscategory
 router.get('/api/store/businesscategory/get',BusinessCategoryDomain.getBusinessCategoryList);
 
+// get businesscategoryId
+router.get('/api/store/businesscategory/getid/:id',BusinessCategoryDomain.getBusinessCategoryId);
 
 router.get('/api/store/businesscategory/getactive',BusinessCategoryDomain.getBusinessCategoryActiveList);
 

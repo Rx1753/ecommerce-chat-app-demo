@@ -22,6 +22,7 @@ export class BusinessUserAuthDatabaseLayer {
         console.log(existingEmail);
         return existingEmail;
     }
+
     static async isExistingPhone(phoneNumber: Number) {
         const existingPhone = await BusinessUser.findOne({ $and: [{ phoneNumber }, { isDelete: false }] });
         return existingPhone;
@@ -34,7 +35,7 @@ export class BusinessUserAuthDatabaseLayer {
     }
 
     static async signUpUser(req: any) {
-        const { name, email, password, phoneNumber} = req.body;
+        const { name, email, password, phoneNumber } = req.body;
 
         var user: BusinessUserAttrs;
 
@@ -55,6 +56,7 @@ export class BusinessUserAuthDatabaseLayer {
         }
 
         const data = BusinessUser.build(user);
+        data.createdBy = data.id;
         data.refreshToken = await JwtService.refreshToken({ email: data.email, id: data._id, phoneNumber: data.phoneNumber, type: PayloadType.Vendor, })
         await data.save();
         await new BusinessUserCreatedPublisher(natsWrapper.client).publish({
@@ -71,24 +73,67 @@ export class BusinessUserAuthDatabaseLayer {
         return data;
     }
 
-
-
     static async checkPassword(existingPassword: string, password: string) {
         return await Password.compare(existingPassword, password);
     }
 
     static async getAllUsers() {
-        return await BusinessUser.find({ isDelete: false });
+        return await BusinessUser.find().populate('store');
     }
+
+    static async getAllActiveUsers() {
+        return await BusinessUser.find({ isActive: true }).populate('store');
+    }
+
+    static async getAllDeActiveUsers() {
+        return await BusinessUser.find({ isActive: false }).populate('store');
+    }
+
 
     static async getUserById(id: any) {
         const customer = await BusinessUser.findById(id);
-        return customer;
+        if (customer) {
+            return customer;
+        } else {
+            throw new BadRequestError('given id is not in DB');
+        }
     }
 
     static async deleteUserById(id: string) {
-        const user = await BusinessUser.updateOne({ _id: id }, { $set: { isDelete: true, } });
-        return user;
+
+        const data = await BusinessUser.findById(id);
+
+        if (data && data.isActive) {
+            if (data.id == data?.createdBy) {
+                const userData = await BusinessUser.find({ $and: [{ createdBy: data.id }, { isActive: true }, { _id: { $ne: data.id } }] })
+                console.log('userData', userData);
+
+                if (userData.length != 0) {
+                    const user = await BusinessUser.updateOne({ _id: id }, { $set: { isActive: false, } });
+                    return user;
+                } else {
+                    throw new BadRequestError('Deactive is not possible due to one profile handler');
+                }
+            } else if (data.store) {
+                const userData = await BusinessUser.find({ $and: [{ store: data.store }, { _id: { $ne: data.id } }, { isActive: true },] });
+                console.log('userData', userData);
+                if (userData.length != 0) {
+                    const user = await BusinessUser.updateOne({ _id: id }, { $set: { isActive: false, } });
+                    return user;
+                } else {
+                    throw new BadRequestError('Deactive is not possible due to one profile handler');
+                }
+
+            } else {
+                throw new BadRequestError('Deactive is not possible');
+            }
+        } else if (data && data?.isActive == false) {
+            const user = await BusinessUser.updateOne({ _id: id }, { $set: { isActive: true, } });
+            return user;
+        }
+        else {
+            throw new BadRequestError('given id data not exists in DB');
+        }
     }
 
     static async getUserByName(name: string) {
@@ -398,6 +443,7 @@ export class BusinessUserAuthDatabaseLayer {
         }
 
     }
+
     static async roleMapping(req: any, id: any) {
         console.log('check');
 

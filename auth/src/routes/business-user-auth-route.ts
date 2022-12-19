@@ -1,5 +1,5 @@
 import express, { Request, Response, Router } from 'express';
-import {verifyCustomerToken, verifyToken, verifyVendorToken} from '../middlewares/current-user';
+import {verifyAdminToken, verifyCustomerToken, verifyToken, verifyVendorToken} from '../middlewares/current-user';
 import { validateRequest } from '@rx-ecommerce-chat/common_lib';
 import { BusinessUserAuthValidation } from "../validations/business-user-auth-validation";
 import { BusinessDomain } from '../domain/business-user-auth-domain';
@@ -13,12 +13,14 @@ router.post('/api/users/businessuser/signin',BusinessUserAuthValidation.signInVa
   
 //All User List
 router.get('/api/users/businessuser/getallusers', BusinessDomain.getAllUsers);
+router.get('/api/users/businessuser/getallactiveusers', BusinessDomain.getAllActiveUsers);
+router.get('/api/users/businessuser/getalldeactiveusers', BusinessDomain.getAllDeActiveUsers);
 
 //Single User Detail
 router.get('/api/users/businessuser/getuserbyid/:id', BusinessDomain.getUserById);
 
 //Delete Single User
-router.get('/api/users/businessuser/delete/:id', BusinessDomain.deleteUserById);
+router.put('/api/users/businessuser/delete/:id',verifyAdminToken,validateRequest, BusinessDomain.deleteUserById);
 
 //User by name
 router.get('/api/users/businessuser/getuserbyname/:name',BusinessDomain.getUserByName)

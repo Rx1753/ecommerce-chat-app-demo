@@ -72,7 +72,17 @@ export class BusinessSubCategoryDatabaseLayer {
             .populate('businessCategoryId');
         return data;
     }
-    
+      
+    static async getBusinessSubCategoryId(req: any,id:any) {
+        const data = await BusinessSubCategory.findById(id)
+            .populate('businessCategoryId');
+            if (data) {
+                return data;
+            } else {
+                throw new BadRequestError('given id type no data found in DB')
+            }
+    }
+
     static async getBusinessSubCategoryActiveList(req: any) {
         const data = await BusinessSubCategory.find({isActive:true})
             .populate('businessCategoryId');
@@ -82,12 +92,19 @@ export class BusinessSubCategoryDatabaseLayer {
     static async getBusinessCategoryIdList(req: any,id:any) {
         const data = await BusinessSubCategory.find({businessCategoryId:id})
             .populate('businessCategoryId');
-        return data;
+            if (data) {
+                return data;
+            } else {
+                throw new BadRequestError('given id type no data found in DB')
+            }
     }
 
     static async categoryCheck(req:any):Promise<any>{
         const data = await AdminUser.findById(req.currentUser.id).populate('permissionId._id');
         var dataPermission:any;
+        if(data?.isSuperAdmin==true){
+            return data;
+        }
         if(data?.permissionId){
             data.permissionId.map((e:any)=>{
                 if(e._id.tableName=="category"){

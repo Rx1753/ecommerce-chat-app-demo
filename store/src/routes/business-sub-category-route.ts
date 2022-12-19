@@ -20,6 +20,9 @@ router.put('/api/store/businesssubcategory/delete/:id',verifyAdminToken,Business
 // get all BusinessSubCategory
 router.get('/api/store/businesssubcategory/get',BusinessSubCategoryDomain.getBusinessSubCategoryList);
 
+// get all BusinessSubCategory
+router.get('/api/store/businesssubcategory/getid/:id',BusinessSubCategoryDomain.getBusinessSubCategoryId);
+
 // get active businessSubCategoryList with active status code
 router.get('/api/store/businesssubcategory/getactive',BusinessSubCategoryDomain.getBusinessSubCategoryActiveList);
 

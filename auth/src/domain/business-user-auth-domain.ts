@@ -95,6 +95,15 @@ export class BusinessDomain {
         var customer = await BusinessUserAuthDatabaseLayer.getAllUsers();
         res.status(200).send(customer);
     }
+    
+    static async getAllActiveUsers(req: Request, res: Response) {
+        var customer = await BusinessUserAuthDatabaseLayer.getAllActiveUsers();
+        res.status(200).send(customer);
+    }
+    static async getAllDeActiveUsers(req: Request, res: Response) {
+        var customer = await BusinessUserAuthDatabaseLayer.getAllDeActiveUsers();
+        res.status(200).send(customer);
+    }
 
     //GET USER BY ID
     static async getUserById(req: Request, res: Response) {

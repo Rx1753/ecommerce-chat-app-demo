@@ -43,7 +43,6 @@ const ProductCategorySchema = new mongoose.Schema({
             ret.ProductCategoryId = ret._id;
             delete ret._id;
             delete ret.__v;
-            delete ret.isActive;
             delete ret.createdAt;
             delete ret.updatedAt;
         },

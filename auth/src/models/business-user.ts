@@ -73,8 +73,6 @@ const BusinessUserSchema = new mongoose.Schema({
             delete ret._id;
             delete ret.__v;
             delete ret.password;
-            delete ret.isActive;
-            delete ret.isDelete;
             delete ret.created_at;
             delete ret.updated_at;
         },

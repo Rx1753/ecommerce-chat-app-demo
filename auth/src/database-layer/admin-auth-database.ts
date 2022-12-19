@@ -15,6 +15,7 @@ import { natsWrapper } from '../nats-wrapper';
 import { InviteCodeCreatedPublisher } from '../events/publisher/invite-code-publisher';
 import { AdminPermissionCreatedPublisher } from '../events/publisher/admin-permission-publisher';
 import { AdminCreatedPublisher } from '../events/publisher/admin-publisher';
+import { AdminUpdatedPublisher } from '../events/publisher/admin-updated-publisher';
 
 export class AuthDatabaseLayer {
 
@@ -367,11 +368,24 @@ export class AuthDatabaseLayer {
           permissionRoleId.push(e);
         }
       }))
-    }
+    
     await AdminUser.findByIdAndUpdate(req.body.id, { permissionId: permissionRoleId });
+    await new AdminUpdatedPublisher(natsWrapper.client).publish({
+      id: req.body.id,
+      userName: adminUserData?.userName,
+      allowChangePassword: adminUserData?.allowChangePassword,
+      isActive: adminUserData?.isActive,
+      permissionId:permissionRoleId,
+      createdBy:adminUserData?.createdBy,
+      email:adminUserData?.email,
+      phoneNumber:adminUserData?.phoneNumber
+
+    })
     const adminData =await AdminUser.findById(req.body.id).populate('permissionId._id');
     return adminData;
-
+  }else{
+    throw new BadRequestError('sended id is not valid')
+  }
   }
 
 }

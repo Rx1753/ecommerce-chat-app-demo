@@ -9,11 +9,7 @@ export class BusinessProfileDatabaseLayer {
         console.log(req.currentUser.id);
         
         const data = BusinessProfile.build({
-            BusinessUsers: [
-                {
-                    BusinessUserId: req.currentUser.id,
-                }
-            ],
+            BusinessUsers: [req.currentUser.id],
             name: name,
             businessSubCategoryId: BusinessSubCategoryId,
             tagLine: tagLine,

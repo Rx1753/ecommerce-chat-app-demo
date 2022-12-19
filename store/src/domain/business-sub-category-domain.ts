@@ -8,7 +8,7 @@ export class BusinessSubCategoryDomain {
     static async createBusinessSubCategory(req: Request, res: Response) {
 
         const permission = await BusinessSubCategoryDatabaseLayer.categoryCheck(req);
-        if (permission.isCreate == true) {
+        if (permission.isCreate == true ||  permission.isSuperAdmin==true) {
             const BusinessSubCategory = await BusinessSubCategoryDatabaseLayer.createBusinessSubCategory(req);
             res.status(201).send(BusinessSubCategory);
         } else {
@@ -21,7 +21,7 @@ export class BusinessSubCategoryDomain {
             throw new BadRequestError('Requested id is not id type');
         }
         const permission = await BusinessSubCategoryDatabaseLayer.categoryCheck(req);
-        if (permission.isUpdate == true) {
+        if (permission.isUpdate == true ||  permission.isSuperAdmin==true) {
             await BusinessSubCategoryDatabaseLayer.updateBusinessSubCategory(req, req.params.id);
             res.status(201).send({ updated: true });
         } else {
@@ -34,7 +34,7 @@ export class BusinessSubCategoryDomain {
             throw new BadRequestError('Requested id is not id type');
         }
         const permission = await BusinessSubCategoryDatabaseLayer.categoryCheck(req);
-        if (permission.isDelete == true) {
+        if (permission.isDelete == true ||  permission.isSuperAdmin==true) {
             await BusinessSubCategoryDatabaseLayer.deleteBusinessSubCategory(req.params.id);
             res.status(201).send({ deleted: true });
         } else {
@@ -47,7 +47,14 @@ export class BusinessSubCategoryDomain {
         const BusinessSubCategory = await BusinessSubCategoryDatabaseLayer.getBusinessSubCategoryList(req);
         res.status(201).send(BusinessSubCategory);
     }
-
+    
+    static async getBusinessSubCategoryId(req: Request, res: Response) {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            throw new BadRequestError('Requested id is not id type');
+        }
+        const BusinessSubCategory = await BusinessSubCategoryDatabaseLayer.getBusinessSubCategoryId(req,req.params.id);
+        res.status(201).send(BusinessSubCategory);
+    }
 
     static async getBusinessSubCategoryActiveList(req: Request, res: Response) {
         const BusinessSubCategory = await BusinessSubCategoryDatabaseLayer.getBusinessSubCategoryActiveList(req);
@@ -55,6 +62,9 @@ export class BusinessSubCategoryDomain {
     }
 
     static async getBusinessCategoryIdList(req: Request, res: Response) {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            throw new BadRequestError('Requested id is not id type');
+        }
         const BusinessSubCategory = await BusinessSubCategoryDatabaseLayer.getBusinessCategoryIdList(req, req.params.id);
         res.status(201).send(BusinessSubCategory);
     }

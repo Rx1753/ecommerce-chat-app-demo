@@ -7,7 +7,7 @@ export class BusinessCategoryDomain {
 
     static async createBusinessCategory(req: Request, res: Response) {
         const permission = await BusinessCategoryDatabaseLayer.categoryCheck(req);
-        if (permission.isCreate == true) {
+        if (permission.isCreate == true || permission.isSuperAdmin==true) {
             const BusinessCategory = await BusinessCategoryDatabaseLayer.createBusinessCategory(req);
             res.status(201).send(BusinessCategory);
         } else {
@@ -23,7 +23,7 @@ export class BusinessCategoryDomain {
         }
 
         const permission = await BusinessCategoryDatabaseLayer.categoryCheck(req);
-        if (permission.isUpdate == true) {
+        if (permission.isUpdate == true ||  permission.isSuperAdmin==true) {
             await BusinessCategoryDatabaseLayer.updateBusinessCategory(req, req.params.id);
             res.status(201).send({ updated: true });
         } else {
@@ -36,7 +36,7 @@ export class BusinessCategoryDomain {
             throw new BadRequestError('Requested id is not id type');
         }
         const permission = await BusinessCategoryDatabaseLayer.categoryCheck(req);
-        if (permission.isDelete == true) {
+        if (permission.isDelete == true ||  permission.isSuperAdmin==true) {
             await BusinessCategoryDatabaseLayer.deleteBusinessCategory(req.params.id);
             res.status(201).send({ deleted: true });
         } else {
@@ -49,6 +49,13 @@ export class BusinessCategoryDomain {
         res.status(201).send(BusinessCategory);
     }
     
+    static async getBusinessCategoryId(req: Request, res: Response) {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            throw new BadRequestError('Requested id is not id type');
+        }
+        const BusinessCategory = await BusinessCategoryDatabaseLayer.getBusinessCategoryId(req,req.params.id);
+        res.status(201).send(BusinessCategory);
+    }
 
     static async getBusinessCategoryActiveList(req: Request, res: Response) {
         const BusinessCategory = await BusinessCategoryDatabaseLayer.getBusinessCategoryActiveList(req);

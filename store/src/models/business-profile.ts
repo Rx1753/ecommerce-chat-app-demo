@@ -5,7 +5,7 @@ import { BusinessUserDoc } from "./business-user";
 // intetface that describe the prooerties
 // that are required to cretae new user
 export interface BusinessProfileAttrs {
-    BusinessUsers: [{ BusinessUserId: string }],
+    BusinessUsers: string[],
     name: string,
     tagLine?: string,
     businessSubCategoryId: string,
@@ -37,17 +37,11 @@ export interface BusinessProfileDoc extends mongoose.Document {
     qrCode: string,
     latitude: number,
     longitude: number,
-    BusinessUsers: [
-        {
-            BusinessUserId: BusinessUserDoc,
-        }
-    ]
+    BusinessUsers: BusinessUserDoc[]
 }
 
 const BusinessProfileSchema = new mongoose.Schema({
-    BusinessUsers: [{
-        BusinessUserId: { type: String, ref: 'BusinessUser' }, _id: false,
-    }],
+    BusinessUsers: [{ type: String, ref: 'BusinessUser' },],
     name: { type: String },
     tagLine: { type: String, default: null },
     description: { type: String, },

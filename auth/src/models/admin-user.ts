@@ -47,7 +47,7 @@ interface AdminUserModel extends mongoose.Model<AdminUserDoc> {
 const adminUserSchema = new mongoose.Schema(
   {
     userName: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String,  },
     password: { type: String, required: true },
     phoneNumber: { type: Number },
     isMfa: { type: Boolean, default: false },
