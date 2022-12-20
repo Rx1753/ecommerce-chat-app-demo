@@ -12,7 +12,7 @@ const router = express.Router();
 router.post('/api/users/state/create', StateValidation.StateCreateValidation, verifyAdminToken,validateRequest,StateDomain.createState);
 
 // Country update
-router.put('/api/users/state/update/:id',verifyAdminToken,validateRequest, StateDomain.updateState)
+router.put('/api/users/state/update/:id',StateValidation.StateUpdateValidation,verifyAdminToken,validateRequest, StateDomain.updateState)
 
 // delete Country
 router.delete('/api/users/state/delete/:id',verifyAdminToken,validateRequest, StateDomain.deleteState);

@@ -3,9 +3,11 @@ import { app } from './app';
 import { AdminCreatedListener } from './event/listener/admin-listener';
 import { AdminPermissioCreatedListener } from './event/listener/admin-permission-listener';
 import { BusinessCategoryCreatedListener } from './event/listener/business-category-listener';
+import { BusinessCategoryUpdatedListener } from './event/listener/business-category-updated-listener';
 import { BusinessRoleCreatedListener } from './event/listener/business-role-listener';
 import { BusinessRoleMappingListener } from './event/listener/business-role-mapping-listener';
 import { BusinessSubCategoryCreatedListener } from './event/listener/business-sub-category-listener';
+import { BusinessSubCategoryUpdatedListener } from './event/listener/business-sub-category-update-listener';
 import { BusinessUserCreatedListener } from './event/listener/business-user-listener';
 import { StoreCreatedListener } from './event/listener/store-listener';
 import { natsWrapper } from './nats-wrapper';
@@ -58,7 +60,9 @@ const start = async () => {
     new BusinessRoleMappingListener(natsWrapper.client).listen();
     new AdminCreatedListener(natsWrapper.client).listen();
     new AdminPermissioCreatedListener(natsWrapper.client).listen();
-
+    new BusinessSubCategoryUpdatedListener(natsWrapper.client).listen();
+    new BusinessCategoryUpdatedListener(natsWrapper.client).listen();
+    
   } catch (error: any) {
     throw Error(error);
   }

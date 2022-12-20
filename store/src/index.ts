@@ -9,6 +9,7 @@ import { BusinessRoleCreatedListener } from './event/listener/business-role-list
 import { BusinessRoleMappingListener } from './event/listener/business-role-mapping-listener';
 import { AdminPermissioCreatedListener } from './event/listener/admin-permission-listener';
 import { AdminCreatedListener } from './event/listener/admin-listener';
+import { AdminUpdateListener } from './event/listener/admin-update-listener';
 
 const port = 3000;
 
@@ -55,7 +56,8 @@ const start = async () => {
     new BusinessRoleMappingListener(natsWrapper.client).listen();
     new AdminCreatedListener(natsWrapper.client).listen();
     new AdminPermissioCreatedListener(natsWrapper.client).listen();
-
+    new AdminUpdateListener(natsWrapper.client).listen();
+    
     mongoose.set('strictQuery', false)
     await mongoose.connect(process.env.MONGO_URI).then(() => {
       console.log(

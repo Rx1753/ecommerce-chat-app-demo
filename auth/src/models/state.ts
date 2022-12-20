@@ -17,6 +17,7 @@ interface StateModel extends mongoose.Model<StateDoc> {
 export interface StateDoc extends mongoose.Document {
     stateName: string;
     countryId: CountryDoc;
+    isActive:boolean;
     created_at: Date;
     updated_at: Date;
 
@@ -25,7 +26,7 @@ export interface StateDoc extends mongoose.Document {
 const stateSchema = new mongoose.Schema({
     stateName: { type: String, required: true, unique: true },
     countryId: { type: String, ref: 'country' },
-    isDelete: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
     created_at: { type: Number, default: () => Date.now() },
     updated_at: { type: Number, default: () => Date.now() },
 }, {

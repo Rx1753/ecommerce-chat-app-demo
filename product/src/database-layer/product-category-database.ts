@@ -3,6 +3,7 @@ import { AdminUser } from '../models/admin-user';
 import { BusinessCategory } from '../models/business-category';
 import { BusinessSubCategory } from '../models/business-sub-category';
 import { ProductCategory } from "../models/product-category";
+import { ProductSubCategory } from '../models/product-sub-category';
 
 export class ProductCategoryDatabaseLayer {
 
@@ -48,7 +49,7 @@ export class ProductCategoryDatabaseLayer {
             if(data){
                 const status=data.isActive ? false : true;
                 await ProductCategory.findByIdAndUpdate(id,{isActive:status});
-                
+                await ProductSubCategory.updateMany({productCategoryId:id},{$set:{isActive:status}});
                 return;
             }else{
                 throw new BadRequestError('Data not found for given id');

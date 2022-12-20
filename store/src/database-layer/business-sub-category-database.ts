@@ -1,5 +1,6 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { BusinessSubCategoryCreatedPublisher } from '../event/publisher/business-sub-category-publisher';
+import { BusinessSubCategoryUpdatePublisher } from '../event/publisher/business-sub-category-updated-publisher';
 import { AdminUser } from '../models/admin-user';
 import { BusinessCategory } from '../models/business-category';
 import { BusinessSubCategory } from "../models/business-sub-category";
@@ -56,7 +57,13 @@ export class BusinessSubCategoryDatabaseLayer {
             if(data){
                 const status=data.isActive ? false : true;
                 await BusinessSubCategory.findByIdAndUpdate(id,{isActive:status});
-                
+                await new BusinessSubCategoryUpdatePublisher(natsWrapper.client).publish({
+                    id: id,
+                    name: data.name,
+                    description: data.description,
+                    isActive: status,
+                    businessCategoryId: data.businessCategoryId.toString()
+                })
                 return;
             }else{
                 throw new BadRequestError('Data not found for given id');

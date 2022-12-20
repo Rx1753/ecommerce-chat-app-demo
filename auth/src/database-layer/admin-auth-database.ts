@@ -301,7 +301,7 @@ export class AuthDatabaseLayer {
             email: createVerificationCode.email
           })
 
-          await MailService.mailTrigger(req.body.email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
+          // await MailService.mailTrigger(req.body.email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
           return;
 
         } else {

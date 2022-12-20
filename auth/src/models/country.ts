@@ -14,6 +14,7 @@ interface CountryModel extends mongoose.Model<CountryDoc> {
 // interface for single user properties
 export interface CountryDoc extends mongoose.Document {
     countryName: string;
+    isActive:boolean;
     created_at: Date;
     updated_at: Date;
 
@@ -21,7 +22,7 @@ export interface CountryDoc extends mongoose.Document {
 
 const countrySchema = new mongoose.Schema({
     countryName: {type: String,required: true,unique: true},
-    isDelete: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
     created_at: { type: Number, default: () => Date.now() },
     updated_at: { type: Number, default: () => Date.now() },
 }, {

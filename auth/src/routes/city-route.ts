@@ -12,7 +12,7 @@ const router = express.Router();
 router.post('/api/users/city/create',CityValidation.CityCreateValidation,verifyAdminToken,validateRequest,CityDomain.createCity);
 
 // city update
-router.put('/api/users/city/update/:id',verifyAdminToken,validateRequest,CityDomain.updateCity)
+router.put('/api/users/city/update/:id',CityValidation.CityUpdateValidation,verifyAdminToken,validateRequest,CityDomain.updateCity)
  
 // delete city
 router.delete('/api/users/city/delete/:id',verifyAdminToken,validateRequest,CityDomain.deleteCity);

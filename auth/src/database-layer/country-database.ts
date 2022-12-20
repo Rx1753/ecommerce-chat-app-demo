@@ -24,7 +24,7 @@ export class CountryDatabaseLayer {
         const currentDate = new Date();
         const updated_at = currentDate.getTime();
         try {
-            await Country.findByIdAndUpdate(id, { countryName: req.body.countryName, update_at: updated_at });
+            await Country.findByIdAndUpdate(id, { countryName: req.body.countryName,isActive:req.body.isActive, update_at: updated_at });
             return;
         }
         catch (err: any) {
@@ -35,7 +35,9 @@ export class CountryDatabaseLayer {
 
     static async deleteCountry(id: string) {
         try {
-            await Country.findByIdAndUpdate(id, { isDelete: true });
+            const countryData= await Country.findById(id)
+            const status = countryData?.isActive ? false : true;
+            await Country.findByIdAndUpdate(id, { isActive : status });
             return;
         } catch (err: any) {
             console.log(err.message);

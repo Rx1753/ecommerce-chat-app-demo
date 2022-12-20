@@ -17,6 +17,7 @@ interface CityModel extends mongoose.Model<CityDoc> {
 export interface CityDoc extends mongoose.Document {
     cityName: string;
     stateId: StateDoc;
+    isActive: boolean;
 }
 
 const citySchema = new mongoose.Schema({
@@ -24,7 +25,7 @@ const citySchema = new mongoose.Schema({
     stateId: { type: String, ref: 'state'},
     created_at: { type: Number, default: () => Date.now() },
     updated_at: { type: Number, default: () => Date.now() },
-    is_delete: { type: Boolean, default: false }
+    isActive: { type: Boolean, default: true }
 }, {
     toJSON: {
         transform(doc, ret) {

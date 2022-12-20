@@ -182,7 +182,7 @@ export class AuthDomain {
 
   static async forgotPassword(req: Request, res: Response) {
     await AuthDatabaseLayer.forgotPasswordMailTrigger(req);
-    res.status(200).send();
+    res.status(200).send({"messgae": "Email trigger successfully"});
   }
 
   static async forgotPasswordCodeVerification(req: Request, res: Response) {

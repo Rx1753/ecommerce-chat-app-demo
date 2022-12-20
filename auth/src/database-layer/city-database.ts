@@ -36,7 +36,7 @@ export class CityDatabaseLayer {
         const currentDate = new Date();
         const updated_at = currentDate.getTime();
         try {
-            await City.findByIdAndUpdate(id, { CityName: req.body.CityName, stateId: req.body.stateId, update_at: updated_at });
+            await City.findByIdAndUpdate(id, { CityName: req.body.CityName, stateId: req.body.stateId,isActive:req.body.isActive, update_at: updated_at });
             return;
         }
         catch (err: any) {
@@ -47,7 +47,9 @@ export class CityDatabaseLayer {
 
     static async deleteCity(id: string) {
         try {
-            await City.findByIdAndDelete(id);
+            const cityData = await City.findById(id);
+            const status = cityData?.isActive ? false : true;
+            await City.findByIdAndUpdate(id,{isActive:status})
             return;
         } catch (err: any) {
             console.log(err.message);
