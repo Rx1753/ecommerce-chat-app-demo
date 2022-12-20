@@ -9,7 +9,7 @@ export class ProductSubCategoryDatabaseLayer {
         try {
 
             const { name, description, productCategoryId } = req.body;
-            const productCategoryCheck = await ProductCategory.findOne({$and:[{id:productCategoryId},{isActive:true}]});
+            const productCategoryCheck = await ProductCategory.findOne({$and:[{_id:productCategoryId},{isActive:true}]});
             if (productCategoryCheck) {
                 const data = ProductSubCategory.build({
                     name: name,

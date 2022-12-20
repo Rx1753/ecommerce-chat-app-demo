@@ -106,7 +106,6 @@ export class BusinessUserAuthDatabaseLayer {
         if (data && data.isActive) {
             if (data.id == data?.createdBy) {
                 const userData = await BusinessUser.find({ $and: [{ createdBy: data.id }, { isActive: true }, { _id: { $ne: data.id } }] })
-                console.log('userData', userData);
 
                 if (userData.length != 0) {
                     const user = await BusinessUser.updateOne({ _id: id }, { $set: { isActive: false, } });
@@ -116,7 +115,8 @@ export class BusinessUserAuthDatabaseLayer {
                 }
             } else if (data.store) {
                 const userData = await BusinessUser.find({ $and: [{ store: data.store }, { _id: { $ne: data.id } }, { isActive: true },] });
-                console.log('userData', userData);
+                console.log('userData',userData);
+                
                 if (userData.length != 0) {
                     const user = await BusinessUser.updateOne({ _id: id }, { $set: { isActive: false, } });
                     return user;
