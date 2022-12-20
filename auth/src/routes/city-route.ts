@@ -19,6 +19,8 @@ router.delete('/api/users/city/delete/:id',verifyAdminToken,validateRequest,City
 
 // get all city
 router.get('/api/users/city/get',CityDomain.getCityList);
+router.get('/api/users/city/getactive',CityDomain.getCityActiveList);
+router.get('/api/users/city/getdeactive',CityDomain.getCityDeactiveList);
 
 //get city based on name
 router.get('/api/users/city/getbasedonname/:name',CityDomain.getCityNameBasedSerch);

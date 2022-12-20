@@ -24,8 +24,13 @@ export class CountryDatabaseLayer {
         const currentDate = new Date();
         const updated_at = currentDate.getTime();
         try {
-            await Country.findByIdAndUpdate(id, { countryName: req.body.countryName,isActive:req.body.isActive, update_at: updated_at });
-            return;
+            const data = await Country.findById(id);
+            if (data) {
+                await Country.findByIdAndUpdate(id, { countryName: req.body.countryName, isActive: req.body.isActive, update_at: updated_at });
+                return;
+            } else {
+                throw new BadRequestError('given id is not exist in db');
+            }
         }
         catch (err: any) {
             console.log(err.message);
@@ -35,10 +40,14 @@ export class CountryDatabaseLayer {
 
     static async deleteCountry(id: string) {
         try {
-            const countryData= await Country.findById(id)
-            const status = countryData?.isActive ? false : true;
-            await Country.findByIdAndUpdate(id, { isActive : status });
-            return;
+            const countryData = await Country.findById(id)
+            if (countryData) {
+                const status = countryData?.isActive ? false : true;
+                await Country.findByIdAndUpdate(id, { isActive: status });
+                return;
+            } else {
+                throw new BadRequestError('given id is not exist in db');
+            }
         } catch (err: any) {
             console.log(err.message);
             throw new BadRequestError(err.message)
@@ -46,12 +55,20 @@ export class CountryDatabaseLayer {
     }
 
     static async getCountryList(req: any) {
-        const data = await Country.find({ isDelete: false });
+        const data = await Country.find();
         return data;
     }
 
+    static async getCountryActiveList(req: any) {
+        const data = await Country.find({ isActive: true });
+        return data;
+    }
+    static async getCountryDeactiveList(req: any) {
+        const data = await Country.find({ isActive: false });
+        return data;
+    }
     static async getCountryNameBasedSerch(name: string) {
-        const data = await Country.find({ countryName: { $regex: name + '.*', $options: 'i' } })
+        const data = await Country.find({$and:[{ countryName: { $regex: name + '.*', $options: 'i' } },{ isActive: true }]})
         if (data) {
             return data;
         } else {

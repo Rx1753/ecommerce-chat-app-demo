@@ -19,7 +19,8 @@ router.delete('/api/users/state/delete/:id',verifyAdminToken,validateRequest, St
 
 // get all Country
 router.get('/api/users/state/get', StateDomain.getStateList);
-
+router.get('/api/users/state/getdeactive', StateDomain.getStateDeactiveList);
+router.get('/api/users/state/getactive', StateDomain.getStateActiveList);
 router.get('/api/users/state/getstatebasedonname/:name', StateDomain.getStateNameBasedSerch);
 
 //get State based on stateId

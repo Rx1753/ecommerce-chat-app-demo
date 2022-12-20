@@ -31,6 +31,14 @@ export class CountryDomain {
         const address = await CountryDatabaseLayer.getCountryList(req);
         res.status(201).send(address);
     }
+    static async getCountryActiveList(req: Request, res: Response) {
+        const address = await CountryDatabaseLayer.getCountryActiveList(req);
+        res.status(201).send(address);
+    }
+    static async getCountryDeactiveList(req: Request, res: Response) {
+        const address = await CountryDatabaseLayer.getCountryDeactiveList(req);
+        res.status(201).send(address);
+    }
     
     static async getCountryNameBasedSerch(req: Request, res: Response) {
         const address = await CountryDatabaseLayer.getCountryNameBasedSerch(req.params.name);

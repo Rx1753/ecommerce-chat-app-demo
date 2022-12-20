@@ -30,6 +30,14 @@ export class StateDomain {
         const State =  await StateDatabaseLayer.getStateList(req);
         res.status(201).send(State);
     }
+    static async getStateDeactiveList(req: Request, res: Response) {
+        const State =  await StateDatabaseLayer.getStateDeactiveList(req);
+        res.status(201).send(State);
+    }
+    static async getStateActiveList(req: Request, res: Response) {
+        const State =  await StateDatabaseLayer.getStateActiveList(req);
+        res.status(201).send(State);
+    }
     static async getStateNameBasedSerch(req: Request, res: Response) {
         const State =  await StateDatabaseLayer.getStateNameBasedSerch(req.params.name);
         res.status(201).send(State);

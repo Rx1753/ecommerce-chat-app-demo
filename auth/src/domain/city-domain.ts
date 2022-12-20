@@ -30,7 +30,17 @@ export class CityDomain {
         const city = await CityDatabaseLayer.getCityList(req);
         res.status(201).send(city);
     }
+    
 
+    static async getCityDeactiveList(req: Request, res: Response) {
+        const city = await CityDatabaseLayer.getCityDeactiveList(req);
+        res.status(201).send(city);
+    }
+
+    static async getCityActiveList(req: Request, res: Response) {
+        const city = await CityDatabaseLayer.getCityActiveList(req);
+        res.status(201).send(city);
+    }
     static async getCityStateId(req: Request, res: Response) {
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');

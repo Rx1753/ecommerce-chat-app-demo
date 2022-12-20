@@ -19,6 +19,8 @@ router.delete('/api/users/country/delete/:id',verifyAdminToken,validateRequest,C
 
 // get all Country
 router.get('/api/users/country/get',CountryDomain.getCountryList);
+router.get('/api/users/country/getactive',CountryDomain.getCountryActiveList);
+router.get('/api/users/country/getdeactive',CountryDomain.getCountryDeactiveList);
 
 router.get('/api/users/country/getcountrybasedonname/:name',CountryDomain.getCountryNameBasedSerch);
 
