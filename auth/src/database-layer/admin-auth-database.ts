@@ -237,6 +237,148 @@ export class AuthDatabaseLayer {
     return data;
   }
 
+  static async getUserRuleId(id: any) {
+    var data = await AdminUser.findOne({ _id: id }).populate('permissionId._id').select('permissionId');
+    if (data) {
+      const res: {}[] = [];
+      data.permissionId.forEach((element: any) => {
+        res.push(element._id);
+        console.log(element._id);
+
+      });
+      return res;
+    } else {
+      throw new BadRequestError('given id is not exist');
+    }
+  }
+
+  static async updateUserRuleId(req: any, Id: any) {
+    var data = await AdminUser.findOne({ _id: Id }).populate('permissionId._id').select('permissionId');
+
+    console.log('req', req.body);
+    const { id, tableName, isRead, isCreate, isUpdate, isDelete } = req.body;
+
+
+    if (data) {
+      const r: any = [];
+      data.permissionId.forEach((element: any) => {
+        r.push(element._id.id);
+        console.log(element._id);
+      });
+      var permissionRoleId: { _id: string }[] = [];
+      if (r.includes(id)) {
+        const roleId = await AuthDatabaseLayer.checkRoleMapping(tableName, isCreate, isUpdate, isDelete, isRead);
+
+        var permissionRoleId: { _id: string }[] = [];
+        permissionRoleId.push(roleId);
+        const adminUserData = await AdminUser.findById(Id).populate('permissionId._id');
+        console.log('permissionRoleId', permissionRoleId);
+
+        if (adminUserData) {
+          await Promise.all(adminUserData.permissionId.map((e: any) => {
+            if (tableName != (e._id.tableName)) {
+              permissionRoleId.push(e);
+            }
+          }))
+
+          await AdminUser.findByIdAndUpdate(Id, { permissionId: permissionRoleId });
+          await new AdminUpdatedPublisher(natsWrapper.client).publish({
+            id: Id,
+            userName: adminUserData?.userName,
+            allowChangePassword: adminUserData?.allowChangePassword,
+            isActive: adminUserData?.isActive,
+            permissionId: permissionRoleId,
+            createdBy: adminUserData?.createdBy,
+            email: adminUserData?.email,
+            phoneNumber: adminUserData?.phoneNumber
+
+          })
+          const adminData = await AdminUser.findById(Id).populate('permissionId._id');
+          return adminData;
+        } else {
+          throw new BadRequestError('given id is not exist');
+        }
+      } else {
+        throw new BadRequestError('Passs id is not valid');
+      }
+    } else {
+      throw new BadRequestError('given id is not exist');
+    }
+  }
+
+  //---------
+  static async addUserRuleId(req: any, Id: any) {
+
+    const { tableName, isRead, isCreate, isUpdate, isDelete } = req.body;
+    var permissionRoleId: { _id: string }[] = [];
+    const roleId = await AuthDatabaseLayer.checkRoleMapping(tableName, isCreate, isUpdate, isDelete, isRead);
+
+    var permissionRoleId: { _id: string }[] = [];
+    permissionRoleId.push(roleId);
+    const adminUserData = await AdminUser.findById(Id).populate('permissionId._id');
+    console.log('permissionRoleId', permissionRoleId);
+
+    if (adminUserData) {
+      await Promise.all(adminUserData.permissionId.map((e: any) => {
+        if (tableName != (e._id.tableName)) {
+          permissionRoleId.push(e);
+        }
+      }))
+
+      await AdminUser.findByIdAndUpdate(Id, { permissionId: permissionRoleId });
+      await new AdminUpdatedPublisher(natsWrapper.client).publish({
+        id: Id,
+        userName: adminUserData?.userName,
+        allowChangePassword: adminUserData?.allowChangePassword,
+        isActive: adminUserData?.isActive,
+        permissionId: permissionRoleId,
+        createdBy: adminUserData?.createdBy,
+        email: adminUserData?.email,
+        phoneNumber: adminUserData?.phoneNumber
+
+      })
+      const adminData = await AdminUser.findById(Id).populate('permissionId._id');
+      return adminData;
+    } else {
+      throw new BadRequestError('given id is not exist');
+    }
+  }
+
+
+
+
+  static async deleteUserRuleId(id: any, ruleId: any) {
+    var permissionRoleId: { _id: string }[] = [];
+    const adminUserData = await AdminUser.findById(id).populate('permissionId._id');
+    console.log('permissionRoleId', permissionRoleId);
+
+    if (adminUserData) {
+      await Promise.all(adminUserData.permissionId.map((e: any) => {
+        if (ruleId != (e._id.id)) {
+          permissionRoleId.push(e);
+        }
+      }))
+
+      await AdminUser.findByIdAndUpdate(id, { permissionId: permissionRoleId });
+      await new AdminUpdatedPublisher(natsWrapper.client).publish({
+        id: id,
+        userName: adminUserData?.userName,
+        allowChangePassword: adminUserData?.allowChangePassword,
+        isActive: adminUserData?.isActive,
+        permissionId: permissionRoleId,
+        createdBy: adminUserData?.createdBy,
+        email: adminUserData?.email,
+        phoneNumber: adminUserData?.phoneNumber
+
+      })
+      const adminData = await AdminUser.findById(id).populate('permissionId._id');
+      return adminData;
+    } else {
+      throw new BadRequestError('given id is not exist');
+    }
+
+  }
+
   static async getCurrentUser(id: any) {
     var data = await AdminUser.findOne({ _id: id }).populate('permissionId._id');
     return data;
@@ -250,7 +392,7 @@ export class AuthDatabaseLayer {
       if (adminData.isSuperAdmin == true) {
         const data = await AdminUser.findById({ _id: id });
         if (data) {
-          var status=data.isActive ? false : true;
+          var status = data.isActive ? false : true;
           await AdminUser.findByIdAndUpdate(id, { isActive: status });
         }
         return;
@@ -353,7 +495,7 @@ export class AuthDatabaseLayer {
         throw new BadRequestError('Repeating table is not possible');
       }
     });
-    
+
     var permissionRoleId: { _id: string }[] = [];
 
     await Promise.all(roleData.map(async (e: any) => {
@@ -361,31 +503,31 @@ export class AuthDatabaseLayer {
       permissionRoleId.push(roleMapData);
     }));
     const adminUserData = await AdminUser.findById(req.body.id).populate('permissionId._id');
-    
-    if(adminUserData){
-      await Promise.all(adminUserData.permissionId.map((e:any)=>{
-        if(!roleDataArr.includes(e._id.tableName)){
+
+    if (adminUserData) {
+      await Promise.all(adminUserData.permissionId.map((e: any) => {
+        if (!roleDataArr.includes(e._id.tableName)) {
           permissionRoleId.push(e);
         }
       }))
-    
-    await AdminUser.findByIdAndUpdate(req.body.id, { permissionId: permissionRoleId });
-    await new AdminUpdatedPublisher(natsWrapper.client).publish({
-      id: req.body.id,
-      userName: adminUserData?.userName,
-      allowChangePassword: adminUserData?.allowChangePassword,
-      isActive: adminUserData?.isActive,
-      permissionId:permissionRoleId,
-      createdBy:adminUserData?.createdBy,
-      email:adminUserData?.email,
-      phoneNumber:adminUserData?.phoneNumber
 
-    })
-    const adminData =await AdminUser.findById(req.body.id).populate('permissionId._id');
-    return adminData;
-  }else{
-    throw new BadRequestError('sended id is not valid')
-  }
+      await AdminUser.findByIdAndUpdate(req.body.id, { permissionId: permissionRoleId });
+      await new AdminUpdatedPublisher(natsWrapper.client).publish({
+        id: req.body.id,
+        userName: adminUserData?.userName,
+        allowChangePassword: adminUserData?.allowChangePassword,
+        isActive: adminUserData?.isActive,
+        permissionId: permissionRoleId,
+        createdBy: adminUserData?.createdBy,
+        email: adminUserData?.email,
+        phoneNumber: adminUserData?.phoneNumber
+
+      })
+      const adminData = await AdminUser.findById(req.body.id).populate('permissionId._id');
+      return adminData;
+    } else {
+      throw new BadRequestError('sended id is not valid')
+    }
   }
 
 }

@@ -7,10 +7,9 @@ export class ProductSubCategoryDatabaseLayer {
 
     static async createProductSubCategory(req: any) {
         try {
-            console.log('2');
 
             const { name, description, productCategoryId } = req.body;
-            const productCategoryCheck = await ProductCategory.findById(productCategoryId);
+            const productCategoryCheck = await ProductCategory.findOne({$and:[{id:productCategoryId},{isActive:true}]});
             if (productCategoryCheck) {
                 const data = ProductSubCategory.build({
                     name: name,
@@ -22,7 +21,7 @@ export class ProductSubCategoryDatabaseLayer {
                 await data.save();
                 return data;
             } else {
-                throw new BadRequestError('Provided Business Sub Category is not valid');
+                throw new BadRequestError('Provided Category is not valid');
             }
         } catch (e: any) {
             throw new BadRequestError(e.message);
@@ -32,7 +31,7 @@ export class ProductSubCategoryDatabaseLayer {
     static async updateProductSubCategory(req: any, id: string) {
         const currentDate = new Date();
         const updatedAt = currentDate.getTime();
-        const productCategoryCheck = await ProductCategory.findById(req.body.productCategoryId);
+        const productCategoryCheck = await ProductCategory.findOne({$and:[{id:req.body.productCategoryId},{isActive:true}]});
         if (productCategoryCheck) {
             try {
                 const data = await ProductSubCategory.findByIdAndUpdate(id, { name: req.body.name, description: req.body.description, isActive: req.body.isActive, productCategoryId: req.body.productCategoryId, updateAt: updatedAt });
@@ -50,8 +49,12 @@ export class ProductSubCategoryDatabaseLayer {
 
     static async deleteProductSubCategory(id: string) {
         try {
-            const data = await ProductSubCategory.findById(id);
+            const data = await ProductSubCategory.findById(id).populate('productCategoryId');
+            
             if (data) {
+                if(data.productCategoryId.isActive==false){
+                    throw new BadRequestError('parent category is inactive so not possible to active this category')
+                }
                 const status = data.isActive ? false : true;
                 await ProductSubCategory.findByIdAndUpdate(id, { isActive: status });
 

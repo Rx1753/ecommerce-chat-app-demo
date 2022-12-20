@@ -10,7 +10,7 @@ export class BusinessSubCategoryDatabaseLayer {
 
     static async createBusinessSubCategory(req: any) {
         const { name, description, businessCategoryId } = req.body;
-        const businessCategoryCheck = await BusinessCategory.findById(businessCategoryId);
+        const businessCategoryCheck = await BusinessCategory.findOne({$and:[{_id:businessCategoryId},{isActive:true}]});
         if (businessCategoryCheck) {
             const data = BusinessSubCategory.build({
                 name: name,
@@ -36,8 +36,9 @@ export class BusinessSubCategoryDatabaseLayer {
     static async updateBusinessSubCategory(req: any, id: string) {
         const currentDate = new Date();
         const updatedAt = currentDate.getTime();
-        const businessCategoryCheck = await BusinessCategory.findById(req.body.businessCategoryId);
-        if (businessCategoryCheck) {
+        const businessCategoryCheck = await BusinessCategory.findOne({$and:[{_id:req.body.businessCategoryId},{isActive:true}]});
+        const data=await BusinessSubCategory.findById(id);
+        if (businessCategoryCheck && data) {
             try {
                 await BusinessSubCategory.findByIdAndUpdate(id, { name: req.body.name, description: req.body.description, isActive: req.body.isActive, businessCategoryId: req.body.businessCategoryId, update_at: updatedAt });
                 return;
@@ -53,8 +54,11 @@ export class BusinessSubCategoryDatabaseLayer {
 
     static async deleteBusinessSubCategory(id: string) {
         try {
-            const data=await BusinessSubCategory.findById(id);
+            const data=await BusinessSubCategory.findById(id).populate('businessCategoryId');
             if(data){
+                if(data.businessCategoryId.isActive==false){
+                    throw new BadRequestError('parent category is inactive so not possible to active this category')
+                }
                 const status=data.isActive ? false : true;
                 await BusinessSubCategory.findByIdAndUpdate(id,{isActive:status});
                 await new BusinessSubCategoryUpdatePublisher(natsWrapper.client).publish({

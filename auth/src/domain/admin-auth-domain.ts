@@ -150,6 +150,63 @@ export class AuthDomain {
     }
     res.status(200).send(user);
   }
+  
+
+  static async getUserRuleId(req: Request, res: Response) {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      throw new BadRequestError('Requested id is not id type');
+    }
+    const user = await AuthDatabaseLayer.getUserRuleId(req.params.id);
+    if (!user) {
+      throw new BadRequestError(Strings.userDoesNotExist);
+    }
+    res.status(200).send(user);
+  }
+  
+  static async updateUserRuleId(req: Request, res: Response) {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      throw new BadRequestError('Requested id is not id type');
+    }
+    console.log('body',req.body);
+    
+    const user = await AuthDatabaseLayer.updateUserRuleId(req,req.params.id);
+    if (!user) {
+      throw new BadRequestError(Strings.userDoesNotExist);
+    }else{
+      const data = await AuthDatabaseLayer.getUserRuleId(req.params.id);
+      res.status(200).send(data);
+    }
+    
+  }
+  
+  static async deleteUserRuleId(req: Request, res: Response) {
+    if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(req.params.ruleId)) {
+      throw new BadRequestError('Requested id is not id type');
+    }
+    const user = await AuthDatabaseLayer.deleteUserRuleId(req.params.id,req.params.ruleId);
+    if (!user) {
+      throw new BadRequestError(Strings.userDoesNotExist);
+    }else{
+      const data = await AuthDatabaseLayer.getUserRuleId(req.params.id);
+      res.status(200).send(data);
+    }
+  }
+  
+  static async addUserRuleId(req: Request, res: Response) {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      throw new BadRequestError('Requested id is not id type');
+    }
+    console.log('body',req.body);
+    
+    const user = await AuthDatabaseLayer.addUserRuleId(req,req.params.id);
+    if (!user) {
+      throw new BadRequestError(Strings.userDoesNotExist);
+    }else{
+      const data = await AuthDatabaseLayer.getUserRuleId(req.params.id);
+      res.status(200).send(data);
+    }
+    
+  }
 
   // //Delete user by Id
   static async statusChangeId(req: Request, res: Response) {

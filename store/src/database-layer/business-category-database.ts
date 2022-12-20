@@ -32,8 +32,13 @@ export class BusinessCategoryDatabaseLayer {
         const currentDate = new Date();
         const updatedAt = currentDate.getTime();
         try {
+            const data=await BusinessCategory.findById(id);
+            if(data){
             await BusinessCategory.findByIdAndUpdate(id, { name: req.body.name, description: req.body.description, isActive: req.body.isActive, update_at: updatedAt });
             return;
+            }else{
+                throw new BadRequestError("given id is not valid")
+            }
         }
         catch (err: any) {
             console.log(err.message);

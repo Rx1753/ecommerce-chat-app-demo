@@ -74,9 +74,25 @@ export class Validation {
     body('code').notEmpty().withMessage('Code must be write'),
     body('password').notEmpty().withMessage('password must be write')
   ];
-
+  static updatesRoleIdValidation=[
+    body('id').notEmpty().withMessage('pls provide id'),
+    body('tableName').notEmpty().withMessage('pls provide tableName'),
+    body('isRead').isBoolean().withMessage('pls write isRead'),
+    body('isUpdate').isBoolean().withMessage('pls write isUpdate'),
+    body('isDelete').isBoolean().withMessage('pls write isDelete'),
+    body('isCreate').isBoolean().withMessage('pls write isCreate'),
+  ]
   static updateRoleValidation=[
     body('id').notEmpty().withMessage('pls provide id of admin you want to update'),
     body('rolesArray').notEmpty().withMessage('pls write Roles of the admin'),
   ]
+
+  static addRoleValidation=[
+    body('tableName').notEmpty().withMessage('pls provide tableName'),
+    body('isRead').isBoolean().withMessage('pls write isRead'),
+    body('isUpdate').isBoolean().withMessage('pls write isUpdate'),
+    body('isDelete').isBoolean().withMessage('pls write isDelete'),
+    body('isCreate').isBoolean().withMessage('pls write isCreate'),
+  ]
+  
 }
