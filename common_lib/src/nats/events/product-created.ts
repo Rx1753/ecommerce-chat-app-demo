@@ -15,5 +15,6 @@ export interface ProductCreatedEvent{
         calculateOnBasePrice?: boolean;
         relatableProducts?: string[],
         createdBy: string,
+        isActive:boolean;
     }
 }

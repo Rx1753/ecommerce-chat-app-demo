@@ -41,3 +41,4 @@ export * from './nats/events/admin-user-updated';
 export * from './nats/events/business-category-updated';
 export * from './nats/events/business-sub-category-updated';
 export * from './nats/events/store-updated';
+export * from './nats/events/product-update';

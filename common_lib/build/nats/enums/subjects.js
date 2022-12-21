@@ -26,4 +26,5 @@ var Subjects;
     Subjects["BusinessCategoryUpdated"] = "user:BusinessCategoryUpdated";
     Subjects["BusinessSubCategoryUpdated"] = "user:BusinessSubCategoryUpdated";
     Subjects["StoreUpdated"] = "store:StoreUpdated";
+    Subjects["ProductUpdated"] = "Product:ProductUpdated";
 })(Subjects = exports.Subjects || (exports.Subjects = {}));

@@ -22,4 +22,5 @@ export enum Subjects {
   BusinessCategoryUpdated="user:BusinessCategoryUpdated",
   BusinessSubCategoryUpdated="user:BusinessSubCategoryUpdated",
   StoreUpdated="store:StoreUpdated",
+  ProductUpdated="Product:ProductUpdated"
 }

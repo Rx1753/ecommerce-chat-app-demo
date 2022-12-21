@@ -1,13 +1,12 @@
 import { Subjects } from "../enums/subjects";
-export interface ProductCreatedEvent {
-    subject: Subjects.ProductCreated;
+export interface ProductUpdateEvent {
+    subject: Subjects.ProductUpdated;
     data: {
         id: string;
         name: string;
         description: string;
         productSubCategoryId: string;
         imageUrl: string;
-        storeId: string;
         brandName: string;
         basePrice: number;
         mrpPrice: number;

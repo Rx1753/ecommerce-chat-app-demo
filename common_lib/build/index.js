@@ -52,3 +52,4 @@ __exportStar(require("./nats/events/admin-user-updated"), exports);
 __exportStar(require("./nats/events/business-category-updated"), exports);
 __exportStar(require("./nats/events/business-sub-category-updated"), exports);
 __exportStar(require("./nats/events/store-updated"), exports);
+__exportStar(require("./nats/events/product-update"), exports);
