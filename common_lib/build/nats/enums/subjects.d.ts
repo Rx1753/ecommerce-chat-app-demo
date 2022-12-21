@@ -20,5 +20,6 @@ export declare enum Subjects {
     AdminPermissionCreated = "user:AdminPermissionCreated",
     AdminUserUpdated = "user:AdminUserUpdated",
     BusinessCategoryUpdated = "user:BusinessCategoryUpdated",
-    BusinessSubCategoryUpdated = "user:BusinessSubCategoryUpdated"
+    BusinessSubCategoryUpdated = "user:BusinessSubCategoryUpdated",
+    StoreUpdated = "store:StoreUpdated"
 }
