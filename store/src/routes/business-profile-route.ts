@@ -1,6 +1,6 @@
 import express, { Request, Response, Router } from 'express';
 import { BusinessProfileDomain } from '../domain/business-profile-domain';
-import { verifyCustomerToken, verifyVendorToken } from '../middlewares/current-user';
+import {  verifyAdminToken, verifyVendorToken } from '../middlewares/current-user';
 
 const router = express.Router();
 
@@ -13,10 +13,12 @@ router.post('/api/store/businessprofile/create',verifyVendorToken,BusinessProfil
 router.put('/api/store/businessprofile/update/:id',verifyVendorToken,BusinessProfileDomain.updateBusinessProfile)
  
 // delete BusinessProfile
-router.delete('/api/store/businessprofile/delete/:id',verifyVendorToken,BusinessProfileDomain.deleteBusinessProfile);
-
+router.delete('/api/store/businessprofile/byadmin/delete/:id',verifyAdminToken,BusinessProfileDomain.deleteBusinessProfile);
+router.get('/api/store/businessprofile/get',BusinessProfileDomain.getBusinessProfile);
+router.get('/api/store/businessprofile/getactive',BusinessProfileDomain.getActiveBusinessProfile);
+router.get('/api/store/businessprofile/getdeactive',BusinessProfileDomain.getDeactiveBusinessProfile);
 // get all BusinessProfile
-router.get('/api/store/businessprofile/get/:id',verifyVendorToken,BusinessProfileDomain.getBusinessProfileId);
+router.get('/api/store/businessprofile/get/:id',BusinessProfileDomain.getBusinessProfileId);
 
 
 

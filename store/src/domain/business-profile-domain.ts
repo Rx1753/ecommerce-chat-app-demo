@@ -19,12 +19,27 @@ export class BusinessProfileDomain {
     }
 
     static async deleteBusinessProfile(req: Request, res: Response) {
+
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        await BusinessProfileDatabaseLayer.deleteBusinessProfile(req.params.id);
-        res.status(201).send({ deleted: true });
+        const data = await BusinessProfileDatabaseLayer.deleteBusinessProfile(req.params.id);
+        res.status(200).send({ deleted: true });
     }
+    
+    static async getBusinessProfile(req: Request, res: Response) {
+        const BusinessProfile =  await BusinessProfileDatabaseLayer.getBusinessProfile(req);
+        res.status(201).send(BusinessProfile);
+    }
+    static async getActiveBusinessProfile(req: Request, res: Response) {
+        const BusinessProfile =  await BusinessProfileDatabaseLayer.getActiveBusinessProfile(req);
+        res.status(201).send(BusinessProfile);
+    }
+    static async getDeactiveBusinessProfile(req: Request, res: Response) {
+        const BusinessProfile =  await BusinessProfileDatabaseLayer.getDeactiveBusinessProfile(req);
+        res.status(201).send(BusinessProfile);
+    }
+    
 
     static async getBusinessProfileId(req: Request, res: Response) {
         const BusinessProfile =  await BusinessProfileDatabaseLayer.getBusinessProfileById(req,req.params.id);

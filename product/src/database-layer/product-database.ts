@@ -19,7 +19,7 @@ export class ProductDatabaseLayer {
         console.log('type', req.currentUser.type);
 
         if (req.currentUser.type == 'Vendor') {
-            const userData = await BusinessUser.findById(req.currentUser.id);
+            const userData = await BusinessUser.findOne({ $and: [{ _id: req.currentUser.id }, { isActive: true }] });
 
             if (userData) {
                 if (userData.id.toString() == userData.createdBy) {
@@ -42,8 +42,8 @@ export class ProductDatabaseLayer {
         }
         if (permission) {
 
-            const ProductSubCategoryCheck = await ProductSubCategory.findById(productSubCategoryId);
-            const storeCheck = await Store.findById(storeId);
+            const ProductSubCategoryCheck = await ProductSubCategory.findOne({ $and: [{ _id: productSubCategoryId }, { isActive: true }] });
+            const storeCheck = await Store.findOne({ $and: [{ _id: storeId }, { isActive: true }] });
             var productCheck = true;
             if (relatableProducts != null && relatableProducts != 'undefined' && relatableProducts) {
                 await Promise.all(relatableProducts.map(async (e: any) => {
@@ -97,7 +97,8 @@ export class ProductDatabaseLayer {
                         quantity: data.quantity,
                         createdBy: data.createdBy,
                         calculateOnBasePrice: data.calculateOnBasePrice,
-                        relatableProducts: rProduct
+                        relatableProducts: rProduct,
+                        isActive: true
                     });
                     return data;
 
@@ -142,8 +143,8 @@ export class ProductDatabaseLayer {
             throw new BadRequestError('User is not Valid');
         }
         if (permission) {
-            const ProductSubCategoryCheck = await ProductSubCategory.findById(productSubCategoryId);
-            const storeCheck = await Store.findById(storeId);
+            const ProductSubCategoryCheck = await ProductSubCategory.findOne({ $and: [{ _id: productSubCategoryId }, { isActive: true }] });
+            const storeCheck = await Store.findOne({ $and: [{ _id: storeId }, { isActive: true }] });
             var productCheck = true;
             if (relatableProducts != null && relatableProducts != 'undefined' && relatableProducts) {
                 await Promise.all(relatableProducts.map(async (e: any) => {
@@ -220,7 +221,20 @@ export class ProductDatabaseLayer {
         if (permission) {
 
             try {
-                const data = await Product.findByIdAndRemove(id)
+                const data = await Product.findById(id).populate('storeId')
+                if (data) {
+                    const status = data.isActive ? false : true;
+
+                    if (status) {
+                        const storeCheck = await Store.findOne({ $and: [{ _id: data.storeId.id }, { isActive: true }] })
+                        if (!storeCheck) {
+                            throw new BadRequestError("store is deactivted, not possible to product activation");
+                        }
+                    }
+                    await Product.findByIdAndUpdate(id, { isActive: status });
+                    return;
+
+                }
                 return data;
             } catch (error: any) {
                 throw new BadRequestError(error.message);
@@ -234,11 +248,27 @@ export class ProductDatabaseLayer {
 
     static async getProductList(req: any) {
         const data = await Product.find().populate('productSubCategoryId').populate('storeId').populate('relatableProducts');
-        return data;
+        if (data) {
+            return data;
+        } else {
+            throw new BadRequestError("no data found for given id");
+        }
     }
 
     static async getProductCategoryIdList(req: any, id: any) {
         const data = await Product.find({ productSubCategoryId: id }).populate('productSubCategoryId').populate('storeId').populate('relatableProducts');
+        if (data.length != 0) {
+            return data;
+        } else {
+            throw new BadRequestError("no data found for given id");
+        }
+    }
+    static async getActiveProductList() {
+        const data = await Product.find({ isActive: true }).populate('productSubCategoryId').populate('storeId').populate('relatableProducts');
+        return data;
+    }
+    static async getDeactiveProductList() {
+        const data = await Product.find({ isActive: false }).populate('productSubCategoryId').populate('storeId').populate('relatableProducts');
         return data;
     }
 
@@ -266,4 +296,6 @@ export class ProductDatabaseLayer {
         ])
         return productData;
     }
+
+
 }

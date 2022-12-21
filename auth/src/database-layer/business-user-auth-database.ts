@@ -105,6 +105,9 @@ export class BusinessUserAuthDatabaseLayer {
 
         if (data && data.isActive) {
             if (data.id == data?.createdBy) {
+                
+                
+                ///logic gone wrong
                 const userData = await BusinessUser.find({ $and: [{ createdBy: data.id }, { isActive: true }, { _id: { $ne: data.id } }] })
 
                 if (userData.length != 0) {
@@ -113,6 +116,8 @@ export class BusinessUserAuthDatabaseLayer {
                 } else {
                     throw new BadRequestError('Deactive is not possible due to one profile handler');
                 }
+
+
             } else if (data.store) {
                 const userData = await BusinessUser.find({ $and: [{ store: data.store }, { _id: { $ne: data.id } }, { isActive: true },] });
                 console.log('userData',userData);
@@ -143,7 +148,11 @@ export class BusinessUserAuthDatabaseLayer {
 
     static async currentLoginUser(req: any) {
         const user = await BusinessUser.findById({ _id: req.currentUser.id });
+        if(user){
         return user;
+        }else{
+            throw new BadRequestError('Data Not Found');
+        }
     }
 
     static async updateUserInfo(req: any) {
@@ -328,6 +337,10 @@ export class BusinessUserAuthDatabaseLayer {
         const { name, email, password, phoneNumber, isAllowChangePassword, storeId } = req.body;
 
         var user: BusinessUserAttrs;
+        const checkUser = await BusinessUser.findById(req.currentUser.id);
+        if(checkUser?.id!=checkUser?.createdBy){
+            throw new BadRequestError("user is not able to create another user");
+        }
         user = { name, password };
         if (req.body.phoneNumber == null && req.body.phoneNumber == undefined && req.body.email != null && req.body.email != undefined) {
             console.log('phone not defined,\nSo email signup');
@@ -355,9 +368,11 @@ export class BusinessUserAuthDatabaseLayer {
         const userData = BusinessUser.build(user);
 
         userData.createdBy = req.currentUser.id;
-        console.log(req.body.rolesArray);
+
         const roleData = req.body.rolesArray;
         const roleDataArr: string[] = [];
+
+        //removing duplication
         roleData.forEach((e: any) => {
             if (!roleDataArr.includes(e.tableName)) {
                 roleDataArr.push(e.tableName);
@@ -366,7 +381,7 @@ export class BusinessUserAuthDatabaseLayer {
             }
         });
 
-
+        //role creation
         await Promise.all(roleData.map(async (e: any) => {
             const roleMapData = await BusinessUserAuthDatabaseLayer.checkRoleMapping(e.tableName, e.isCreate, e.isUpdate, e.isDelete, e.isRead, userData.id);
             console.log(roleMapData);
@@ -382,7 +397,7 @@ export class BusinessUserAuthDatabaseLayer {
             isActive: true,
             createdBy: req.currentUser.id,
             refreshToken: userData.refreshToken,
-            storeId: userData.store
+            storeId: storeId
         })
         return userData;
     }
@@ -396,8 +411,6 @@ export class BusinessUserAuthDatabaseLayer {
                 const role = BusinessRoleType.build({ tableName: tableName, isRead: isRead, isCreate: isCreate, isDelete: isDelete, isUpdate: isUpdate });
                 console.log(role);
                 await role.save();
-
-
                 await new BusinessRoleTypeCreatedPublisher(natsWrapper.client).publish({
                     id: role.id,
                     tableName: role.tableName,
@@ -428,15 +441,17 @@ export class BusinessUserAuthDatabaseLayer {
 
     static async userGetWithThirRoles(id: any) {
 
-        const userData = await BusinessUser.findById(id);
-
-
+        const userData:any = await BusinessUser.findById(id);
         if (userData) {
             if (userData.id.toString() == userData.createdBy) {
                 return { "role": 'business user', 'userData': userData };
             } else {
                 const userRoleMapping = await BusinessRoleMapping.find({ businessUserId: id }, { 'businessUserId': 0, 'is_delete': 0 }).populate('businessRoleId');
-                return { "role": userRoleMapping, 'userData': userData };
+                var data:any;
+                data=JSON.parse(JSON.stringify(userData));
+                data.userRoles=userRoleMapping;
+                console.log('userData.userRoles',data);
+                return data;
             }
         } else {
             throw new BadRequestError('user Data not found based on given id');

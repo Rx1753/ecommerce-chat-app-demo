@@ -1,5 +1,6 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { StoreCreatedPublisher } from '../event/publisher/store-publisher';
+import { StoreUpdatedPublisher } from '../event/publisher/store-updated-publisher';
 import { BusinessProfile } from '../models/business-profile';
 import { BusinessRoleMapping } from '../models/business-role-mapping';
 import { BusinessSubCategory } from '../models/business-sub-category';
@@ -18,7 +19,7 @@ export class StoreDatabaseLayer {
         console.log(req.currentUser.id);
         var permission = false;
         console.log('hii');
-        
+
         if (req.currentUser.type == 'Vendor') {
             const userData = await BusinessUser.findById(req.currentUser.id);
             if (userData) {
@@ -44,7 +45,7 @@ export class StoreDatabaseLayer {
             const BusinessSubCategoryCheck = await BusinessSubCategory.findById(BusinessSubCategoryId);
             const BusinessProfileCheck = await BusinessProfile.findById(BusinessProfileId);
             const countryCheck = await Country.findById(countryId);
-            const stateCheck = await State.findById( stateId );
+            const stateCheck = await State.findById(stateId);
             const cityCheck = await City.findById(cityId);
 
             if (BusinessProfileCheck && BusinessSubCategoryCheck && countryCheck && stateCheck && cityCheck) {
@@ -76,15 +77,7 @@ export class StoreDatabaseLayer {
                     businessSubCategoryId: BusinessSubCategoryCheck.id,
                     description: description,
                     name: name,
-                    latitude: lat,
-                    longitude: lon,
-                    city: cityCheck.id,
-                    state: stateCheck.id,
-                    country: countryCheck.id,
-                    pinCode: pinCode,
-                    addressLine1: addressLine1,
-                    imageUrl: imageUrl,
-                    welcomeMessage: welcomeMessage,
+                    isActive: true,
                     createdBy: req.currentUser.id
                 })
                 return data;
@@ -184,7 +177,7 @@ export class StoreDatabaseLayer {
                         if (e.businessRoleId.tableName == 'store' && e.businessRoleId.isDelete == true) {
                             permission = true;
                             console.log('user has permission');
-                            
+
                         }
                     })
                 }
@@ -197,7 +190,33 @@ export class StoreDatabaseLayer {
 
         if (permission) {
             try {
-                await Store.findByIdAndDelete(id);
+                const data = await Store.findById(id);
+                if (data) {
+                    const checkBusinessProfile = await BusinessProfile.findOne({ $and: [{ _id: data.businessProfileId }, { isActive: true }] });
+                    const status = data.isActive ? false : true;
+                    if (status) {
+                        if (!checkBusinessProfile) {
+                            throw new BadRequestError("parent business profile id is false so not able to store active");
+                        }
+                    }
+
+                    await Store.findByIdAndUpdate(id, { isActive: status });
+                    new StoreUpdatedPublisher(natsWrapper.client).publish({
+                        id: id,
+                        phoneNumber: data.phoneNumber,
+                        email: data.email,
+                        businessProfileId: data.businessProfileId.toString(),
+                        businessSubCategoryId: data.businessSubCategoryId.toString(),
+                        description: data.description,
+                        membershipId: data.membershipId,
+                        createdBy: data.createdBy.toString(),
+                        isActive: status,
+                        name: data.name
+                    })
+
+                } else {
+                    throw new BadRequestError("given id is not exist in DB");
+                }
                 //delete listener pensding
                 return;
             } catch (err: any) {
@@ -211,7 +230,26 @@ export class StoreDatabaseLayer {
 
     static async getStoreById(req: any, id: string) {
         const data = await Store.findById(id);
+        if (data) {
+            return data;
+        } else {
+            throw new BadRequestError("id not found in DB");
+        }
+
+    }
+
+    static async getStore() {
+        const data = await Store.find();
         return data;
     }
+    static async getActiveStore() {
+        const data = await Store.find({ isActive: true });
+        return data;
+    }
+    static async getDeactiveStore() {
+        const data = await Store.find({ isActive: false });
+        return data;
+    }
+
 
 }

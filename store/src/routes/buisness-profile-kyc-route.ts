@@ -1,6 +1,6 @@
 import express, { Request, Response, Router } from 'express';
 import { BusinessProfileKycDomain } from '../domain/business-profile-kyc-domain';
-import { verifyAdminToken, verifyCustomerToken, verifyVendorToken } from '../middlewares/current-user';
+import { verifyVendorToken } from '../middlewares/current-user';
 
 const router = express.Router();
 

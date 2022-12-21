@@ -14,17 +14,7 @@ export class StoreCreatedListener extends Listener<StoreCreatedEvent>{
             businessSubCategoryId,
             description,
             name,
-            latitude,
-            longitude,
-            city,
-            state,
-            country,
-            pinCode,
-            imageUrl,
-            addressLine1,
-            addressLine2,
-            membershipId,
-            welcomeMessage,
+            isActive,
             createdBy } = data
         const StoreData = Store.build({
             phoneNumber,
@@ -33,17 +23,7 @@ export class StoreCreatedListener extends Listener<StoreCreatedEvent>{
             businessSubCategoryId,
             description,
             name,
-            latitude,
-            longitude,
-            city,
-            state,
-            country,
-            pinCode,
-            imageUrl,
-            addressLine1,
-            addressLine2,
-            membershipId,
-            welcomeMessage,
+            isActive,
             createdBy
         })
         

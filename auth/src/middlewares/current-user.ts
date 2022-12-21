@@ -23,7 +23,7 @@ export const verifyToken = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (!req.session?.jwt || !req.headers['token']) {
+  if (!req.session?.jwt && !req.headers['token']) {
     console.log('token not wrote');
     throw new BadRequestError('Token/Session not provided');
   }
@@ -38,31 +38,29 @@ export const verifyToken = async (
 
   try {
     const payload = jwt.verify(token, process.env.JWT_KEY!) as UserPayload;
-    req.currentUser = payload;
-    if (req.currentUser.email) {
-      if (req.currentUser.type == "Admin") {
-        const data = await AdminUser.findOne({ $and: [{ email: req.currentUser.email }, { id: req.currentUser.id }, { isActive: true }] })
-        if(data){
-          next();
-        }else{
+   
+    console.log('payload',payload);
+    
+      if (payload.type == "Admin") {
+        const data = await AdminUser.findOne({ $and: [ { _id: payload.id}, { isActive: true }] })
+        if(!data){
           throw new BadRequestError('token/session you login is no more authorized');
         }
-      }else if (req.currentUser.type == "Vendor") {
-        const data = await BusinessUser.findOne({ $and: [{ email: req.currentUser.email }, { id: req.currentUser.id }, { isActive: true }] })
-        if(data){
-          next();
-        }else{
+      }else if (payload.type == "Vendor") {
+        const data = await BusinessUser.findOne({ $and: [ { _id: payload.id }, { isActive: true }] })
+        console.log(data);
+        if(!data){
           throw new BadRequestError('token/session you login is no more authorized');
         }
-      }else if(req.currentUser.type=="Customer"){
-        const data = await Customer.findOne({ $and: [{ email: req.currentUser.email }, { id: req.currentUser.id }, { isActive: true }] })
-        if(data){
-          next();
-        }else{
+      }else if(payload.type=="Customer"){
+        const data = await Customer.findOne({ $and: [ { _id: payload.id }, { isActive: true }] })
+        if(!data){
           throw new BadRequestError('token/session you login is no more authorized');
         }
       }
-    }
+      req.currentUser = payload;
+  
+    
   } catch (error: any) {
     if (error instanceof TokenExpiredError) {
       throw new BadRequestError(error.message);

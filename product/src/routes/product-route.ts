@@ -19,6 +19,8 @@ router.delete('/api/product/delete/:id',verifyToken,ProductDomain.deleteProduct)
 
 // get all Product
 router.get('/api/product/get',ProductDomain.getProductList);
+router.get('/api/product/getactive',ProductDomain.getActiveProductList);
+router.get('/api/product/getdeactive',ProductDomain.getDeactiveProductList);
 
 // get all Product based on businessId
 router.get('/api/product/getproductsubcategory/:id',ProductDomain.getProductSubCategoryIdList);

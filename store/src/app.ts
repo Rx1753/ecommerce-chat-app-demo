@@ -25,17 +25,18 @@ app.use(
 );
 
 // Router
+app.use(BusinessProfileRouter);
 app.use(BusinessCategoryRouter);
 app.use(BusinessSubCategoryRouter);
-app.use(BusinessProfileRouter);
 app.use(BusinessProfileKycRouter);
 app.use(StoreRouter);
 app.use(StoreWorkingDayRouter);
 app.use(StoreHolidayRouter);
-app.use(errorHandler);
+
 
 app.all('*', async () => {
   throw new NotFoundError();
 });
+app.use(errorHandler);
 
 export { app };

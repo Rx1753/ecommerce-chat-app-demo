@@ -1,6 +1,7 @@
 import mongoose, { ObjectId } from "mongoose";
 import { Password } from "../services/password";
 import { AccountTypeDoc } from "./account-type";
+import { StoreDoc } from "./store";
 
 // intetface that describe the prooerties
 // that are required to cretae new user
@@ -41,7 +42,7 @@ export interface BusinessUserDoc extends mongoose.Document {
     isDelete: boolean;
     refreshToken: string;
     broadcastCount: number;
-    store:string;
+    store:StoreDoc;
 }
 
 const BusinessUserSchema = new mongoose.Schema({

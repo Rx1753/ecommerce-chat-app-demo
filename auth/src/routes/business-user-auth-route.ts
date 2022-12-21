@@ -26,31 +26,32 @@ router.put('/api/users/businessuser/delete/:id',verifyAdminToken,validateRequest
 router.get('/api/users/businessuser/getuserbyname/:name',BusinessDomain.getUserByName)
 
 //User persnol info update
-router.put('/api/users/businessuser/updateuser',verifyVendorToken,BusinessDomain.updateUserInfo)
+router.put('/api/users/businessuser/updateuser',verifyVendorToken,validateRequest,BusinessDomain.updateUserInfo)
  
 // CURRENT_USER
-router.get('/api/users/businessuser/currentuser', verifyToken,BusinessDomain.currentLoginUser);
+router.get('/api/users/businessuser/currentuser', verifyToken,validateRequest,BusinessDomain.currentLoginUser);
 
 //MailTrigger for emailVerification
-router.get('/api/users/businessuser/mailverifytrigger',verifyVendorToken,BusinessDomain.emailVerification);
+router.get('/api/users/businessuser/mailverifytrigger',verifyVendorToken,validateRequest,BusinessDomain.emailVerification);
 
 //verify email code
-router.post('/api/users/businessuser/mailverifycode',verifyVendorToken,BusinessDomain.emailCodeVerification);
+router.post('/api/users/businessuser/mailverifycode',verifyVendorToken,validateRequest,BusinessDomain.emailCodeVerification);
 
 //forgot password mail trigger
-router.get('/api/users/businessuser/forgotpassword/mailtrigger',verifyVendorToken,BusinessDomain.forgotPasswordMailTrigger);
+router.get('/api/users/businessuser/forgotpassword/mailtrigger',verifyVendorToken,validateRequest,BusinessDomain.forgotPasswordMailTrigger);
 
 //forgot password with code verify
-router.post('/api/users/businessuser/forgotpassword/codeverify',verifyVendorToken,BusinessDomain.forgotPasswordCodeVerification);
+router.post('/api/users/businessuser/forgotpassword/codeverify',verifyVendorToken,validateRequest,BusinessDomain.forgotPasswordCodeVerification);
 
 //add user
-router.post('/api/users/businessuser/adduser',verifyVendorToken,BusinessDomain.createUser);
+router.post('/api/users/businessuser/adduser',verifyVendorToken,validateRequest,BusinessDomain.createUser);
 
 //getuser and thier roles
 router.get('/api/users/businessuser/getuserrole/:id',BusinessDomain.userGetWithThirRoles);
 
 //get user roles based on id 
 router.get('/api/users/businessuser/role/:id',BusinessDomain.roleMapping);
+
 // SIGN-OUT
 router.post('/api/users/signout', 
 // AuthDomain.signOut

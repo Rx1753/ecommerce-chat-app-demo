@@ -30,6 +30,16 @@ export class ProductDomain {
         const Product =  await ProductDatabaseLayer.getProductList(req);
         res.status(201).send(Product);
     }
+
+    static async getActiveProductList(req: Request, res: Response) {
+        const Product =  await ProductDatabaseLayer.getActiveProductList();
+        res.status(201).send(Product);
+    }
+
+    static async getDeactiveProductList(req: Request, res: Response) {
+        const Product =  await ProductDatabaseLayer.getDeactiveProductList();
+        res.status(201).send(Product);
+    }
     
     static async getProductSubCategoryIdList(req: Request, res: Response) {
         if (!mongoose.isValidObjectId(req.params.id)) {
@@ -38,8 +48,6 @@ export class ProductDomain {
         const Product =  await ProductDatabaseLayer.getProductCategoryIdList(req,req.params.id);
         res.status(201).send(Product);
     }
-    
-
 
     static async getProductWithAddOnsAndProductItem(req: Request, res: Response) {
         const Product =  await ProductDatabaseLayer.getProductWithAddOnsAndProductItem(req);

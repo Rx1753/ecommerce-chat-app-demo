@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { app } from './app';
 import { ExpirationCompleteListener } from './events/listener/expiration-complete-listener';
 import { StoreCreatedListener } from './events/listener/store-listener';
+import { StoreUpdatedListener } from './events/listener/store-updated-listener';
 import { natsWrapper } from './nats-wrapper';
 
 const port = 3000;
@@ -46,7 +47,7 @@ const start = async () => {
     
     new StoreCreatedListener(natsWrapper.client).listen();
     new ExpirationCompleteListener(natsWrapper.client).listen();
-
+    new StoreUpdatedListener(natsWrapper.client).listen();
   } catch (error: any) {
     throw Error(error);
   }

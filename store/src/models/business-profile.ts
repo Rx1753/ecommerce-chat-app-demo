@@ -38,6 +38,7 @@ export interface BusinessProfileDoc extends mongoose.Document {
     latitude: number,
     longitude: number,
     BusinessUsers: BusinessUserDoc[]
+    isActive:boolean;
 }
 
 const BusinessProfileSchema = new mongoose.Schema({
@@ -56,7 +57,7 @@ const BusinessProfileSchema = new mongoose.Schema({
     followers: { type: Number, default: 0 },
     following: { type: Number, default: 0 },
     isKYCApproved: { type: Boolean, default: false },
-    isActive: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
     minOrderAmount: { type: Number, default: 0 },
     welcomeMessage: { type: String, default: "Welcome to My business profile" },
     createdAt: { type: Number, default: () => Date.now() },

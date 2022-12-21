@@ -179,6 +179,8 @@ export class BusinessDomain {
 
     //currentLoginUSer
     static async currentLoginUser(req: Request, res: Response) {
+        console.log('hiiiii');
+        
         const currentUser = await BusinessUserAuthDatabaseLayer.currentLoginUser(req);
         res.status(200).send(currentUser);
     }

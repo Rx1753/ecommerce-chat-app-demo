@@ -10,6 +10,7 @@ import { BusinessSubCategoryCreatedListener } from './event/listener/business-su
 import { BusinessSubCategoryUpdatedListener } from './event/listener/business-sub-category-update-listener';
 import { BusinessUserCreatedListener } from './event/listener/business-user-listener';
 import { StoreCreatedListener } from './event/listener/store-listener';
+import { StoreUpdatedListener } from './event/listener/store-updated-listener';
 import { natsWrapper } from './nats-wrapper';
 
 const port = 3000;
@@ -62,7 +63,7 @@ const start = async () => {
     new AdminPermissioCreatedListener(natsWrapper.client).listen();
     new BusinessSubCategoryUpdatedListener(natsWrapper.client).listen();
     new BusinessCategoryUpdatedListener(natsWrapper.client).listen();
-    
+    new StoreUpdatedListener(natsWrapper.client).listen();
   } catch (error: any) {
     throw Error(error);
   }

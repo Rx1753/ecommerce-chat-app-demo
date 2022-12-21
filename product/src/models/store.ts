@@ -1,7 +1,10 @@
 import mongoose, { ObjectId } from "mongoose";
+import { Password } from "../services/password";
 
 // import { BusinessProfileDoc } from "./business-profile";
 // import { BusinessSubCategoryDoc } from "./business-sub-category";
+
+import { BusinessUserDoc } from "./business-user";
 
 // intetface that describe the prooerties
 // that are required to cretae new user
@@ -12,17 +15,7 @@ export interface StoreAttrs {
     businessSubCategoryId: string,
     description: string,
     name: string,
-    latitude: number,
-    longitude: number,
-    city: string,
-    state: string,
-    country: string,
-    pinCode: number,
-    imageUrl:string,
-    addressLine1: string,
-    addressLine2?: string,
-    membershipId?: string,
-    welcomeMessage?: string, 
+    isActive:boolean,
     createdBy: string,
 }
 
@@ -44,20 +37,7 @@ export interface StoreDoc extends mongoose.Document {
     chat: boolean,
     pauseOrder: boolean,
     name: string,
-    rating: number,
-    latitude: number,
-    longitude: number,
-    city: string,
-    state: string,
-    country: string,
-    pinCode: number,
-    addressLine1: string,
-    addressLine2: string,
-    isActive: boolean,
-    membershipId: string,
-    welcomeMessage: string,
-    isApprovedByAdmin: boolean,
-    brodcastCount: number,
+    isActive:boolean,
     createdBy: string,
 }
 
@@ -69,22 +49,8 @@ const StoreSchema = new mongoose.Schema({
     businessSubCategoryId: { type: String, ref: 'BusinessSubCategory' },
     businessProfileId: { type: String, ref: 'BusinessProfileId' },
     rating: { type: Number, default: 0 },
-    city: { type: String, ref: 'City' },
-    state: { type: String, ref: 'State' },
-    country: { type: String, ref: 'Country' },
-    latitude: { type: Number, default: null },
-    longitude: { type: Number, default: null },
-    addressLine1: { type: String },
-    addressLine2: { type: String },
-    pinCode: { type: Number },
-    chat: { type: Boolean, default: false },
-    pauseOrder: { type: Boolean, default: false },
     phoneNumber: { type: Number },
     isActive: { type: Boolean, default: false },
-    membershipId: { type: String, ref: 'Membership', default: null },
-    isApprovedByAdmin: { type: Boolean, default: false },
-    welcomeMessage: { type: String, default: "Welcome to My business profile" },
-    brodcastCount: { type: Number, default: 0 },
     createdBy: { type: String, ref: 'BusinessUser' },
     createdAt: { type: Number, default: () => Date.now() },
     updatedAt: { type: Number, default: () => Date.now() },

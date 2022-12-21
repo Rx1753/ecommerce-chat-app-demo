@@ -34,5 +34,19 @@ export class StoreDomain {
         res.status(201).send(Store);
     }
     
+    static async getStore(req: Request, res: Response) {
+        const Store =  await StoreDatabaseLayer.getStore();
+        res.status(201).send(Store);
+    }
+
+    static async getActiveStore(req: Request, res: Response) {
+        const Store =  await StoreDatabaseLayer.getActiveStore();
+        res.status(201).send(Store);
+    }
+
+    static async getDeactiveStore(req: Request, res: Response) {
+        const Store =  await StoreDatabaseLayer.getDeactiveStore();
+        res.status(201).send(Store);
+    }
 
 }

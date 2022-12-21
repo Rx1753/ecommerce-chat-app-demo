@@ -41,7 +41,7 @@ export class AddOnsDatabaseLayer {
             throw new BadRequestError('User is not Valid');
         }
         if (permission) {
-            const productCheck = await Product.findOne({ _id: productId });
+            const productCheck = await Product.findOne({$and:[{ _id: productId },{isActive:true}]});
             
             if (productCheck) {
                 try {
@@ -74,7 +74,6 @@ export class AddOnsDatabaseLayer {
             mrpPrice,
             quantity, } = req.body;
         var permission = false;
-        console.log('type', req.currentUser.type);
 
         if (req.currentUser.type == 'Vendor') {
             const userData = await BusinessUser.findById(req.currentUser.id);
