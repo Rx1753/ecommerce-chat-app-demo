@@ -21,4 +21,5 @@ export enum Subjects {
   AdminUserUpdated="user:AdminUserUpdated",
   BusinessCategoryUpdated="user:BusinessCategoryUpdated",
   BusinessSubCategoryUpdated="user:BusinessSubCategoryUpdated",
+  StoreUpdated="store:StoreUpdated",
 }

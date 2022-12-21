@@ -1,6 +1,6 @@
 import { Subjects } from "../enums/subjects";
-export interface StoreCreatedEvent{
-    subject:Subjects.StoreCreated,
+export interface StoreUpdatedEvent{
+    subject:Subjects.StoreUpdated,
     data:{
         id:string,
         phoneNumber: number;
