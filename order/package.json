@@ -1,5 +1,5 @@
 {
-  "name": "Order",
+  "name": "order",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@rx-ecommerce-chat/common_lib": "^1.0.25",
+    "@rx-ecommerce-chat/common_lib": "^1.0.42",
     "@types/cookie-session": "^2.0.44",
     "@types/express": "^4.17.14",
     "@types/jsonwebtoken": "^8.5.9",

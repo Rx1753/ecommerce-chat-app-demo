@@ -1,15 +1,16 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import { CustomerAddressCreatedPublisher } from '../events/publisher/customer-address-publisher';
 import { customerAddress } from '../models/customer-address';
+import { natsWrapper } from '../nats-wrapper';
 
 export class CustomerAddressDatabaseLayer {
 
     static async createAddress(req: any) {
-        var { phoneNumber, addressType, isDefault, addressLine1, addressLine2, cityId, stateId, countryId } = req.body;
+        var { phoneNumber, addressType, isDefault, addressLine1, addressLine2, cityId, stateId, countryId ,zipCode} = req.body;
 
 
         if (isDefault == true) {
             const data = await customerAddress.findOneAndUpdate({ $and: [{ customerId: req.currentUser.id }, { isDefalultAddress: true }] }, { $set: { isDefalultAddress: false } });
-            console.log('data', data);
         } else {
             const data = await customerAddress.find({ coustomerId: req.currentUser.id });
             if (data.length == 0) {
@@ -25,9 +26,23 @@ export class CustomerAddressDatabaseLayer {
             addressLine2: addressLine2,
             cityId: cityId,
             stateId: stateId,
-            countryId: countryId
+            countryId: countryId,
+            zipCode:zipCode,
         })
         await data.save();
+        await new CustomerAddressCreatedPublisher(natsWrapper.client).publish({
+            id: data.id,
+            customerId: data.customerId,
+            phoneNumber: data.phoneNumber,
+            addressType: data.addressType,
+            isDefalultAddress: data.isDefalultAddress,
+            addressLine1: data.addressLine1,
+            addressLine2: data.addressLine2,
+            cityId: data.cityId.toString(),
+            stateId: data.stateId.toString(),
+            countryId: data.countryId.toString(),
+            zipCodes:zipCode
+        })
         return data;
     }
 

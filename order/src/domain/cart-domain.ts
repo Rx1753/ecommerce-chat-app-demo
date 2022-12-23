@@ -11,6 +11,14 @@ export class CartDomain {
     }
 
 
+    static async removeSignleCart(req: Request, res: Response) {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            throw new BadRequestError('Requested id is not id type');
+          }
+        const data=await CartDatabaseLayer.removeSignleCart(req,req.params.id);
+        res.status(201).send(data);
+    }
+    
     static async removeCart(req: Request, res: Response) {
         await CartDatabaseLayer.removeCart(req);
         res.status(201).send({ deleted: true });

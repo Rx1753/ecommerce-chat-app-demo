@@ -4,12 +4,12 @@ import { BusinessProfileKyc } from "../models/business-profile-kyc";
 
 export class BusinessProfileKycDatabaseLayer {
 
-    static async createBusinessProfileKyc(req: any) {
+    static async createBusinessProfileKyc(req: any, publicUrl: any) {
         const { documentUrl, documentType, businessProfileId } = req.body;
-        var businessProfileCheck = await BusinessProfile.findById(businessProfileId);
+        var businessProfileCheck = await BusinessProfile.findOne({ $and: [{ _id: businessProfileId }, { isActive: true }] });
         if (businessProfileCheck) {
             const data = BusinessProfileKyc.build({
-                documentUrl: documentUrl,
+                documentUrl: publicUrl,
                 documentType: documentType,
                 businessProfileId: businessProfileCheck.id,
                 uploadedBy: req.currentUser.id
@@ -26,9 +26,15 @@ export class BusinessProfileKycDatabaseLayer {
         const currentDate = new Date();
         const updatedAt = currentDate.getTime();
         try {
-            const data = await BusinessProfileKyc.findByIdAndUpdate(id, { isApproved: req.body.isApproved, update_at: updatedAt });
-            await BusinessProfile.findByIdAndUpdate(data?.businessProfileId, { isKYCApproved: req.body.isApproved });
-            return;
+            const data = await BusinessProfileKyc.findById(id);
+            if (data) {
+                const status = data.isApproved ? false : true;
+                await BusinessProfileKyc.findByIdAndUpdate(id, { isApproved: status, update_at: updatedAt });
+                await BusinessProfile.findByIdAndUpdate(data.businessProfileId, { isKYCApproved: status });
+                return;
+            } else {
+                throw new BadRequestError("id is not exist in DB")
+            }
         }
         catch (err: any) {
             console.log(err.message);
@@ -47,17 +53,17 @@ export class BusinessProfileKycDatabaseLayer {
     // }
 
     static async getBusinessProfileKycList(req: any) {
-        const data = await BusinessProfileKyc.find();
+        const data = await BusinessProfileKyc.find().populate('businessProfileId').populate('uploadedBy');
         return data;
     }
 
     static async getBusinessProfileKycPendingList(req: any) {
-        const data = await BusinessProfileKyc.find({isApproved:false});
+        const data = await BusinessProfileKyc.find({ isApproved: false }).populate('businessProfileId').populate('uploadedBy');
         return data;
     }
 
     static async getBusinessProfileIdKycList(req: any, id: any) {
-        const data = await BusinessProfileKyc.find({ BusinessProfileId: id });
+        const data = await BusinessProfileKyc.find({ businessProfileId: id }).populate('businessProfileId').populate('uploadedBy');
         return data;
     }
 

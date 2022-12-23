@@ -26,6 +26,7 @@ export class StoreCreatedListener extends Listener<StoreCreatedEvent>{
             isActive,
             createdBy
         })
+        
         StoreData._id = id;
         await StoreData.save();
         msg.ack();

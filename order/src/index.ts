@@ -56,7 +56,7 @@ const start = async () => {
     new CustomerCreatedListener(natsWrapper.client).listen()
     new ProductCreatedListener(natsWrapper.client).listen()
     new ProductItemCreatedListener(natsWrapper.client).listen()
-
+    
   } catch (error: any) {
     throw Error(error);
   }

@@ -44,6 +44,8 @@ const start = async () => {
     natsWrapper.client.on('close', () => {
       process.exit();
     });
+    
+    
 
     process.on('SIGINT', () => natsWrapper.client!.close());
     process.on('SIGTERM', () => natsWrapper.client!.close());
@@ -64,6 +66,8 @@ const start = async () => {
         `Connected to MongoDB', ${process.env.MONGO_URI}`
       ); // Should be a random port
     });;
+
+
   } catch (error: any) {
     throw Error(error);
   }

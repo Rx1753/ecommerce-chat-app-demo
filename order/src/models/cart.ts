@@ -32,8 +32,6 @@ const CartSchema = new mongoose.Schema({
             ret.CartId = ret._id;
             delete ret._id;
             delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
         },
     }
 });

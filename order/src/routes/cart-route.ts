@@ -11,8 +11,11 @@ const router = express.Router();
 // cart create
 router.post('/api/order/cart/create',verifyCustomerToken,validateRequest,CartDomain.createCart);
 
-// delete cart
+//cart delete
 router.get('/api/order/cart/remove',verifyCustomerToken,CartDomain.removeCart);
+
+// delete product from cart
+router.get('/api/order/cart/removeproduct/:id',verifyCustomerToken,CartDomain.removeSignleCart);
 
 // get all cart
 router.get('/api/order/cart/get',verifyToken,CartDomain.getCart);

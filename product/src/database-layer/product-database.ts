@@ -13,10 +13,8 @@ export class ProductDatabaseLayer {
     static async createProduct(req: any) {
         const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, mrpPrice, addOns, quantity, isInvoiceAvailable, calculateOnBasePrice, isCancellation, relatableProducts } = req.body;
 
-
-
         var permission = false;
-        console.log('type', req.currentUser.type);
+        console.log('type', req.currentUser.id);
 
         if (req.currentUser.type == 'Vendor') {
             const userData = await BusinessUser.findOne({ $and: [{ _id: req.currentUser.id }, { isActive: true }] });
@@ -54,7 +52,6 @@ export class ProductDatabaseLayer {
                     console.log('productData', productData);
 
                     if (!productData) {
-
                         productCheck = false;
                     }
                 }))
