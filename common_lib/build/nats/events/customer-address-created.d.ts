@@ -12,5 +12,6 @@ export interface CustomerAddressCreatedEvent {
         cityId: string;
         stateId: string;
         countryId: string;
+        zipCodes: number;
     };
 }
