@@ -6,6 +6,8 @@ import { OrderDatabaseLayer } from '../database-layer/order-database';
 export class OrderDomain {
 
     static async createOrder(req: Request, res: Response) {
+        console.log('1');
+        
         const Order = await OrderDatabaseLayer.createOrderBasedOnCart(req);
         res.status(201).send(Order);
     }

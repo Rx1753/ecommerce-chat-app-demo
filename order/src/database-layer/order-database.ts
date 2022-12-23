@@ -11,7 +11,7 @@ export class OrderDatabaseLayer {
         const cartData = await Cart.findById({customerId:req.currentUser.id});
         if(cartData){
             const addressId=await customerAddress.findOne({$and:[{customerId:req.currentUser.id},{isDefalultAddress:true}]})
-
+            if(addressId){
             const payableAmount:number=0;
             await Promise.all(cartData.cartList.map(async (element:any)=>{
                 var pItem: boolean;
@@ -27,7 +27,7 @@ export class OrderDatabaseLayer {
             }))
 
             const {deliveryMode}= req.body;
-            if(addressId){
+            
 
                 // Order.build({
                 //     customerId: req.currentUser.id,
