@@ -53,3 +53,4 @@ __exportStar(require("./nats/events/business-category-updated"), exports);
 __exportStar(require("./nats/events/business-sub-category-updated"), exports);
 __exportStar(require("./nats/events/store-updated"), exports);
 __exportStar(require("./nats/events/product-update"), exports);
+__exportStar(require("./nats/events/customer-address-created"), exports);
