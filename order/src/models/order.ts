@@ -12,7 +12,7 @@ export interface OrderAttrs {
     zipCode: number;
     deliveryMode: string;
     payableAmount: number;
-    couponId?: string;
+    couponId?: string | null;
     discountPrice: number;
     totalPrice: number;
     remarks: string;

@@ -9,7 +9,7 @@ export class OrderDomain {
         console.log('1');
         
         const Order = await OrderDatabaseLayer.createOrderBasedOnCart(req);
-        res.status(201).send(Order);
+        res.status(201).send({orderPlace:true});
     }
 
     static async getSignleOrder(req: Request, res: Response) {
