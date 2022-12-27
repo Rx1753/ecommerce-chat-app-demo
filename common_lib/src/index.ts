@@ -45,3 +45,5 @@ export * from './nats/events/product-update';
 export * from './nats/events/customer-address-created';
 export * from './nats/events/coupon-created';
 export * from './nats/events/coupon-mapping-created';
+export * from './nats/events/product-category-created';
+export * from './nats/events/product-sub-category-created';

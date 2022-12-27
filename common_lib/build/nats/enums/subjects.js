@@ -30,4 +30,6 @@ var Subjects;
     Subjects["CustomerAddressCreated"] = "user:CustomerAddressCreated";
     Subjects["CouponCreated"] = "product:CouponCreated";
     Subjects["CouponMappingCreated"] = "product:CouponMappingCreated";
+    Subjects["ProductCategoryCreated"] = "product:ProductCategoryCreated";
+    Subjects["ProductSubCategoryCreated"] = "product:ProductSubCategoryCreated";
 })(Subjects = exports.Subjects || (exports.Subjects = {}));

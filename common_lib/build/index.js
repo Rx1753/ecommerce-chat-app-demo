@@ -56,3 +56,5 @@ __exportStar(require("./nats/events/product-update"), exports);
 __exportStar(require("./nats/events/customer-address-created"), exports);
 __exportStar(require("./nats/events/coupon-created"), exports);
 __exportStar(require("./nats/events/coupon-mapping-created"), exports);
+__exportStar(require("./nats/events/product-category-created"), exports);
+__exportStar(require("./nats/events/product-sub-category-created"), exports);
