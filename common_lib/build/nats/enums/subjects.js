@@ -28,4 +28,6 @@ var Subjects;
     Subjects["StoreUpdated"] = "store:StoreUpdated";
     Subjects["ProductUpdated"] = "Product:ProductUpdated";
     Subjects["CustomerAddressCreated"] = "user:CustomerAddressCreated";
+    Subjects["CouponCreated"] = "product:CouponCreated";
+    Subjects["CouponMappingCreated"] = "product:CouponMappingCreated";
 })(Subjects = exports.Subjects || (exports.Subjects = {}));
