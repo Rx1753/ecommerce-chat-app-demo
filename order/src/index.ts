@@ -3,10 +3,14 @@ import { app } from './app';
 import { BusinessRoleCreatedListener } from './event/listener/business-role-listener';
 import { BusinessRoleMappingListener } from './event/listener/business-role-mapping-listener';
 import { BusinessUserCreatedListener } from './event/listener/business-user-listener';
+import { CouponCreatedListener } from './event/listener/coupon-created-listener';
+import { CouponMappingCreatedListener } from './event/listener/coupon-mapping-created';
 import { CustomerAddressCreatedListener } from './event/listener/customer-address-listener';
 import { CustomerCreatedListener } from './event/listener/customer-listener';
+import { ProductCategoryCreatedListener } from './event/listener/product-category-created-listener';
 import { ProductItemCreatedListener } from './event/listener/product-item-listener';
 import { ProductCreatedListener } from './event/listener/product-listener';
+import { ProductSubCategoryCreatedListener } from './event/listener/product-sub-category-created-listener';
 import { StoreCreatedListener } from './event/listener/store-listener';
 import { natsWrapper } from './nats-wrapper';
 
@@ -58,6 +62,11 @@ const start = async () => {
     new ProductCreatedListener(natsWrapper.client).listen()
     new ProductItemCreatedListener(natsWrapper.client).listen()
     new CustomerAddressCreatedListener(natsWrapper.client).listen()
+    new CouponCreatedListener(natsWrapper.client).listen()
+    new CouponMappingCreatedListener(natsWrapper.client).listen()
+    new ProductSubCategoryCreatedListener(natsWrapper.client).listen()
+    new ProductCategoryCreatedListener(natsWrapper.client).listen()
+    
   } catch (error: any) {
     throw Error(error);
   }

@@ -1,7 +1,9 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import { ProductSubCategoryCreatedPublisher } from '../event/publisher/product-sub-category-publisher';
 import { AdminUser } from '../models/admin-user';
 import { ProductCategory } from '../models/product-category';
 import { ProductSubCategory } from "../models/product-sub-category";
+import { natsWrapper } from '../nats-wrapper';
 
 export class ProductSubCategoryDatabaseLayer {
 
@@ -19,6 +21,13 @@ export class ProductSubCategoryDatabaseLayer {
                 });
                 console.log(data);
                 await data.save();
+                await new ProductSubCategoryCreatedPublisher(natsWrapper.client).publish({
+                    id: data.id,
+                    name:data.name,
+                    description:data.description,
+                    isActive: data.isActive,
+                    productCategoryId: data.productCategoryId.toString()
+                })
                 return data;
             } else {
                 throw new BadRequestError('Provided Category is not valid');

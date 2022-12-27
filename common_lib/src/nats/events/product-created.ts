@@ -16,5 +16,6 @@ export interface ProductCreatedEvent{
         relatableProducts?: string[],
         createdBy: string,
         isActive:boolean;
+        
     }
 }

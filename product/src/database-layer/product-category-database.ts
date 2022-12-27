@@ -1,9 +1,11 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import { ProductCategoryCreatedPublisher } from '../event/publisher/product-category-publisher';
 import { AdminUser } from '../models/admin-user';
 import { BusinessCategory } from '../models/business-category';
 import { BusinessSubCategory } from '../models/business-sub-category';
 import { ProductCategory } from "../models/product-category";
 import { ProductSubCategory } from '../models/product-sub-category';
+import { natsWrapper } from '../nats-wrapper';
 
 export class ProductCategoryDatabaseLayer {
 
@@ -19,6 +21,13 @@ export class ProductCategoryDatabaseLayer {
             });
             console.log(data);
             await data.save();
+            await new ProductCategoryCreatedPublisher(natsWrapper.client).publish({
+                id: data.id,
+                name: data.name,
+                description:data.name,
+                isActive: data.isActive,
+                businessSubCategoryId: data.businessSubCategoryId.toString()
+            })
             return data;
         } else {
             throw new BadRequestError('Provided Business Sub Category is not valid');

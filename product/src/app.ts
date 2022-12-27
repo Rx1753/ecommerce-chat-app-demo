@@ -30,10 +30,10 @@ app.use(ProductRouter);
 app.use(ProductItemRouter);
 app.use(AddOnsRouter);
 app.use(CouponRouter);
-app.use(errorHandler);
+
 
 app.all('*', async () => {
   throw new NotFoundError();
 });
-
+app.use(errorHandler);
 export { app };

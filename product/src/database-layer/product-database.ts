@@ -244,7 +244,12 @@ export class ProductDatabaseLayer {
     }
 
     static async getProductList(req: any) {
-        const data = await Product.find().populate('productSubCategoryId').populate('storeId').populate('relatableProducts');
+        const data = await Product.find().populate({
+            path:  'productSubCategoryId', populate: {
+                    path: 'productCategoryId'
+                
+            }
+        }).populate('storeId').populate('relatableProducts');
         if (data) {
             return data;
         } else {
@@ -253,7 +258,12 @@ export class ProductDatabaseLayer {
     }
 
     static async getProductCategoryIdList(req: any, id: any) {
-        const data = await Product.find({ productSubCategoryId: id }).populate('productSubCategoryId').populate('storeId').populate('relatableProducts');
+        const data = await Product.find({ productSubCategoryId: id }).populate({
+            path:  'productSubCategoryId', populate: {
+                    path: 'productCategoryId'
+                
+            }
+        }).populate('storeId').populate('relatableProducts');
         if (data.length != 0) {
             return data;
         } else {
@@ -261,11 +271,21 @@ export class ProductDatabaseLayer {
         }
     }
     static async getActiveProductList() {
-        const data = await Product.find({ isActive: true }).populate('productSubCategoryId').populate('storeId').populate('relatableProducts');
+        const data = await Product.find({ isActive: true }).populate({
+            path:  'productSubCategoryId', populate: {
+                    path: 'productCategoryId'
+                
+            }
+        }).populate('storeId').populate('relatableProducts');
         return data;
     }
     static async getDeactiveProductList() {
-        const data = await Product.find({ isActive: false }).populate('productSubCategoryId').populate('storeId').populate('relatableProducts');
+        const data = await Product.find({ isActive: false }).populate({
+            path:  'productSubCategoryId', populate: {
+                    path: 'productCategoryId'
+                
+            }
+        }).populate('storeId').populate('relatableProducts');
         return data;
     }
 

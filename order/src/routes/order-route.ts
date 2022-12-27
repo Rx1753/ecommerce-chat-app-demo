@@ -17,4 +17,6 @@ router.get('/api/order/get',verifyToken,OrderDomain.getOrder);
 
 
 
+router.get('/api/order/coupon',verifyToken,OrderDomain.couponSuggestion);
+
 export { router as OrderRouter };

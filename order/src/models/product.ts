@@ -1,4 +1,6 @@
 import mongoose, { ObjectId } from "mongoose";
+import { ProductCategoryDoc } from "./product-category";
+import { ProductSubCategoryDoc } from "./product-sub-category";
 import { StoreDoc } from "./store";
 
 // intetface that describe the prooerties
@@ -38,6 +40,7 @@ export interface ProductDoc extends mongoose.Document {
     calculateOnBasePrice: boolean;
     relatableProducts: ProductDoc[];
     createdBy: string;
+    productSubCategoryId:ProductSubCategoryDoc;
 }
 
 const ProductSchema = new mongoose.Schema({
@@ -48,6 +51,7 @@ const ProductSchema = new mongoose.Schema({
     basePrice: { type: Number },
     mrpPrice: { type: Number },
     quantity: { type: Number },
+    productSubCategoryId:{type:String, ref:'ProductSubCategory'},
     calculateOnBasePrice: { type: Boolean, default: true },
     storeId: { type: String, ref: 'Store' },
     relatableProducts: [

@@ -9,6 +9,7 @@ import { BusinessRoleMappingListener } from './event/listener/business-role-mapp
 import { BusinessSubCategoryCreatedListener } from './event/listener/business-sub-category-listener';
 import { BusinessSubCategoryUpdatedListener } from './event/listener/business-sub-category-update-listener';
 import { BusinessUserCreatedListener } from './event/listener/business-user-listener';
+import { CustomerCreatedListener } from './event/listener/customer-listener';
 import { StoreCreatedListener } from './event/listener/store-listener';
 import { StoreUpdatedListener } from './event/listener/store-updated-listener';
 import { natsWrapper } from './nats-wrapper';
@@ -64,6 +65,8 @@ const start = async () => {
     new BusinessSubCategoryUpdatedListener(natsWrapper.client).listen();
     new BusinessCategoryUpdatedListener(natsWrapper.client).listen();
     new StoreUpdatedListener(natsWrapper.client).listen();
+    new CustomerCreatedListener(natsWrapper.client).listen();
+    
   } catch (error: any) {
     throw Error(error);
   }

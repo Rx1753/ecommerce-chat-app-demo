@@ -1,5 +1,4 @@
 import mongoose, { ObjectId } from "mongoose";
-import { BusinessSubCategoryDoc } from "./business-sub-category";
 // name String
 //   description String
 //   isActive Boolean
@@ -26,7 +25,7 @@ export interface ProductCategoryDoc extends mongoose.Document {
     name: string;
     description:string;
     isActive:boolean;
-    businessSubCategoryId:BusinessSubCategoryDoc;
+    businessSubCategoryId:string;
 }
 
 const ProductCategorySchema = new mongoose.Schema({
