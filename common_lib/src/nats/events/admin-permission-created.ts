@@ -3,6 +3,7 @@ export interface AdminPermissionUserCreatedEvent{
     subject:Subjects.AdminPermissionCreated,
     data:{
         id:string;
+        
         tableName: string;
         isCreate: boolean;
         isDelete: boolean;
