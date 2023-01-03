@@ -39,3 +39,6 @@ export * from './nats/events/coupon-created';
 export * from './nats/events/coupon-mapping-created';
 export * from './nats/events/product-category-created';
 export * from './nats/events/product-sub-category-created';
+export * from './nats/events/admin-created';
+export * from './nats/events/admin-role';
+export * from './nats/events/admin-role-mapping';

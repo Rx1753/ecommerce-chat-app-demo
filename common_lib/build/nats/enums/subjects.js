@@ -32,4 +32,7 @@ var Subjects;
     Subjects["CouponMappingCreated"] = "product:CouponMappingCreated";
     Subjects["ProductCategoryCreated"] = "product:ProductCategoryCreated";
     Subjects["ProductSubCategoryCreated"] = "product:ProductSubCategoryCreated";
+    Subjects["AdminCreated"] = "user:AdminCreated";
+    Subjects["AdminRoleMappingCreated"] = "user:AdminRoleMappingCreated";
+    Subjects["AdminRoleCreated"] = "user:AdminRoleCreated";
 })(Subjects = exports.Subjects || (exports.Subjects = {}));

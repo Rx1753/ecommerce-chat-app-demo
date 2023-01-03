@@ -27,6 +27,8 @@ export enum Subjects {
   CouponCreated="product:CouponCreated",
   CouponMappingCreated="product:CouponMappingCreated",
   ProductCategoryCreated="product:ProductCategoryCreated",
-  ProductSubCategoryCreated="product:ProductSubCategoryCreated"
-
+  ProductSubCategoryCreated="product:ProductSubCategoryCreated",
+  AdminCreated="user:AdminCreated",
+  AdminRoleMappingCreated="user:AdminRoleMappingCreated",
+  AdminRoleCreated="user:AdminRoleCreated",
 }

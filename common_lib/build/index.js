@@ -58,3 +58,6 @@ __exportStar(require("./nats/events/coupon-created"), exports);
 __exportStar(require("./nats/events/coupon-mapping-created"), exports);
 __exportStar(require("./nats/events/product-category-created"), exports);
 __exportStar(require("./nats/events/product-sub-category-created"), exports);
+__exportStar(require("./nats/events/admin-created"), exports);
+__exportStar(require("./nats/events/admin-role"), exports);
+__exportStar(require("./nats/events/admin-role-mapping"), exports);
