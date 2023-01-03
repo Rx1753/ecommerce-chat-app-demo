@@ -53,4 +53,9 @@ export class ProductDomain {
         const Product =  await ProductDatabaseLayer.getProductWithAddOnsAndProductItem(req);
         res.status(201).send(Product);
     }
+    
+    static async serchData(req: Request, res: Response) {
+        const Product =  await ProductDatabaseLayer.serchData(req);
+        res.status(201).send(Product);
+    }
 }

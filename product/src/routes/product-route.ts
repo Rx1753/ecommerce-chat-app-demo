@@ -9,6 +9,8 @@ const router = express.Router();
 //ADMIN Middleware check pending
 
 // Product create
+
+router.get('/api/product/search/:data',ProductDomain.serchData);
 router.post('/api/product/create',verifyToken,ProductValidation.ProductCreateValidation,validateRequest,ProductDomain.createProduct);
 
 // Product update

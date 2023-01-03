@@ -44,7 +44,7 @@ export class CustomerAuthDatabaseLayer {
         return req.params.status;
     }
 
-    static async signUpUser(req: any, inviteCode: string) {
+    static async  signUpUser(req: any, inviteCode: string) {
 
         const adminInviteCase = await adminSwitches.findOne({ name: 'inviteOnly' });
 
@@ -72,12 +72,12 @@ export class CustomerAuthDatabaseLayer {
 
             if (adminInviteCase?.status == false) {
                 console.log("Admin switch\'s off So directly Signin ");
-
                 user.status = "New";
+
             } else if (adminInviteCase?.status && isWaiting == true) {
                 console.log('isWaiting apply so directly in waiting list');
-
                 user.status = "pending";
+
             } else if (adminInviteCase?.status && refralCode != null && refralCode != undefined) {
                 console.log('invite code verify logic');
 
@@ -149,8 +149,11 @@ export class CustomerAuthDatabaseLayer {
                 name:storeData.name,
                 email:storeData.email,
                 phoneNumber:storeData.phoneNumber
-            })
-            return storeData;
+            }) 
+            if(storeData.status==='pending'){
+                return {data:storeData,flag:true};
+            }
+            return {data:{ accessToken: userJwt, refreshToken: storeData.refreshToken },flag:false};
             
         } catch (error: any) {
             throw new BadRequestError(error.message);

@@ -48,6 +48,7 @@ const start = async () => {
     new StoreCreatedListener(natsWrapper.client).listen();
     new ExpirationCompleteListener(natsWrapper.client).listen();
     new StoreUpdatedListener(natsWrapper.client).listen();
+    
   } catch (error: any) {
     throw Error(error);
   }

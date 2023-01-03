@@ -105,9 +105,6 @@ export class AuthDatabaseLayer {
     }
   }
 
-
-
-
   static async checkRoleMapping(tableName: string, isCreate: boolean, isUpdate: boolean, isDelete: boolean, isRead: boolean) {
 
     try {

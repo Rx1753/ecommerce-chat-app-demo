@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import { CustomerAuthDatabaseLayer } from '../database-layer/customer-auth-databse';
 import { JwtService } from '../services/jwt';
 import { invitionCode } from '../models/invition-code';
-
+import { CustomerDoc } from "../models/customer";
 // import { UserCreatedPublisher } from '../events/publisher/user-created-publisher';
 // import { natsWrapper } from '../nats-wrapper';
 
@@ -32,18 +32,17 @@ export class CustomerDomain {
         }
         const inviteCode = shortid.generate();
 
-        //nats publisher
-        // await new UserCreatedPublisher(natsWrapper.client).publish({
-        //     id: user.id,
-        //     userId: user.id,
-        //     firstName: user.firstName,
-        //     lastName: user.lastName,
-        //     email: user.email,
-        //     type: user.type,
-        // });
-
         var user = await CustomerAuthDatabaseLayer.signUpUser(req, inviteCode);
-        return res.status(201).send(user);
+        const userData = JSON.parse(JSON.stringify(user));
+        console.log('user',userData);
+        
+        if(userData.flag==true && userData.data ){
+            return res.status(201).send(userData.data);
+        }
+        if(userData.flag==false && userData.data){
+            return res.status(200).send(userData.data);
+        }
+        
     }
 
     //SIGNIN 
@@ -58,18 +57,17 @@ export class CustomerDomain {
             console.log('phone not defined,\nSo email signup');
             email = req.body.email;
             exitstingEmail = await CustomerAuthDatabaseLayer.isExistingEmail(email)
+            if(exitstingEmail.status==="pending"){
+                throw new BadRequestError("You are in waiting list\n if admin approves you then you are eligible to login");
+            }
             isEmail = true;
         }
+
         if (req.body.phoneNumber != null && req.body.phoneNumber != undefined && req.body.email == null && req.body.email == undefined) {
             console.log('email not defined,\nSo phone signup');
             phoneNumber = req.body.phoneNumber;
             existingPhone = await CustomerAuthDatabaseLayer.isExistingPhone(phoneNumber)
         }
-        // if (req.body.phoneNumber != null && req.body.phoneNumber != undefined && req.body.email != null && req.body.email != undefined) {
-        //     phoneNumber = phoneNumber;
-        //     email = email;
-        // }
-
 
         if (isEmail && !exitstingEmail) {
             throw new BadRequestError('Invalid Email');

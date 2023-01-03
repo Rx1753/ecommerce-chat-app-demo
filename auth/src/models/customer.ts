@@ -52,6 +52,7 @@ export interface CustomerDoc extends mongoose.Document {
     isAllowToRecieveBrodcast:boolean;
     isLastSeenActive:boolean;
     isAllowToChatStranger:boolean;
+    status:string;
 }
 
 const customerSchema = new mongoose.Schema({
@@ -76,7 +77,7 @@ const customerSchema = new mongoose.Schema({
     referalType:{type:String,enum:['Admin','CustomerUser']},
     referalId: { type: String, default: null, ref: 'CustomerUser' },
     noOfFriend: { type: Number, default: 0 },
-    status: { type: String, enum: ['New', 'pending', 'Approved', 'Rejected', 'diActivated'], default: 'New' },
+    status: { type: String, enum: ['New', 'pending', 'Approved'], default: 'New' },
     noOfFollowedBusiness: { type: Number, default: 0 },
     isReadReceipt: { type: Boolean, default: true },
     isEmailVisible: { type: Boolean, default: true },

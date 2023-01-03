@@ -1,9 +1,12 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import mongoose from 'mongoose';
 import { ProductCreatedPublisher } from '../event/publisher/product-publisher';
+import { BusinessCategory } from '../models/business-category';
 import { BusinessRoleMapping } from '../models/business-role-mapping';
+import { BusinessSubCategory } from '../models/business-sub-category';
 import { BusinessUser } from '../models/business-user';
 import { Product } from "../models/product";
+import { ProductCategory } from '../models/product-category';
 import { ProductSubCategory } from '../models/product-sub-category';
 import { Store } from '../models/store';
 import { natsWrapper } from '../nats-wrapper';
@@ -245,9 +248,9 @@ export class ProductDatabaseLayer {
 
     static async getProductList(req: any) {
         const data = await Product.find().populate({
-            path:  'productSubCategoryId', populate: {
-                    path: 'productCategoryId'
-                
+            path: 'productSubCategoryId', populate: {
+                path: 'productCategoryId'
+
             }
         }).populate('storeId').populate('relatableProducts');
         if (data) {
@@ -259,9 +262,9 @@ export class ProductDatabaseLayer {
 
     static async getProductCategoryIdList(req: any, id: any) {
         const data = await Product.find({ productSubCategoryId: id }).populate({
-            path:  'productSubCategoryId', populate: {
-                    path: 'productCategoryId'
-                
+            path: 'productSubCategoryId', populate: {
+                path: 'productCategoryId'
+
             }
         }).populate('storeId').populate('relatableProducts');
         if (data.length != 0) {
@@ -272,18 +275,18 @@ export class ProductDatabaseLayer {
     }
     static async getActiveProductList() {
         const data = await Product.find({ isActive: true }).populate({
-            path:  'productSubCategoryId', populate: {
-                    path: 'productCategoryId'
-                
+            path: 'productSubCategoryId', populate: {
+                path: 'productCategoryId'
+
             }
         }).populate('storeId').populate('relatableProducts');
         return data;
     }
     static async getDeactiveProductList() {
         const data = await Product.find({ isActive: false }).populate({
-            path:  'productSubCategoryId', populate: {
-                    path: 'productCategoryId'
-                
+            path: 'productSubCategoryId', populate: {
+                path: 'productCategoryId'
+
             }
         }).populate('storeId').populate('relatableProducts');
         return data;
@@ -315,4 +318,51 @@ export class ProductDatabaseLayer {
     }
 
 
+
+    static async serchData(req: any) {
+        const serchData = (req.params.data).trim();
+
+        console.log('req.params.data', req.params.data);
+
+        const businessCategoryArr: any[] = [], businessSubCategoryArr: any[] = [], productCategoryArr: any[] = [], productSubCategoryArr: any[] = [];
+        const businessCategory = await BusinessCategory.find({ name: { $regex: `^${serchData}`, $options: 'i' } });
+        businessCategory.map((e: any) => {
+            businessCategoryArr.push(e._id);
+        })
+
+        const businessSubCategory = await BusinessSubCategory.find({ $or: [{ name: { $regex: `^${serchData}`, $options: 'i' } }, { businessCategoryId: { $in: businessCategoryArr } }] })
+        businessSubCategory.map((e: any) => {
+            businessSubCategoryArr.push(e._id);
+        })
+
+        const productCategory = await ProductCategory.find({ $or: [{ name: { $regex: `^${serchData}`, $options: 'i' } }, { businessSubCategoryId: { $in: businessSubCategoryArr } }] })
+        productCategory.map((e: any) => {
+            productCategoryArr.push(e._id);
+        })
+
+        const productSubCategory = await ProductSubCategory.find({ $or: [{ name: { $regex: `^${serchData}`, $options: 'i' } }, { productCategoryId: { $in: productCategoryArr } }] })
+        productSubCategory.map((e: any) => {
+            productSubCategoryArr.push(e._id);
+        })
+
+        const product = await Product.find({
+            $or:
+                [{ name: { $regex: `^${serchData}`, $options: 'i' } },
+                { description: { $regex: `^${serchData}`, $options: 'i' } },
+                { brandName: { $regex: `^${serchData}`, $options: 'i' } },
+                { productSubCategoryId: productSubCategoryArr }]
+            })
+            .populate({
+                path: 'productSubCategoryId', populate: {
+                    path: 'productCategoryId', populate: {
+                        path: 'businessSubCategoryId', populate: {
+                            path: 'businessCategoryId'
+                        }
+                    }
+                }
+            })
+
+        return product;
+
+    }
 }
