@@ -1,5 +1,7 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { ProductSubCategoryCreatedPublisher } from '../event/publisher/product-sub-category-publisher';
+import { Admin } from '../models/admin';
+import { AdminRoleMapping } from '../models/admin-role-mapping';
 import { AdminUser } from '../models/admin-user';
 import { ProductCategory } from '../models/product-category';
 import { ProductSubCategory } from "../models/product-sub-category";
@@ -117,22 +119,23 @@ export class ProductSubCategoryDatabaseLayer {
         return data;
     }
 
-    static async categoryCheck(req: any): Promise<any> {
-        const data = await AdminUser.findById(req.currentUser.id).populate('permissionId._id');
-        var dataPermission: any;
-        if (data?.isSuperAdmin == true) {
+    static async categoryCheck(req:any):Promise<any>{
+        const data = await Admin.findById(req.currentUser.id);
+        var dataPermission:any;
+        if(data?.isSuperAdmin==true){
             return data;
         }
-        if (data?.permissionId) {
-            data.permissionId.map((e: any) => {
-                if (e._id.tableName == "category") {
-                    dataPermission = e._id;
+        const roleData = await AdminRoleMapping.find({roleId:data?.roleId}).populate('permissionId')
+        if(roleData){
+            roleData.map((e:any)=>{
+                if(e.permissionId.tableName=="category"){
+                 dataPermission= e._id;
                 }
             })
         }
-        if (dataPermission) {
+        if(dataPermission){
             return dataPermission;
-        } else {
+        }else{
             throw new BadRequestError('Not wrights of category table')
         }
     }

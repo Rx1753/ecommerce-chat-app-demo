@@ -124,8 +124,18 @@ export class StoreDatabaseLayer {
                 const BusinessSubCategoryCheck = await BusinessSubCategory.findById(BusinessSubCategoryId);
                 const BusinessProfileCheck = await BusinessProfile.findById(BusinessProfileId);
                 const countryCheck = await Country.findById(countryId);
-                const stateCheck = await State.findOne({ $and: [{ id: stateId }, { country_id: countryId }] });
-                const cityCheck = await City.findOne({ $and: [{ id: cityId }, { stateId: stateId }] });
+                const stateCheck = await State.findById(stateId);
+                const cityCheck = await City.findById(cityId);
+                console.log('BusinessProfileCheck,',BusinessProfileCheck);
+                console.log('BusinessSubCategoryCheck',BusinessSubCategoryCheck);
+                console.log('countryCheck',countryCheck);
+                console.log('stateCheck',stateCheck);
+                console.log('cityCheck',cityCheck);
+                
+                
+                
+                
+                
                 if (BusinessProfileCheck && BusinessSubCategoryCheck && countryCheck && stateCheck && cityCheck) {
                     await Store.findByIdAndUpdate(id, {
                         phoneNumber: phoneNumber,

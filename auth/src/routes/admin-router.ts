@@ -10,6 +10,9 @@ import { verifyAdminToken } from '../middlewares/current-user';
 
 const router = express.Router();
 
+router.post('/api/users/admin/permission',Validation.addRoleValidation,validateRequest,AuthDomain.addPermissions)
+router.post('/api/users/admin/rolecreate',AuthDomain.addRole)
+
 // SIGN-IN
 router.post('/api/users/admin/login', Validation.signInValidation, validateRequest, AuthDomain.signIn);
 
@@ -26,7 +29,6 @@ router.put('/api/users/admin/statuschange/:id', verifyAdminToken, validateReques
 // Require Auth Verification
 // */
 
-
 //All User List
 router.post('/api/users/admin/forgotpassword/mailtrigger', Validation.forgotPasswordValidation, validateRequest, AuthDomain.forgotPassword);
 
@@ -39,9 +41,12 @@ router.get('/api/users/admin/getalladmin', AuthDomain.getAllUsers);
 //Single User Detail
 router.get('/api/users/admin/getadmindetail/:id', AuthDomain.getUserById);
 router.get('/api/users/admin/getadminrules/:id', AuthDomain.getUserRuleId);
-router.put('/api/users/admin/updateadminrules/:id',Validation.updatesRoleIdValidation,verifyAdminToken, validateRequest, AuthDomain.updateUserRuleId);
-router.delete('/api/users/admin/deleteadminrules/:id/:ruleId',verifyAdminToken, validateRequest, AuthDomain.deleteUserRuleId)
-router.post('/api/users/admin/addadminrules/:id',Validation.addRoleValidation,verifyAdminToken, validateRequest,AuthDomain.addUserRuleId)
+// router.put('/api/users/admin/updateadminrules/:id',Validation.updatesRoleIdValidation,verifyAdminToken, validateRequest, AuthDomain.updateUserRuleId);
+// router.delete('/api/users/admin/deleteadminrules/:id/:ruleId',verifyAdminToken, validateRequest, AuthDomain.deleteUserRuleId)
+// router.post('/api/users/admin/addadminrules/:id',Validation.addRoleValidation,verifyAdminToken, validateRequest,AuthDomain.addUserRuleId)
+
+
+
 // SIGN-OUT
 router.post('/api/users/admin/signout', AuthDomain.signOut);
 

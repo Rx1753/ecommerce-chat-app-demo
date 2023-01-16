@@ -18,7 +18,7 @@ router.put('/api/store/storeworkingday/update/:id',verifyVendorToken,StoreWorkin
 router.delete('/api/store/storeworkingday/delete/:id',verifyVendorToken,StoreWorkingDayDomain.deleteStoreWorkingDay);
 
 // get all Store
-router.get('/api/store/storeworkingday/get/:id',verifyToken,StoreWorkingDayDomain.getStoreWorkingDayId);
+router.get('/api/store/storeworkingday/get/:id',verifyVendorToken,StoreWorkingDayDomain.getStoreWorkingDayId);
 
 
 

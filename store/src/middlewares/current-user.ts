@@ -3,6 +3,7 @@ import jwt, { TokenExpiredError } from 'jsonwebtoken';
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { AdminUser } from '../models/admin-user';
 import { BusinessUser } from '../models/business-user';
+import { Admin } from '../models/admin';
 
 
 interface UserPayload {
@@ -41,14 +42,14 @@ export const verifyToken = async (
     req.currentUser = payload;
     if (req.currentUser.email) {
       if (req.currentUser.type == "Admin") {
-        const data = await AdminUser.findOne({ $and: [{ email: req.currentUser.email }, { id: req.currentUser.id }, { isActive: true }] })
+        const data = await Admin.findOne({ $and: [{ _id: payload.id }, { isActive: true }] })
         if(data){
           next();
         }else{
           throw new BadRequestError('token/session you login is no more authorized');
         }
       }else if (req.currentUser.type == "Vendor") {
-        const data = await BusinessUser.findOne({ $and: [{ email: req.currentUser.email }, { id: req.currentUser.id }, { isActive: true }] })
+        const data = await BusinessUser.findOne({ $and: [{ _id: payload.id }, { isActive: true }] })
         if(data){
           next();
         }else{
@@ -124,7 +125,7 @@ export const verifyAdminToken = async (
     if (payload.type != 'Admin') {
       throw new BadRequestError('Unauthorized Admin');
     }
-    const data = await AdminUser.findOne({ $and: [{ _id: payload.id }, { isActive: true }] })
+    const data = await Admin.findOne({ $and: [{ _id: payload.id }, { isActive: true }] })
     if(!data){
       throw new BadRequestError('token/session you login is no more authorized');
     }

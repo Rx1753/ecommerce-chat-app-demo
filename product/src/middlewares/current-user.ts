@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt, { TokenExpiredError } from 'jsonwebtoken';
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { AdminUser } from '../models/admin-user';
+import { Admin } from '../models/admin';
 
 interface UserPayload {
   id: string;
@@ -107,7 +108,7 @@ export const verifyAdminToken = async (
     if (payload.type != 'Admin') {
       throw new BadRequestError('Unauthorized Admin');
     }
-    const data = await AdminUser.findOne({ $and: [{ _id: payload.id }, { isActive: true }] })
+    const data = await Admin.findOne({ $and: [{ _id: payload.id }, { isActive: true }] })
     if(!data){
       throw new BadRequestError('token/session you login is no more authorized');
     }

@@ -4,6 +4,7 @@ import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { AdminUser } from '../models/admin-user';
 import { BusinessUser } from '../models/business-user';
 import { Customer } from '../models/customer';
+import { Admin } from '../models/admin';
 
 interface UserPayload {
   id: string;
@@ -42,7 +43,7 @@ export const verifyToken = async (
     console.log('payload',payload);
     
       if (payload.type == "Admin") {
-        const data = await AdminUser.findOne({ $and: [ { _id: payload.id}, { isActive: true }] })
+        const data = await Admin.findOne({ $and: [ { _id: payload.id}, { isActive: true }] })
         if(!data){
           throw new BadRequestError('token/session you login is no more authorized');
         }
@@ -109,7 +110,7 @@ export const verifyAdminToken = async (
   next: NextFunction
 ) => {
   console.log('middleware');
-
+  
   if (!req.session?.jwt && !req.headers['token']) {
     console.log('token not wrote');
     throw new BadRequestError('Token/Session not provided');
@@ -130,7 +131,9 @@ export const verifyAdminToken = async (
     if (payload.type != 'Admin') {
       throw new BadRequestError('Unauthorized Admin');
     }
-    const data = await AdminUser.findOne({ $and: [{ _id: payload.id }, { isActive: true }] })
+    const data = await Admin.findOne({ $and: [{ _id: payload.id }, { isActive: true }] })
+    console.log('data',data);
+    
     if(!data){
       throw new BadRequestError('token/session you login is no more authorized');
     }

@@ -30,11 +30,11 @@ export class StoreHolidayDomain {
         res.status(201).send({ deleted: true });
     }
 
-    static async getStoreHolidayId(req: Request, res: Response) {
+    static async getStoreHolidayByStoreId(req: Request, res: Response) {
         if (!mongoose.isValidObjectId(req.params.id)) {
             throw new BadRequestError('Requested id is not id type');
         }
-        const Store =  await StoreHolidayDatabaseLayer.getStoreHolidayById(req,req.params.id);
+        const Store =  await StoreHolidayDatabaseLayer.getStoreHolidayByStoreId(req,req.params.id);
         res.status(201).send(Store);
     }
     

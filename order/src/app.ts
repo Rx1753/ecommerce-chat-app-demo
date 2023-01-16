@@ -1,7 +1,7 @@
 import express from 'express';
 import 'express-async-errors';
 import cookieSession from 'cookie-session';
-import { errorHandler } from '@rx-ecommerce-chat/common_lib';
+import { errorHandler, NotFoundError } from '@rx-ecommerce-chat/common_lib';
 import { cartRouter } from './routes/cart-route';
 import { OrderRouter } from './routes/order-route';
 const app = express();
@@ -23,8 +23,8 @@ app.use(cartRouter);
 app.use(OrderRouter);
 app.use(errorHandler);
 
-// app.all('*', async () => {
-//   throw new NotFoundError();
-// });
+app.all('*', async () => {
+  throw new NotFoundError();
+});
 
 export { app };

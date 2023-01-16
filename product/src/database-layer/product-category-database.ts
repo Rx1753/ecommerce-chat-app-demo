@@ -1,5 +1,7 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { ProductCategoryCreatedPublisher } from '../event/publisher/product-category-publisher';
+import { Admin } from '../models/admin';
+import { AdminRoleMapping } from '../models/admin-role-mapping';
 import { AdminUser } from '../models/admin-user';
 import { BusinessCategory } from '../models/business-category';
 import { BusinessSubCategory } from '../models/business-sub-category';
@@ -107,14 +109,15 @@ export class ProductCategoryDatabaseLayer {
     }
 
     static async categoryCheck(req:any):Promise<any>{
-        const data = await AdminUser.findById(req.currentUser.id).populate('permissionId._id');
+        const data = await Admin.findById(req.currentUser.id);
         var dataPermission:any;
         if(data?.isSuperAdmin==true){
             return data;
         }
-        if(data?.permissionId){
-            data.permissionId.map((e:any)=>{
-                if(e._id.tableName=="category"){
+        const roleData = await AdminRoleMapping.find({roleId:data?.roleId}).populate('permissionId')
+        if(roleData){
+            roleData.map((e:any)=>{
+                if(e.permissionId.tableName=="category"){
                  dataPermission= e._id;
                 }
             })

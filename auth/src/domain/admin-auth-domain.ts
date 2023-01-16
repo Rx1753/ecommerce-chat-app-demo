@@ -42,9 +42,9 @@ export class AuthDomain {
     const data: AdminPermissionsAttrs = req.body;
     var isPermissionAdded = await AuthDatabaseLayer.addPermission(data);
     if (isPermissionAdded) {
-      return res
-        .status(201)
-        .send({ status: true, message: Strings.permissionAdded, permissionId: isPermissionAdded.id });
+      res.status(201).send(isPermissionAdded);
+    }else{
+      throw new BadRequestError('permission not created');
     }
   }
 
@@ -163,50 +163,50 @@ export class AuthDomain {
     res.status(200).send(user);
   }
   
-  static async updateUserRuleId(req: Request, res: Response) {
-    if (!mongoose.isValidObjectId(req.params.id)) {
-      throw new BadRequestError('Requested id is not id type');
-    }
-    console.log('body',req.body);
+  // static async updateUserRuleId(req: Request, res: Response) {
+  //   if (!mongoose.isValidObjectId(req.params.id)) {
+  //     throw new BadRequestError('Requested id is not id type');
+  //   }
+  //   console.log('body',req.body);
     
-    const user = await AuthDatabaseLayer.updateUserRuleId(req,req.params.id);
-    if (!user) {
-      throw new BadRequestError(Strings.userDoesNotExist);
-    }else{
-      const data = await AuthDatabaseLayer.getUserRuleId(req.params.id);
-      res.status(200).send(data);
-    }
+  //   const user = await AuthDatabaseLayer.updateUserRuleId(req,req.params.id);
+  //   if (!user) {
+  //     throw new BadRequestError(Strings.userDoesNotExist);
+  //   }else{
+  //     const data = await AuthDatabaseLayer.getUserRuleId(req.params.id);
+  //     res.status(200).send(data);
+  //   }
     
-  }
+  // }
   
-  static async deleteUserRuleId(req: Request, res: Response) {
-    if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(req.params.ruleId)) {
-      throw new BadRequestError('Requested id is not id type');
-    }
-    const user = await AuthDatabaseLayer.deleteUserRuleId(req.params.id,req.params.ruleId);
-    if (!user) {
-      throw new BadRequestError(Strings.userDoesNotExist);
-    }else{
-      const data = await AuthDatabaseLayer.getUserRuleId(req.params.id);
-      res.status(200).send(data);
-    }
-  }
+  // static async deleteUserRuleId(req: Request, res: Response) {
+  //   if (!mongoose.isValidObjectId(req.params.id) || !mongoose.isValidObjectId(req.params.ruleId)) {
+  //     throw new BadRequestError('Requested id is not id type');
+  //   }
+  //   const user = await AuthDatabaseLayer.deleteUserRuleId(req.params.id,req.params.ruleId);
+  //   if (!user) {
+  //     throw new BadRequestError(Strings.userDoesNotExist);
+  //   }else{
+  //     const data = await AuthDatabaseLayer.getUserRuleId(req.params.id);
+  //     res.status(200).send(data);
+  //   }
+  // }
   
-  static async addUserRuleId(req: Request, res: Response) {
-    if (!mongoose.isValidObjectId(req.params.id)) {
-      throw new BadRequestError('Requested id is not id type');
-    }
-    console.log('body',req.body);
+  // static async addUserRuleId(req: Request, res: Response) {
+  //   if (!mongoose.isValidObjectId(req.params.id)) {
+  //     throw new BadRequestError('Requested id is not id type');
+  //   }
+  //   console.log('body',req.body);
     
-    const user = await AuthDatabaseLayer.addUserRuleId(req,req.params.id);
-    if (!user) {
-      throw new BadRequestError(Strings.userDoesNotExist);
-    }else{
-      const data = await AuthDatabaseLayer.getUserRuleId(req.params.id);
-      res.status(200).send(data);
-    }
+  //   const user = await AuthDatabaseLayer.addUserRuleId(req,req.params.id);
+  //   if (!user) {
+  //     throw new BadRequestError(Strings.userDoesNotExist);
+  //   }else{
+  //     const data = await AuthDatabaseLayer.getUserRuleId(req.params.id);
+  //     res.status(200).send(data);
+  //   }
     
-  }
+  // }
 
   // //Delete user by Id
   static async statusChangeId(req: Request, res: Response) {
@@ -252,4 +252,9 @@ export class AuthDomain {
     res.status(200).send(data);
   }
 
+  
+  static async addRole(req:Request,res:Response){
+    const data = await AuthDatabaseLayer.addRole(req);
+    res.status(200).send(data);
+  }
 }

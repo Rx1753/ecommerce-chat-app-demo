@@ -1,5 +1,4 @@
 import mongoose, { ObjectId } from 'mongoose';
-import { AdminRoleDoc } from './admin-role';
 
 // An interface that describe the properties
 // that are required to create user
@@ -9,8 +8,8 @@ export interface AdminAttrs {
   password: string;
   phoneNumber?: number | null;
   createdBy?: string | null;
-  allowChangePassword: boolean;
-  roleId: string,
+  allowChangePassword:boolean;
+  roleId:string,
 }
 
 // An interface that describe the properties
@@ -26,14 +25,14 @@ interface AdminDoc extends mongoose.Document {
   imageUrl: string;
   isSuperAdmin: boolean;
   //permissionId :
-  roleId: AdminRoleDoc;
+  roleId:string;
   createdBy: string;
   updatedBy: string;
   isActive: boolean;
   refreshToken: string;
   createdAt: Date;
   updatedAt: Date;
-  allowChangePassword: boolean;
+  allowChangePassword:boolean;
 }
 
 // An interface that describe the properties
@@ -46,7 +45,7 @@ interface AdminModel extends mongoose.Model<AdminDoc> {
 const AdminSchema = new mongoose.Schema(
   {
     userName: { type: String, required: true },
-    email: { type: String, },
+    email: { type: String,  },
     password: { type: String, required: true },
     phoneNumber: { type: Number },
     isMfa: { type: Boolean, default: false },
@@ -54,14 +53,15 @@ const AdminSchema = new mongoose.Schema(
     isMobileVerified: { type: Boolean, default: false },
     imageUrl: { type: String, default: '' },
     isSuperAdmin: { type: Boolean, default: false },
-    createdBy: { type: String, default: null, ref: 'admin' },
+    createdBy: { type: String, default: null, ref:'admin' },
     updatedBy: { type: String, default: '' },
     isActive: { type: Boolean, default: true },
     refreshToken: { type: String },
-    allowChangePassword: { type: Boolean, default: true },
-    roleId: { type: String, ref: 'AdminRole', required: true },
+    allowChangePassword:{type:Boolean,default:true},
+    roleId:{type:String,ref:'AdminRole'},
     createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() }  },
+    updatedAt: { type: Number, default: () => Date.now() }
+  },
   {
     toJSON: {
       transform(doc, ret) {
@@ -92,7 +92,7 @@ AdminSchema.statics.build = (attrs: AdminAttrs) => {
 
 // Model
 const Admin = mongoose.model<AdminDoc, AdminModel>(
-  'admin',
+  'Admin',
   AdminSchema
 );
 

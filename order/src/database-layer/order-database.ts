@@ -1,5 +1,7 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import e from 'express';
+import { privateca } from 'googleapis/build/src/apis/privateca';
+import { BusinessSubCategory } from '../models/business-sub-category';
 import { Cart } from '../models/cart';
 import { Coupon } from '../models/coupon';
 import { CouponMapping } from '../models/coupon-mapping';
@@ -8,6 +10,7 @@ import { Order } from '../models/order';
 import { OrderProduct } from '../models/order-product';
 import { Product } from '../models/product';
 import { ProductItem } from '../models/product-item';
+import { Store } from '../models/store';
 
 export class OrderDatabaseLayer {
 
@@ -155,13 +158,16 @@ export class OrderDatabaseLayer {
                                             $and: [{ couponId: a.CouponId },
                                             {
                                                 $or: [{ $and: [{ isProduct: true }, { baseId: element.productId }] },
-                                                      {$and: [ {isProductCategory:true},{baseId:productItemData.productId.productSubCategoryId.productCategoryId._id.toHexString()},
-                                                      {$and: [ {isProductSubCategory:true},{baseId:productItemData.productId.productSubCategoryId._id.toHexString()}
-                                                    ]}]
+                                                {
+                                                    $and: [{ isProductCategory: true }, { baseId: productItemData.productId.productSubCategoryId.productCategoryId._id.toHexString() },
+                                                    {
+                                                        $and: [{ isProductSubCategory: true }, { baseId: productItemData.productId.productSubCategoryId._id.toHexString() }
+                                                        ]
+                                                    }]
+                                                }]
                                             }]
-                                         }]
                                         }
-                                        )
+                                    )
                                     if (couponMappingData.length != 0) {
                                         a.couponData = couponMappingData;
                                         CouponProductArr.push(a);
@@ -196,11 +202,14 @@ export class OrderDatabaseLayer {
                                         $and: [{ couponId: a.CouponId },
                                         {
                                             $or: [{ $and: [{ isProduct: true }, { baseId: element.productId }] },
-                                                  {$and: [ {isProductCategory:true},{baseId:productData.productSubCategoryId.productCategoryId._id.toHexString()},
-                                                  {$and: [ {isProductSubCategory:true},{baseId:productData.productSubCategoryId._id.toHexString()}
-                                                ]}]
+                                            {
+                                                $and: [{ isProductCategory: true }, { baseId: productData.productSubCategoryId.productCategoryId._id.toHexString() },
+                                                {
+                                                    $and: [{ isProductSubCategory: true }, { baseId: productData.productSubCategoryId._id.toHexString() }
+                                                    ]
+                                                }]
+                                            }]
                                         }]
-                                     }]
                                     })
                                     if (couponMappingData.length != 0) {
                                         a.couponData = couponMappingData;
@@ -251,4 +260,140 @@ export class OrderDatabaseLayer {
         return data;
     }
 
-}
+    static async revenue(req: any) {
+
+        const data = await OrderProduct.aggregate([
+            { $group: { _id: '$storeId' } },
+        ])
+
+        var storeData,price:number;
+        var resData:{storeId:string,price:number}[]=[];
+        await Promise.all(data.map(async (e: any) => {
+            storeData = await OrderProduct.find({ storeId: e._id });
+            price=0;
+            storeData.map((a:any)=>{
+                price=a.mrpPrice+price;
+            })
+            resData.push({storeId:e._id,price:price});           
+        }))
+        return resData;
+    }
+    static async customer(req: any) {
+
+        const data = await OrderProduct.aggregate([
+            { $group: { _id: '$customerId' } },
+        ])
+
+        var storeData,price:number;
+        var resData:{storeId:string,price:number}[]=[];
+        await Promise.all(data.map(async (e: any) => {
+            storeData = await OrderProduct.find({ storeId: e._id });
+            price=0;
+            storeData.map((a:any)=>{
+                price=a.mrpPrice+price;
+            })
+            resData.push({storeId:e._id,price:price});           
+        }))
+        return resData;
+    }
+
+    static async totalOrderFromEachBusinessCategory(req: any) {
+
+        
+        const data = await OrderProduct.aggregate([
+            { $group: { _id: '$storeId' } },
+        ])
+
+        var storeData,count=0;
+        var storeId:string[]=[];
+        var resData:any[]=[];
+
+        //store logic 
+        await Promise.all(data.map(async (e: any) => {
+            storeData = await OrderProduct.find({ storeId: e._id });
+            count=storeData.length;
+            storeId.push(e._id);
+            resData.push({storeId:e._id,count:count});           
+        }))
+
+        //business Sub category logic
+        const sData= await Store.find({_id:{$in:storeId}}).populate('businessSubCategoryId');
+        var businessSubCat:any[]=[];
+        var rData=JSON.parse(JSON.stringify(resData));
+        await Promise.all(sData.map((e:any)=>{
+            rData.map((b:any)=>{
+                if(e._id.toHexString()==b.storeId ){
+                    if(!businessSubCat.includes(e.businessSubCategoryId._id.toHexString())){
+                        businessSubCat.push(e.businessSubCategoryId._id.toHexString());
+                        b.businessSubCategoryId=e.businessSubCategoryId._id.toHexString();
+                    }else{
+                        rData.map((a:any)=>{
+                            if(a.businessSubCategoryId==e.businessSubCategoryId._id.toHexString()){
+                                a.count=b.count+a.count;
+                            }
+                        })
+                    }
+                }
+            })
+        }))
+        
+        const removeDataArr:any[]=[];
+        var counter=0;
+        rData.map((a:any)=>{
+            if(!a.businessSubCategoryId){
+                removeDataArr.push(counter);
+            }
+            counter=counter+1;
+        })
+        
+        const filterDeleteIndexOfItem = [... new Set(removeDataArr)] as any;
+        const filterItemData = rData.filter(function (value: any, index: any) {
+            return filterDeleteIndexOfItem.indexOf(index) == -1;
+        })
+        const newArr = filterItemData.map(({storeId, ...rest}:{storeId:any}) => {
+            return rest;
+        });
+
+        //business category logic
+        const businessCatData=await BusinessSubCategory.find({_id:{$in:businessSubCat}}).populate('businessCategoryId');
+        var businessCat:any[]=[];
+        var newResArr=JSON.parse(JSON.stringify(newArr));
+        await Promise.all(businessCatData.map((e:any)=>{
+            newResArr.map((b:any)=>{
+                if(e._id.toHexString()==b.businessSubCategoryId ){
+                    if(!businessCat.includes(e.businessCategoryId._id.toHexString())){
+                        businessCat.push(e.businessCategoryId._id.toHexString());
+                        b.businessCategoryId=e.businessCategoryId;
+                    }else{
+                        newResArr.map((a:any)=>{
+                            if(a.businessCategoryId){
+                                if(a.businessCategoryId._id.toHexString()==e.businessCategoryId._id.toHexString()){
+                                    a.count=b.count+a.count;
+                                }
+                            }  
+                        })
+                    }
+                }
+            })
+        }))
+        
+        const removeDataArrCat:any[]=[];
+        var counter1=0;
+        newResArr.map((a:any)=>{
+            if(!a.businessCategoryId){
+                removeDataArrCat.push(counter1);
+            }
+            counter1=counter1+1;
+        })
+        
+        const filterDeleteIndexOfItem1 = [... new Set(removeDataArrCat)] as any;
+        const filterItemData1 = newResArr.filter(function (value: any, index: any) {
+            return filterDeleteIndexOfItem1.indexOf(index) == -1;
+        })
+
+        const newArrRes = filterItemData1.map(({businessSubCategoryId, ...rest}:{businessSubCategoryId:any}) => {
+            return rest;
+        });
+        return newArrRes;
+    }     
+} 

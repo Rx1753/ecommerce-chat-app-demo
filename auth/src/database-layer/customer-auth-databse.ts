@@ -44,7 +44,7 @@ export class CustomerAuthDatabaseLayer {
         return req.params.status;
     }
 
-    static async  signUpUser(req: any, inviteCode: string) {
+    static async signUpUser(req: any, inviteCode: string) {
 
         const adminInviteCase = await adminSwitches.findOne({ name: 'inviteOnly' });
 
@@ -53,6 +53,7 @@ export class CustomerAuthDatabaseLayer {
         const { name, email, password, phoneNumber, refralCode, isWaiting } = req.body;
 
         var user: CustomerAttrs;
+
         try {
             user = { name, password, inviteCode };
             if (req.body.phoneNumber == null && req.body.phoneNumber == undefined && req.body.email != null && req.body.email != undefined) {
@@ -85,18 +86,21 @@ export class CustomerAuthDatabaseLayer {
                 const inviteCodeCheck = (user.email != null && user.phoneNumber != null) ?
                     (await invitionCode.findOne({ $and: [{ $or: [{ $and: [{ email: user.email }, { type: 'email' }] }, { $and: [{ phoneNumber: user.phoneNumber }, { type: 'phoneNumber' }] }] }, { code: refralCode }, { isUsed: false }] }))
                     : (user.email ?
-                        await invitionCode.findOne({ $and: [{ email: user.email }, { type: 'email' }, { code: refralCode }, { isUsed: false }] }) :
-                        await invitionCode.findOne({ $and: [{ type: 'phoneNumber' }, { code: refralCode }, { phoneNumber: user.phoneNumber }, { isUsed: false }] }));
+                        await invitionCode.findOne({ $and: [{ email: user.email }, { type: 'email' }, { code: refralCode },] }) :
+                        await invitionCode.findOne({ $and: [{ type: 'phoneNumber' }, { code: refralCode }, { phoneNumber: user.phoneNumber }] }));
+                console.log('invitecheck ', inviteCodeCheck);
 
                 if (inviteCodeCheck) {
+                    console.log('inviteCodeCheck', inviteCodeCheck);
 
                     //Day difference for expireDay check
                     const timeStamp: any = inviteCodeCheck?.updated_at;
                     const diff = new Date().getTime() - timeStamp;
                     var diffDays = Math.ceil(diff / (1000 * 3600 * 24));
+                    console.log('diff', diff);
 
-                    // console.log(diffDays);
-                    // console.log(inviteCodeCheck?.expirationDays!);
+                    console.log(diffDays);
+                    console.log(inviteCodeCheck?.expirationDays!);
 
                     if (inviteCodeCheck?.expirationDays! > diffDays) {
                         //referalId
@@ -146,15 +150,17 @@ export class CustomerAuthDatabaseLayer {
             req.session = { jwt: userJwt };
             await new CutomerCreatedPublisher(natsWrapper.client).publish({
                 id: storeData.id,
-                name:storeData.name,
-                email:storeData.email,
-                phoneNumber:storeData.phoneNumber
-            }) 
-            if(storeData.status==='pending'){
-                return {data:storeData,flag:true};
+                name: storeData.name,
+                email: storeData.email,
+                phoneNumber: storeData.phoneNumber
+            })
+            if (storeData.status === 'pending') {
+                return { data: storeData, flag: true };
             }
-            return {data:{ accessToken: userJwt, refreshToken: storeData.refreshToken },flag:false};
-            
+            const resData = JSON.parse(JSON.stringify(storeData));
+            resData.accessToken = userJwt;
+            return { data: resData, flag: false };
+
         } catch (error: any) {
             throw new BadRequestError(error.message);
         }
@@ -186,6 +192,8 @@ export class CustomerAuthDatabaseLayer {
 
     static async currentLoginUser(req: any) {
         const user = await Customer.findById({ _id: req.currentUser.id });
+        console.log(user);
+
         return user;
     }
 
@@ -225,31 +233,23 @@ export class CustomerAuthDatabaseLayer {
         }
     }
 
-    static async emailVerification(req: any) {
-        console.log('email verify');
-        console.log(req.currentUser);
-        try {
-            if (req.currentUser.email != null && req.currentUser.email != undefined) {
-                const customerData = await Customer.findById(req.currentUser.id);
-                if (customerData && customerData.isEmailVerified == false) {
-                    const code = shortid.generate();
-                    var createVerificationCode = invitionCode.build({
-                        type: 'email',
-                        email: customerData.email,
-                        userId: req.currentUser.id,
-                        code: code,
-                        expirationDays: 8
-                    })
-                    await createVerificationCode.save();
-                    await MailService.mailTrigger( customerData.email, 'Email Verification', "<h1>Hello ,</h1><p>here, is your email verfication code,</br> pls enter it in email verification code field <B>" + code + "</B> . </p>");
-                    return;
+    static async emailVerification(email: any, userId: any) {
 
-                } else {
-                    throw new BadRequestError('Your email is already verified')
-                }
-            } else {
-                throw new BadRequestError('You Login with PhoneNumber')
-            }
+        try {
+
+            // const customerData = await Customer.findById(userId);
+
+            const code = shortid.generate();
+            var createVerificationCode = invitionCode.build({
+                type: 'email',
+                email: email,
+                userId: userId,
+                code: code,
+                expirationDays: 8
+            })
+            await createVerificationCode.save();
+            await MailService.mailTrigger(email, 'Email Verification', "<h1>Hello ,</h1><p>here, is your email verfication code,</br> pls enter it in email verification code field <B>" + code + "</B> . </p>");
+            return;
         } catch (err: any) {
             console.log(err.message);
             throw new BadRequestError(err.message)
@@ -341,25 +341,27 @@ export class CustomerAuthDatabaseLayer {
     }
     static async forgotPasswordMailTrigger(req: any) {
         console.log('email verify');
-        console.log(req.currentUser);
+        const email = req.body.email;
+        console.log('email', email);
+
         try {
-            if (req.currentUser.email != null && req.currentUser.email != undefined) {
+            const userData = await Customer.findOne({ email: email });
+            if (userData) {
 
                 const code = shortid.generate();
                 var createVerificationCode = invitionCode.build({
                     type: 'email',
-                    email: req.currentUser.email,
-                    userId: req.currentUser.id,
+                    email: email,
                     code: code,
                     expirationDays: 1
                 })
                 await createVerificationCode.save();
 
-                await MailService.mailTrigger( req.currentUser.email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
+                await MailService.mailTrigger(email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
                 return;
             } else {
 
-                throw new BadRequestError('You Login with PhoneNumber')
+                throw new BadRequestError('Ohh No!!Email not found!! You Login with PhoneNumber')
             }
         } catch (err: any) {
             console.log(err.message);
@@ -370,9 +372,9 @@ export class CustomerAuthDatabaseLayer {
 
     //forgot password with code verify  
     static async forgotPasswordCodeVerification(req: any) {
-        const { code, password } = req.body;
+        const { email, code, password } = req.body;
         try {
-            const inviteCodeCheck = await invitionCode.findOne({ $and: [{ code: code }, { userId: req.currentUser.id }, { email: req.currentUser.email }] })
+            const inviteCodeCheck = await invitionCode.findOne({ $and: [{ code: code }, { email: email }] })
             if (inviteCodeCheck) {
                 const timeStamp: any = inviteCodeCheck?.updated_at;
                 const diff = new Date().getTime() - timeStamp;
@@ -383,7 +385,14 @@ export class CustomerAuthDatabaseLayer {
 
                 if (12000 < diffSecound) {
                     const hased = await Password.toHash(password);
-                    await Customer.findByIdAndUpdate(req.currentUser.id, { password: hased });
+                    const userData = await Customer.findOne({ email: email });
+                    if (userData) {
+                        await Customer.findByIdAndUpdate(userData.id, { password: hased });
+                        return;
+                    } else {
+                        throw new BadRequestError("Email Not Found!!!")
+                    }
+
                     return;
                 } else {
                     await invitionCode.findByIdAndDelete(inviteCodeCheck.id);
@@ -395,6 +404,16 @@ export class CustomerAuthDatabaseLayer {
         } catch (err: any) {
             console.log(err.message);
             throw new BadRequestError(err.message)
+        }
+
+    }
+
+    static async getInviteOnlyGenralSwitch(req: any) {
+        var res = await adminSwitches.find({ name: 'inviteOnly' });
+        if (res.length != 0) {
+            return res[0].status;
+        } else {
+            throw new BadRequestError("Data not found");
         }
 
     }

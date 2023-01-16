@@ -18,6 +18,6 @@ router.put('/api/store/storeholiday/update/:id',verifyVendorToken,StoreHolidayVa
 router.delete('/api/store/storeholiday/delete/:id',verifyVendorToken,StoreHolidayDomain.deleteStoreHoliday);
 
 // get all Store
-router.get('/api/store/storeholiday/get/:id',verifyToken,StoreHolidayDomain.getStoreHolidayId);
+router.get('/api/store/storeholiday/get/:id',StoreHolidayDomain.getStoreHolidayByStoreId);
 
 export { router as StoreHolidayRouter };

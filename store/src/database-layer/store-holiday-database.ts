@@ -159,8 +159,8 @@ export class StoreHolidayDatabaseLayer {
         }
     }
 
-    static async getStoreHolidayById(req: any, id: string) {
-        const data = await storeHoliday.findById(id);
+    static async getStoreHolidayByStoreId(req: any, id: string) {
+        const data = await storeHoliday.find({storeId:id});
         return data;
     }
 

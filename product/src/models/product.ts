@@ -9,7 +9,7 @@ export interface ProductAttrs {
     name: string;
     description: string;
     productSubCategoryId: string;
-    imageUrl: string;
+    imageUrl: string[];
     storeId: string;
     brandName: string;
     warrenty?: boolean;
@@ -38,7 +38,7 @@ export interface ProductDoc extends mongoose.Document {
     description: string;
     isActive: boolean;
     productSubCategoryId: ProductSubCategoryDoc;
-    imageUrl: string;
+    imageUrl: string[];
     brandName: string;
     storeId: StoreDoc;
     warrenty: boolean;
@@ -58,7 +58,7 @@ const ProductSchema = new mongoose.Schema({
     name: { type: String },
     description: { type: String },
     isActive: { type: Boolean, default: true },
-    imageUrl: { type: String },
+    imageUrl: [{ type: String }],
     brandName: { type: String },
     warrenty: { type: Boolean, default: false },
     guaranty: { type: Boolean, default: false },

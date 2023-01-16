@@ -1,7 +1,11 @@
 import mongoose from 'mongoose';
 import { app } from './app';
+import { BusinessCategoryCreatedListener } from './event/listener/business-category-listener';
+import { BusinessCategoryUpdatedListener } from './event/listener/business-category-updated-listener';
 import { BusinessRoleCreatedListener } from './event/listener/business-role-listener';
 import { BusinessRoleMappingListener } from './event/listener/business-role-mapping-listener';
+import { BusinessSubCategoryCreatedListener } from './event/listener/business-sub-category-listener';
+import { BusinessSubCategoryUpdatedListener } from './event/listener/business-sub-category-update-listener';
 import { BusinessUserCreatedListener } from './event/listener/business-user-listener';
 import { CouponCreatedListener } from './event/listener/coupon-created-listener';
 import { CouponMappingCreatedListener } from './event/listener/coupon-mapping-created';
@@ -66,7 +70,10 @@ const start = async () => {
     new CouponMappingCreatedListener(natsWrapper.client).listen()
     new ProductSubCategoryCreatedListener(natsWrapper.client).listen()
     new ProductCategoryCreatedListener(natsWrapper.client).listen()
-    
+    new BusinessSubCategoryUpdatedListener(natsWrapper.client).listen();
+    new BusinessCategoryUpdatedListener(natsWrapper.client).listen();
+    new BusinessCategoryCreatedListener(natsWrapper.client).listen();
+    new BusinessSubCategoryCreatedListener(natsWrapper.client).listen();
   } catch (error: any) {
     throw Error(error);
   }

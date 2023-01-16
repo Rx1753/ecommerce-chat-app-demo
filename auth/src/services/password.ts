@@ -1,4 +1,5 @@
-import { scrypt, randomBytes } from 'crypto';
+import { scrypt, randomBytes }  from 'crypto';
+import * as crypto from "crypto";
 import { promisify } from 'util';
 
 const scryptAsync = promisify(scrypt);
@@ -14,7 +15,10 @@ export class Password {
   static async compare(storedPassword: string, suppliedpassword: string) {
     const [hasedPassword, salt] = storedPassword.split('.');
     const buf = (await scryptAsync(suppliedpassword, salt, 64)) as Buffer;
+    console.log('buf',buf);
 
     return buf.toString('hex') === hasedPassword;
   }
+
+  
 }

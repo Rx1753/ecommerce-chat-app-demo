@@ -8,6 +8,8 @@ import { ProductRouter } from './routes/product-route';
 import { ProductItemRouter } from './routes/product-item-route';
 import { AddOnsRouter } from './routes/add-ons-route';
 import { CouponRouter } from './routes/coupon';
+import { ProductWhishlist } from './models/whislist-product';
+import { ProductWhishlistRouter } from './routes/product-whislist-route';
 
 const app = express();
 
@@ -18,12 +20,13 @@ app.use(express.json());
 app.use(
   cookieSession({
     signed: false, // Disable encrypction in cookie
-    // secure : true, // use cookie only on https connection
+    // secure : true, // use cookie only on https connecßßion
     secure: process.env.NODE_ENV !== 'test',
   })
 );
 
 // Router
+app.use(ProductWhishlistRouter);
 app.use(ProductCategoryRouter);
 app.use(ProductSubCategoryRouter);
 app.use(ProductRouter);

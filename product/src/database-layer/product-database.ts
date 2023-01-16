@@ -89,7 +89,8 @@ export class ProductDatabaseLayer {
                         name: data.name,
                         description: data.description,
                         productSubCategoryId: data.productSubCategoryId.toString(),
-                        imageUrl: data.imageUrl,
+                        //TODO publisher has to change string to Array
+                        imageUrl: data.imageUrl[0],
                         storeId: data.storeId.toString(),
                         brandName: data.brandName,
                         basePrice: data.basePrice,
@@ -179,7 +180,8 @@ export class ProductDatabaseLayer {
                         isCancellation: isCancellation,
                         relatableProducts: relatableProducts,
                     })
-                    return data;
+                    const productData = await Product.findById(id)
+                    return productData;
                 } catch (error: any) {
                     throw new BadRequestError(error.message);
                 }

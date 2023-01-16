@@ -57,9 +57,6 @@ export class CustomerDomain {
             console.log('phone not defined,\nSo email signup');
             email = req.body.email;
             exitstingEmail = await CustomerAuthDatabaseLayer.isExistingEmail(email)
-            if(exitstingEmail.status==="pending"){
-                throw new BadRequestError("You are in waiting list\n if admin approves you then you are eligible to login");
-            }
             isEmail = true;
         }
 
@@ -69,12 +66,13 @@ export class CustomerDomain {
             existingPhone = await CustomerAuthDatabaseLayer.isExistingPhone(phoneNumber)
         }
 
-        if (isEmail && !exitstingEmail) {
+        if (isEmail == true && !exitstingEmail) {
             throw new BadRequestError('Invalid Email');
         }
         if (isEmail == false && !existingPhone) {
             throw new BadRequestError('Invalid PhoneNumber');
         }
+       
         const passwordMatch = await CustomerAuthDatabaseLayer.checkPassword(
             isEmail ? exitstingEmail.password : existingPhone.password,
             password
@@ -83,15 +81,24 @@ export class CustomerDomain {
         if (!passwordMatch) {
             throw new BadRequestError('Invalid Password');
         }
+        console.log('check',exitstingEmail.isMFA);
+        
+        var isMFA=false;
+        // if(isEmail ? (exitstingEmail?.isMFA==true) : (existingPhone.isMFA==true)){
+        //     isMFA=true;
+        // }
 
         if (exitstingEmail) {
             const accessToken = await JwtService.accessToken({ email: exitstingEmail.email, id: exitstingEmail.id, phoneNumber: exitstingEmail.phoneNumber, type: 'Customer' });
             const newRefreshToken = await CustomerAuthDatabaseLayer.updateRefreshToken(exitstingEmail.id, exitstingEmail.email, exitstingEmail.phoneNumber)
-            return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
+            isMFA ? await CustomerAuthDatabaseLayer.emailVerification(exitstingEmail.email,exitstingEmail.id) : ''; 
+            return res.status(201).send({userId:exitstingEmail.id, accessToken: accessToken, refreshToken: newRefreshToken,isMFA:isMFA })
+
         } else if (existingPhone) {
+
             const accessToken = await JwtService.accessToken({ email: existingPhone.email, id: existingPhone.id, phoneNumber: existingPhone.phoneNumber, type: 'Customer' });
             const newRefreshToken = await CustomerAuthDatabaseLayer.updateRefreshToken(existingPhone.id, existingPhone.email, existingPhone.phoneNumber)
-            return res.status(201).send({ accessToken: accessToken, refreshToken: newRefreshToken })
+            return res.status(201).send({ userId:existingPhone.id, accessToken: accessToken, refreshToken: newRefreshToken,isMFA:isMFA })
         }
     }
 
@@ -147,10 +154,10 @@ export class CustomerDomain {
     }
 
     //EmailVerification
-    static async emailVerification(req: Request, res: Response) {
-        const mailTrigger = await CustomerAuthDatabaseLayer.emailVerification(req);
-        res.status(200).send({ mailTrigger: mailTrigger });
-    }
+    // static async emailVerification(req: Request, res: Response) {
+    //     const mailTrigger = await CustomerAuthDatabaseLayer.emailVerification(req);
+    //     res.status(200).send({ mailTrigger: mailTrigger });
+    // }
 
     //mail verification code verify
     static async emailCodeVerification(req: Request, res: Response) {
@@ -173,7 +180,7 @@ export class CustomerDomain {
     //email trigger for forgot password
     static async forgotPasswordMailTrigger(req:Request,res:Response){
         const mailTrigger = await CustomerAuthDatabaseLayer.forgotPasswordMailTrigger(req);
-        res.status(200).send({ mailTrigger: mailTrigger });
+        res.status(200).send({ mailTrigger: true });
     }
 
     //forgot password with code verify
@@ -199,4 +206,9 @@ export class CustomerDomain {
     }
 
 
+    
+    static async getInviteOnlyGenralSwitch(req: Request, res: Response) {
+        var status = await CustomerAuthDatabaseLayer.getInviteOnlyGenralSwitch(req);
+        res.status(200).send(status);
+    }
 }
