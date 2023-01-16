@@ -16,6 +16,8 @@ router.get('/api/order/getorder/:id',verifyCustomerToken,OrderDomain.getSignleOr
 router.get('/api/order/get',verifyToken,OrderDomain.getOrder);
 router.get('/api/order/revenue',OrderDomain.revenue);
 router.get('/api/order/totalorderbusinesscateg',OrderDomain.totalOrderFromEachBusinessCategory);
+router.get('/api/order/totalrevnuebusinesscateg',OrderDomain.totalRevnueFromEachBusinessCategory);
+
 router.get('/api/order/coupon',verifyToken,OrderDomain.couponSuggestion);
 
 export { router as OrderRouter };

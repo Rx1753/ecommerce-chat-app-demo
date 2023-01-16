@@ -266,134 +266,234 @@ export class OrderDatabaseLayer {
             { $group: { _id: '$storeId' } },
         ])
 
-        var storeData,price:number;
-        var resData:{storeId:string,price:number}[]=[];
+        var storeData, price: number;
+        var resData: { storeId: string, price: number }[] = [];
         await Promise.all(data.map(async (e: any) => {
             storeData = await OrderProduct.find({ storeId: e._id });
-            price=0;
-            storeData.map((a:any)=>{
-                price=a.mrpPrice+price;
+            price = 0;
+            storeData.map((a: any) => {
+                price = a.mrpPrice + price;
             })
-            resData.push({storeId:e._id,price:price});           
+            resData.push({ storeId: e._id, price: price });
         }))
         return resData;
     }
+
+
     static async customer(req: any) {
 
         const data = await OrderProduct.aggregate([
             { $group: { _id: '$customerId' } },
         ])
 
-        var storeData,price:number;
-        var resData:{storeId:string,price:number}[]=[];
+        var storeData, price: number;
+        var resData: { storeId: string, price: number }[] = [];
         await Promise.all(data.map(async (e: any) => {
             storeData = await OrderProduct.find({ storeId: e._id });
-            price=0;
-            storeData.map((a:any)=>{
-                price=a.mrpPrice+price;
+            price = 0;
+            storeData.map((a: any) => {
+                price = a.mrpPrice + price;
             })
-            resData.push({storeId:e._id,price:price});           
+            resData.push({ storeId: e._id, price: price });
         }))
         return resData;
     }
 
     static async totalOrderFromEachBusinessCategory(req: any) {
 
-        
+
         const data = await OrderProduct.aggregate([
             { $group: { _id: '$storeId' } },
         ])
 
-        var storeData,count=0;
-        var storeId:string[]=[];
-        var resData:any[]=[];
+        var storeData, count = 0;
+        var storeId: string[] = [];
+        var resData: any[] = [];
 
         //store logic 
         await Promise.all(data.map(async (e: any) => {
             storeData = await OrderProduct.find({ storeId: e._id });
-            count=storeData.length;
+            count = storeData.length;
             storeId.push(e._id);
-            resData.push({storeId:e._id,count:count});           
+            resData.push({ storeId: e._id, count: count });
         }))
 
         //business Sub category logic
-        const sData= await Store.find({_id:{$in:storeId}}).populate('businessSubCategoryId');
-        var businessSubCat:any[]=[];
-        var rData=JSON.parse(JSON.stringify(resData));
-        await Promise.all(sData.map((e:any)=>{
-            rData.map((b:any)=>{
-                if(e._id.toHexString()==b.storeId ){
-                    if(!businessSubCat.includes(e.businessSubCategoryId._id.toHexString())){
+        const sData = await Store.find({ _id: { $in: storeId } }).populate('businessSubCategoryId');
+        var businessSubCat: any[] = [];
+        var rData = JSON.parse(JSON.stringify(resData));
+        await Promise.all(sData.map((e: any) => {
+            rData.map((b: any) => {
+                if (e._id.toHexString() == b.storeId) {
+                    if (!businessSubCat.includes(e.businessSubCategoryId._id.toHexString())) {
                         businessSubCat.push(e.businessSubCategoryId._id.toHexString());
-                        b.businessSubCategoryId=e.businessSubCategoryId._id.toHexString();
-                    }else{
-                        rData.map((a:any)=>{
-                            if(a.businessSubCategoryId==e.businessSubCategoryId._id.toHexString()){
-                                a.count=b.count+a.count;
+                        b.businessSubCategoryId = e.businessSubCategoryId._id.toHexString();
+                    } else {
+                        rData.map((a: any) => {
+                            if (a.businessSubCategoryId == e.businessSubCategoryId._id.toHexString()) {
+                                a.count = b.count + a.count;
                             }
                         })
                     }
                 }
             })
         }))
-        
-        const removeDataArr:any[]=[];
-        var counter=0;
-        rData.map((a:any)=>{
-            if(!a.businessSubCategoryId){
+
+        const removeDataArr: any[] = [];
+        var counter = 0;
+        rData.map((a: any) => {
+            if (!a.businessSubCategoryId) {
                 removeDataArr.push(counter);
             }
-            counter=counter+1;
+            counter = counter + 1;
         })
-        
+
         const filterDeleteIndexOfItem = [... new Set(removeDataArr)] as any;
         const filterItemData = rData.filter(function (value: any, index: any) {
             return filterDeleteIndexOfItem.indexOf(index) == -1;
         })
-        const newArr = filterItemData.map(({storeId, ...rest}:{storeId:any}) => {
+        const newArr = filterItemData.map(({ storeId, ...rest }: { storeId: any }) => {
             return rest;
         });
 
         //business category logic
-        const businessCatData=await BusinessSubCategory.find({_id:{$in:businessSubCat}}).populate('businessCategoryId');
-        var businessCat:any[]=[];
-        var newResArr=JSON.parse(JSON.stringify(newArr));
-        await Promise.all(businessCatData.map((e:any)=>{
-            newResArr.map((b:any)=>{
-                if(e._id.toHexString()==b.businessSubCategoryId ){
-                    if(!businessCat.includes(e.businessCategoryId._id.toHexString())){
+        const businessCatData = await BusinessSubCategory.find({ _id: { $in: businessSubCat } }).populate('businessCategoryId');
+        var businessCat: any[] = [];
+        var newResArr = JSON.parse(JSON.stringify(newArr));
+        await Promise.all(businessCatData.map((e: any) => {
+            newResArr.map((b: any) => {
+                if (e._id.toHexString() == b.businessSubCategoryId) {
+                    if (!businessCat.includes(e.businessCategoryId._id.toHexString())) {
                         businessCat.push(e.businessCategoryId._id.toHexString());
-                        b.businessCategoryId=e.businessCategoryId;
-                    }else{
-                        newResArr.map((a:any)=>{
-                            if(a.businessCategoryId){
-                                if(a.businessCategoryId._id.toHexString()==e.businessCategoryId._id.toHexString()){
-                                    a.count=b.count+a.count;
+                        b.businessCategoryId = e.businessCategoryId;
+                    } else {
+                        newResArr.map((a: any) => {
+                            if (a.businessCategoryId) {
+                                if (a.businessCategoryId._id.toHexString() == e.businessCategoryId._id.toHexString()) {
+                                    a.count = b.count + a.count;
                                 }
-                            }  
+                            }
                         })
                     }
                 }
             })
         }))
-        
-        const removeDataArrCat:any[]=[];
-        var counter1=0;
-        newResArr.map((a:any)=>{
-            if(!a.businessCategoryId){
+
+        const removeDataArrCat: any[] = [];
+        var counter1 = 0;
+        newResArr.map((a: any) => {
+            if (!a.businessCategoryId) {
                 removeDataArrCat.push(counter1);
             }
-            counter1=counter1+1;
+            counter1 = counter1 + 1;
         })
-        
+
         const filterDeleteIndexOfItem1 = [... new Set(removeDataArrCat)] as any;
         const filterItemData1 = newResArr.filter(function (value: any, index: any) {
             return filterDeleteIndexOfItem1.indexOf(index) == -1;
         })
 
-        const newArrRes = filterItemData1.map(({businessSubCategoryId, ...rest}:{businessSubCategoryId:any}) => {
+        const newArrRes = filterItemData1.map(({ businessSubCategoryId, ...rest }: { businessSubCategoryId: any }) => {
             return rest;
         });
         return newArrRes;
-    }     
+    }
+    static async totalRevnueFromEachBusinessCategory(req: any) {
+        const data = await OrderProduct.aggregate([
+            { $group: { _id: '$storeId' } },
+        ])
+        var storeIdArr: any[] = [];
+        var storeData, price: number;
+        var resData: { storeId: string, price: number }[] = [];
+        await Promise.all(data.map(async (e: any) => {
+            storeData = await OrderProduct.find({ storeId: e._id });
+            price = 0;
+            storeData.map((a: any) => {
+                price = a.mrpPrice + price;
+            })
+            resData.push({ storeId: e._id, price: price });
+            storeIdArr.push(e._id);
+        }))
+
+        //business Sub category logic
+        const sData = await Store.find({ _id: { $in: storeIdArr } }).populate('businessSubCategoryId');
+        var businessSubCat: any[] = [];
+        var rData = JSON.parse(JSON.stringify(resData));
+        await Promise.all(sData.map((e: any) => {
+            rData.map((b: any) => {
+                if (e._id.toHexString() == b.storeId) {
+                    if (!businessSubCat.includes(e.businessSubCategoryId._id.toHexString())) {
+                        businessSubCat.push(e.businessSubCategoryId._id.toHexString());
+                        b.businessSubCategoryId = e.businessSubCategoryId._id.toHexString();
+                    } else {
+                        rData.map((a: any) => {
+                            if (a.businessSubCategoryId == e.businessSubCategoryId._id.toHexString()) {
+                                a.price = b.price + a.price;
+                            }
+                        })
+                    }
+                }
+            })
+        }))
+
+        const removeDataArr: any[] = [];
+        var counter = 0;
+        rData.map((a: any) => {
+            if (!a.businessSubCategoryId) {
+                removeDataArr.push(counter);
+            }
+            counter = counter + 1;
+        })
+
+        const filterDeleteIndexOfItem = [... new Set(removeDataArr)] as any;
+        const filterItemData = rData.filter(function (value: any, index: any) {
+            return filterDeleteIndexOfItem.indexOf(index) == -1;
+        })
+        const newArr = filterItemData.map(({ storeId, ...rest }: { storeId: any }) => {
+            return rest;
+        });
+
+        //business category logic
+        const businessCatData = await BusinessSubCategory.find({ _id: { $in: businessSubCat } }).populate('businessCategoryId');
+        var businessCat: any[] = [];
+        var newResArr = JSON.parse(JSON.stringify(newArr));
+        await Promise.all(businessCatData.map((e: any) => {
+            newResArr.map((b: any) => {
+                if (e._id.toHexString() == b.businessSubCategoryId) {
+                    if (!businessCat.includes(e.businessCategoryId._id.toHexString())) {
+                        businessCat.push(e.businessCategoryId._id.toHexString());
+                        b.businessCategoryId = e.businessCategoryId;
+                    } else {
+                        newResArr.map((a: any) => {
+                            if (a.businessCategoryId) {
+                                if (a.businessCategoryId._id.toHexString() == e.businessCategoryId._id.toHexString()) {
+                                    a.price = b.price + a.price;
+                                }
+                            }
+                        })
+                    }
+                }
+            })
+        }))
+
+        const removeDataArrCat: any[] = [];
+        var counter1 = 0;
+        newResArr.map((a: any) => {
+            if (!a.businessCategoryId) {
+                removeDataArrCat.push(counter1);
+            }
+            counter1 = counter1 + 1;
+        })
+
+        const filterDeleteIndexOfItem1 = [... new Set(removeDataArrCat)] as any;
+        const filterItemData1 = newResArr.filter(function (value: any, index: any) {
+            return filterDeleteIndexOfItem1.indexOf(index) == -1;
+        })
+
+        const newArrRes = filterItemData1.map(({ businessSubCategoryId, ...rest }: { businessSubCategoryId: any }) => {
+            return rest;
+        });
+
+        return newArrRes;
+    }
 } 
