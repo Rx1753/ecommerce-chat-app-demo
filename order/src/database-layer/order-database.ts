@@ -1,7 +1,9 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import e from 'express';
 import { privateca } from 'googleapis/build/src/apis/privateca';
+import { BusinessRoleMapping } from '../models/business-role-mapping';
 import { BusinessSubCategory } from '../models/business-sub-category';
+import { BusinessUser } from '../models/business-user';
 import { Cart } from '../models/cart';
 import { Coupon } from '../models/coupon';
 import { CouponMapping } from '../models/coupon-mapping';
@@ -495,5 +497,120 @@ export class OrderDatabaseLayer {
         });
 
         return newArrRes;
+    }
+
+    static async totalSaleBusinessUserBased(req: any, id: any) {
+
+        const userData = await BusinessUser.findById(id);
+        console.log("userData", userData);
+        const userIdArr: any[] = [];
+        const storeIdArr: any[] = [];
+        var seal: number = 0;
+        if (userData) {
+            if (userData._id == userData.createdBy) {
+                console.log('both are equal');
+                const createdUser = await BusinessUser.find({ createdBy: id });
+                console.log('createdUser', createdUser);
+
+                if (createdUser) {
+                    createdUser.map((e: any) => {
+                        userIdArr.push(e.id);
+                    })
+                }
+                console.log('userIdArr', userIdArr);
+                const storeData = await Store.find({ createdBy: { $in: userIdArr } });
+                storeData.map((e: any) => {
+                    storeIdArr.push(e.id);
+                })
+                console.log('storeIdArr', storeIdArr);
+
+                const orderData = await OrderProduct.find({ storeId: { $in: storeIdArr } });
+
+                console.log('orderData', orderData);
+
+                orderData.map((e: any) => {
+                    seal = seal + Number(e.mrpPrice);
+                })
+                console.log('seal', seal);
+
+
+            } else {
+                
+                const storeData = await Store.findById(userData.store);
+
+                if(!storeData){
+                    throw new BadRequestError("Store Id is wrong");
+                }
+                const orderData = await OrderProduct.find({ storeId: storeData.id });
+                orderData.map((e: any) => {
+                    seal = seal + Number(e.mrpPrice);
+                })
+            }
+            return {seal:seal};
+        } else {
+            throw new BadRequestError('Id is wrong');
+        }
+
+    }
+
+    static async totalCustomerBasedBusinessUser(req:any,id:any){
+        const userData = await BusinessUser.findById(id);
+        console.log("userData", userData);
+        const userIdArr: any[] = [];
+        const storeIdArr: any[] = [];
+        const customerIdArr:any[]=[];
+        if (userData) {
+            if (userData._id == userData.createdBy) {
+                console.log('both are equal');
+                const createdUser = await BusinessUser.find({ createdBy: id });
+                console.log('createdUser', createdUser);
+
+                if (createdUser) {
+                    createdUser.map((e: any) => {
+                        userIdArr.push(e.id);
+                    })
+                }
+                console.log('userIdArr', userIdArr);
+                const storeData = await Store.find({ createdBy: { $in: userIdArr } });
+                storeData.map((e: any) => {
+                    storeIdArr.push(e.id);
+                })
+                console.log('storeIdArr', storeIdArr);
+
+                const orderData = await OrderProduct.find({ storeId: { $in: storeIdArr } });
+
+                console.log('orderData', orderData);
+
+                orderData.map((e: any) => {
+                    if(!customerIdArr.includes(e.customerId)){
+                        customerIdArr.push(e.customerId);
+                    }
+                })
+                console.log('customerIdArr', customerIdArr);
+                console.log('customerIdArr.length',customerIdArr.length);
+                 
+
+
+            } else {
+                
+                const storeData = await Store.findById(userData.store);
+
+                if(!storeData){
+                    throw new BadRequestError("Store Id is wrong");
+                }
+                const orderData = await OrderProduct.find({ storeId: storeData.id });
+                orderData.map((e: any) => {
+                    if(!customerIdArr.includes(e.customerId)){
+                        customerIdArr.push(e.customerId);
+                    }
+                })
+                console.log('customerIdArr', customerIdArr);
+                console.log('customerIdArr.length',customerIdArr.length);
+                 
+            }
+            return {customerCount:customerIdArr.length};
+        } else {
+            throw new BadRequestError('Id is wrong');
+        }
     }
 } 

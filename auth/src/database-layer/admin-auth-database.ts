@@ -19,6 +19,7 @@ import { AdminUpdatedPublisher } from '../events/publisher/admin-updated-publish
 import { AdminRole } from '../models/admin-role';
 import { AdminRoleMapping } from '../models/admin-role-mapping';
 import { AdminAttrs,Admin } from '../models/admin';
+import { Customer } from '../models/customer';
 
 export class AuthDatabaseLayer {
 
@@ -582,4 +583,21 @@ export class AuthDatabaseLayer {
     return data;
   }
 
+  static async waitingListApprove(req:any){
+    const {customerId,status}=req.body;
+    const userCheck = await Customer.findById(customerId);
+    if(userCheck){
+      if(status == "Approved"){
+       await Customer.findByIdAndUpdate(customerId,{status:status});
+      }else if(status == "Rejected"){
+        await Customer.findByIdAndDelete(customerId);
+        //TODO Delete  
+      }else{
+        throw new BadRequestError("status is invalid");
+      }
+      return;
+    }else{
+      throw new BadRequestError('CustomerId is wrong');
+    }
+  }
 }

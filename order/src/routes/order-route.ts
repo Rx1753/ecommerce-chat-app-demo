@@ -17,6 +17,9 @@ router.get('/api/order/get',verifyToken,OrderDomain.getOrder);
 router.get('/api/order/revenue',OrderDomain.revenue);
 router.get('/api/order/totalorderbusinesscateg',OrderDomain.totalOrderFromEachBusinessCategory);
 router.get('/api/order/totalrevnuebusinesscateg',OrderDomain.totalRevnueFromEachBusinessCategory);
+router.get('/api/order/totalsalebusinessuserbased/:id',OrderDomain.totalSaleBusinessUserBased);
+router.get('/api/order/totalcustomer/:id',OrderDomain.totalCustomerBasedBusinessUser);
+
 
 router.get('/api/order/coupon',verifyToken,OrderDomain.couponSuggestion);
 

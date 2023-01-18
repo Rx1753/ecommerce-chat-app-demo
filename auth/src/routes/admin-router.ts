@@ -53,6 +53,8 @@ router.post('/api/users/admin/signout', AuthDomain.signOut);
 //get admin by name serch
 router.get('/api/users/admin/getadminbyname/:name', AuthDomain.getAdminByName);
 
+router.post('/api/users/admin/waitinglist',verifyAdminToken, validateRequest,AuthDomain.waitingListApprove)
+
 
 
 export { router as adminAuthRouter };

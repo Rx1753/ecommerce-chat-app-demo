@@ -27,7 +27,7 @@ export interface BusinessUserDoc extends mongoose.Document {
     password: string;
     isActive: boolean;
     createdBy: BusinessUserDoc; // userId
-    storeId:StoreDoc
+    store:StoreDoc
 }
 
 const BusinessUserSchema = new mongoose.Schema({

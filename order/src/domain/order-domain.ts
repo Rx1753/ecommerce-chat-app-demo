@@ -6,8 +6,6 @@ import { OrderDatabaseLayer } from '../database-layer/order-database';
 export class OrderDomain {
 
     static async createOrder(req: Request, res: Response) {
-        console.log('1');
-        
         const Order = await OrderDatabaseLayer.createOrderBasedOnCart(req);
         res.status(201).send({orderPlace:true});
     }
@@ -38,6 +36,16 @@ export class OrderDomain {
     
     static async totalRevnueFromEachBusinessCategory(req: Request, res: Response) {
         const Order =  await OrderDatabaseLayer.totalRevnueFromEachBusinessCategory(req);
+        res.status(201).send(Order);
+    }
+    
+    static async totalSaleBusinessUserBased(req: Request, res: Response) {
+        const Order =  await OrderDatabaseLayer.totalSaleBusinessUserBased(req,req.params.id);
+        res.status(201).send(Order);
+    }
+    
+    static async totalCustomerBasedBusinessUser(req: Request, res: Response) {
+        const Order =  await OrderDatabaseLayer.totalCustomerBasedBusinessUser(req,req.params.id);
         res.status(201).send(Order);
     }
     static async couponSuggestion(req: Request, res: Response) {

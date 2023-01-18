@@ -251,10 +251,14 @@ export class AuthDomain {
     const data = await AuthDatabaseLayer.updateAdminRoles(req);
     res.status(200).send(data);
   }
-
   
   static async addRole(req:Request,res:Response){
     const data = await AuthDatabaseLayer.addRole(req);
     res.status(200).send(data);
+  }
+
+  static async waitingListApprove(req:Request,res:Response){
+    await AuthDatabaseLayer.waitingListApprove(req);
+    res.status(200).send({statusChanged:true});
   }
 }

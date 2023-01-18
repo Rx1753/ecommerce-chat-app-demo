@@ -7,9 +7,6 @@ import { JwtService } from '../services/jwt';
 import { Password } from '../services/password';
 import { MailService } from '../services/mail-services';
 import shortid from 'shortid';
-import { Request } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
-import { ParsedQs } from 'qs';
 import { PayloadType } from '../services/string-values';
 import { natsWrapper } from '../nats-wrapper';
 import { CutomerCreatedPublisher } from '../events/publisher/customer-publisher';
@@ -248,7 +245,7 @@ export class CustomerAuthDatabaseLayer {
                 expirationDays: 8
             })
             await createVerificationCode.save();
-            await MailService.mailTrigger(email, 'Email Verification', "<h1>Hello ,</h1><p>here, is your email verfication code,</br> pls enter it in email verification code field <B>" + code + "</B> . </p>");
+            // await MailService.mailTrigger(email, 'Email Verification', "<h1>Hello ,</h1><p>here, is your email verfication code,</br> pls enter it in email verification code field <B>" + code + "</B> . </p>");
             return;
         } catch (err: any) {
             console.log(err.message);
@@ -264,10 +261,10 @@ export class CustomerAuthDatabaseLayer {
             const diff = new Date().getTime() - timeStamp;
             var diffSecound = Math.ceil((diff / 1000) % 60);
 
-            // console.log(diffDays);
-            // console.log(inviteCodeCheck?.expirationDays!);
+            console.log(diffSecound);
+            console.log(inviteCodeCheck?.expirationDays!);
 
-            if (300000 < diffSecound) {
+            if (300000 > diffSecound) {
                 await Customer.findByIdAndUpdate(req.currentUser.id, { isMFA: true, isEmailVerified: true });
                 return;
             } else {
@@ -356,11 +353,9 @@ export class CustomerAuthDatabaseLayer {
                     expirationDays: 1
                 })
                 await createVerificationCode.save();
-
-                await MailService.mailTrigger(email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
+                // await MailService.mailTrigger(email, 'Forgot Password ', "<h1>Hello,</h1><p>here, is your code,</br> pls enter it in forgot password code field <B>" + code + "</B> . </p>");
                 return;
             } else {
-
                 throw new BadRequestError('Ohh No!!Email not found!! You Login with PhoneNumber')
             }
         } catch (err: any) {
@@ -383,7 +378,7 @@ export class CustomerAuthDatabaseLayer {
                 // console.log(diffDays);
                 // console.log(inviteCodeCheck?.expirationDays!);
 
-                if (12000 < diffSecound) {
+                if (12000 > diffSecound) {
                     const hased = await Password.toHash(password);
                     const userData = await Customer.findOne({ email: email });
                     if (userData) {
@@ -393,7 +388,6 @@ export class CustomerAuthDatabaseLayer {
                         throw new BadRequestError("Email Not Found!!!")
                     }
 
-                    return;
                 } else {
                     await invitionCode.findByIdAndDelete(inviteCodeCheck.id);
                     throw new BadRequestError('Ohh No!! Your Verification code is exppired');

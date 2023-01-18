@@ -84,9 +84,9 @@ export class CustomerDomain {
         console.log('check',exitstingEmail.isMFA);
         
         var isMFA=false;
-        // if(isEmail ? (exitstingEmail?.isMFA==true) : (existingPhone.isMFA==true)){
-        //     isMFA=true;
-        // }
+        if(isEmail ? (exitstingEmail.isMFA==true) : (existingPhone.isMFA==true)){
+            isMFA=true;
+        }
 
         if (exitstingEmail) {
             const accessToken = await JwtService.accessToken({ email: exitstingEmail.email, id: exitstingEmail.id, phoneNumber: exitstingEmail.phoneNumber, type: 'Customer' });
