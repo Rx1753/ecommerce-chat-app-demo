@@ -9,12 +9,13 @@ import { Product } from "../models/product";
 import { ProductCategory } from '../models/product-category';
 import { ProductSubCategory } from '../models/product-sub-category';
 import { Store } from '../models/store';
+import { ProductWhishlist } from '../models/whislist-product';
 import { natsWrapper } from '../nats-wrapper';
 
 export class ProductDatabaseLayer {
 
     static async createProduct(req: any) {
-        const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, mrpPrice, addOns, quantity, isInvoiceAvailable, calculateOnBasePrice, isCancellation, relatableProducts } = req.body;
+        const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, mrpPrice, addOns, quantity, isInvoiceAvailable,  isCancellation, relatableProducts,attributeVariant } = req.body;
 
         var permission = false;
         console.log('type', req.currentUser.id);
@@ -74,7 +75,6 @@ export class ProductDatabaseLayer {
                         warrenty: warrenty,
                         addOns: addOns,
                         isInvoiceAvailable: isInvoiceAvailable,
-                        calculateOnBasePrice: calculateOnBasePrice,
                         isCancellation: isCancellation,
                         relatableProducts: relatableProducts,
                         createdBy: req.currentUser.id
@@ -97,7 +97,6 @@ export class ProductDatabaseLayer {
                         mrpPrice: data.mrpPrice,
                         quantity: data.quantity,
                         createdBy: data.createdBy,
-                        calculateOnBasePrice: data.calculateOnBasePrice,
                         relatableProducts: rProduct,
                         isActive: true
                     });
@@ -116,7 +115,7 @@ export class ProductDatabaseLayer {
     }
 
     static async updateProduct(req: any, id: string) {
-        const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, mrpPrice, addOns, quantity, isInvoiceAvailable, calculateOnBasePrice, isCancellation, relatableProducts } = req.body;
+        const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, mrpPrice, addOns, quantity, isInvoiceAvailable,  isCancellation, relatableProducts } = req.body;
 
         var permission = false;
         console.log('type', req.currentUser.type);
@@ -176,7 +175,6 @@ export class ProductDatabaseLayer {
                         warrenty: warrenty,
                         addOns: addOns,
                         isInvoiceAvailable: isInvoiceAvailable,
-                        calculateOnBasePrice: calculateOnBasePrice,
                         isCancellation: isCancellation,
                         relatableProducts: relatableProducts,
                     })
@@ -256,7 +254,14 @@ export class ProductDatabaseLayer {
             }
         }).populate('storeId').populate('relatableProducts');
         if (data) {
-            return data;
+        const dataStr= JSON.parse(JSON.stringify(data));
+        if(req.currentUser){
+            await Promise.all(dataStr.map(async (e:any)=>{
+                const wishData=await ProductWhishlist.findOne({$and:[{productId:e._id},{customerId:req.currentUser.id}]});
+                dataStr.isInWishList= wishData ? true : false;
+            }))
+        }
+            return dataStr;
         } else {
             throw new BadRequestError("no data found for given id");
         }

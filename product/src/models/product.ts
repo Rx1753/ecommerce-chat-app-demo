@@ -19,7 +19,6 @@ export interface ProductAttrs {
     addOns?: boolean;
     quantity: number;
     isInvoiceAvailable?: boolean;
-    calculateOnBasePrice?: boolean;
     isCancellation?: boolean;
     relatableProducts?: string[],
     createdBy:string,
@@ -48,7 +47,6 @@ export interface ProductDoc extends mongoose.Document {
     addOns: boolean;
     quantity: number;
     isInvoiceAvailable: boolean;
-    calculateOnBasePrice: boolean;
     isCancellation: boolean;
     relatableProducts: ProductDoc[];
     createdBy:string;
@@ -67,10 +65,10 @@ const ProductSchema = new mongoose.Schema({
     addOns: { type: Boolean, default: false },
     quantity: { type: Number },
     isInvoiceAvailable: { type: Boolean, default: false },
-    calculateOnBasePrice: { type: Boolean, default: true },
     isCancellation: { type: Boolean, default: false },
     storeId:{type:String,ref:'Store'},
     relatableProducts: [
+        {_id:false},
          { type: String, ref: 'Product' }
     ],
     productSubCategoryId: { type: String, ref: 'ProductSubCategory' },
@@ -80,8 +78,11 @@ const ProductSchema = new mongoose.Schema({
 }, {
     toJSON: {
         transform(doc, ret) {
-            ret.ProductId = ret._id;
+            ret.productId = ret._id;
+            ret.productName=ret.name;
+            
             delete ret._id;
+            delete ret.name;
             delete ret.__v;
             delete ret.createdAt;
             delete ret.updatedAt;

@@ -48,6 +48,26 @@ export const verifyToken = (
   }
   next();
 };
+
+export const verifyGetToken = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  var token;
+  if (req.session?.jwt ) {
+    token = req.session?.jwt;
+  }else if(req.headers['token']){
+    token = req.headers['token'];
+  }
+  
+  if(token){
+    const payload = jwt.verify(token, process.env.JWT_KEY!) as UserPayload;
+    req.currentUser = payload;
+  }
+  next();
+};
+
 export const verifyCustomerToken = (
   req: Request,
   res: Response,
@@ -57,7 +77,6 @@ export const verifyCustomerToken = (
     console.log('token not wrote');    
     throw new BadRequestError('Token/Session not provided');
   }
-
 
   var token;
   if (req.session?.jwt) {

@@ -1,7 +1,7 @@
 import { validateRequest } from '@rx-ecommerce-chat/common_lib';
 import express, { Request, Response, Router } from 'express';
 import { ProductDomain } from '../domain/product-domain';
-import { verifyToken } from '../middlewares/current-user';
+import { verifyGetToken, verifyToken } from '../middlewares/current-user';
 import { ProductValidation } from '../validations/product-validation';
 
 const router = express.Router();
@@ -20,7 +20,7 @@ router.put('/api/product/update/:id',verifyToken,ProductDomain.updateProduct)
 router.delete('/api/product/delete/:id',verifyToken,ProductDomain.deleteProduct);
 
 // get all Product
-router.get('/api/product/get',ProductDomain.getProductList);
+router.get('/api/product/get',verifyGetToken,ProductDomain.getProductList);
 router.get('/api/product/getactive',ProductDomain.getActiveProductList);
 router.get('/api/product/getdeactive',ProductDomain.getDeactiveProductList);
 

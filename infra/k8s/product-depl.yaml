@@ -25,7 +25,7 @@ spec:
             - name: NATS_CLUSTER_ID
               value: rxshop
             - name: MONGO_URI
-              value: mongodb://product-mongo-srv:27017/product
+              value: mongodb://auth-mongo-srv:27017/product
             - name: JWT_KEY
               valueFrom:
                 secretKeyRef:

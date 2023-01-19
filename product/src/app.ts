@@ -10,6 +10,8 @@ import { AddOnsRouter } from './routes/add-ons-route';
 import { CouponRouter } from './routes/coupon';
 import { ProductWhishlist } from './models/whislist-product';
 import { ProductWhishlistRouter } from './routes/product-whislist-route';
+import { AttributeRouter } from './routes/attribute-route';
+import { AttributeValueRouter } from './routes/attribute-value-route';
 
 const app = express();
 
@@ -33,7 +35,8 @@ app.use(ProductRouter);
 app.use(ProductItemRouter);
 app.use(AddOnsRouter);
 app.use(CouponRouter);
-
+app.use(AttributeRouter);
+app.use(AttributeValueRouter);
 
 app.all('*', async () => {
   throw new NotFoundError();
