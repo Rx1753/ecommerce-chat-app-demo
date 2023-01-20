@@ -12,6 +12,7 @@ import { ProductWhishlist } from './models/whislist-product';
 import { ProductWhishlistRouter } from './routes/product-whislist-route';
 import { AttributeRouter } from './routes/attribute-route';
 import { AttributeValueRouter } from './routes/attribute-value-route';
+import { ProductReviewRouter } from './routes/product-review';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use(AddOnsRouter);
 app.use(CouponRouter);
 app.use(AttributeRouter);
 app.use(AttributeValueRouter);
+app.use(ProductReviewRouter);
 
 app.all('*', async () => {
   throw new NotFoundError();

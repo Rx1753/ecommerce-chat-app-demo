@@ -1,0 +1,61 @@
+import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import { Admin } from '../models/admin';
+import { AdminRoleMapping } from '../models/admin-role-mapping';
+import { AdminUser } from '../models/admin-user';
+import { BusinessCategory } from '../models/business-category';
+import { BusinessSubCategory } from '../models/business-sub-category';
+import { Product } from '../models/product';
+import { ProductReview } from '../models/product-review';
+import { ProductSubCategory } from '../models/product-sub-category';
+import { natsWrapper } from '../nats-wrapper';
+
+export class ProductReviewDatabaseLayer {
+
+    static async createProductReview(req: any) {
+        const { productId,rate,comment,imageURL,title } = req.body;
+        const productCheck = await Product.findById(productId);
+        //TODO:: customer order this product or not
+        if (productCheck) {
+            console.log('rate',rate);
+            
+            const data = ProductReview.build({ productId:productId,
+                rate:(rate),
+                title:title,
+                customerId:req.currentUser.id,
+                comment:comment,
+                imageURL:imageURL});
+            console.log(data);
+            await data.save();
+            return data;
+        } else {
+            throw new BadRequestError('Provided productId is not valid');
+        }
+    }
+
+    static async deleteProductReview(id: string) {
+        const data= await ProductReview.findById(id);
+        if (data) {
+            try {
+                await ProductReview.findByIdAndRemove(id);
+                return;
+            }
+            catch (err: any) {
+                console.log(err.message);
+                throw new BadRequestError(err.message)
+            }
+        } else {
+            throw new BadRequestError('Provided id is not valid');
+        }
+    }
+
+    static async getProductReviewList(req: any) {
+        const data = await ProductReview.find()
+            // .populate({
+            //     path: '', populate: {
+            //         path: 'businessCategoryId'
+            //     }
+            // });
+        return data;
+    }
+
+}

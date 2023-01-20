@@ -58,4 +58,9 @@ export class ProductDomain {
         const Product =  await ProductDatabaseLayer.serchData(req);
         res.status(201).send(Product);
     }
+    
+    static async reviewBasedOnProductId(req:Request,res:Response){
+        const Product =  await ProductDatabaseLayer.reviewBasedOnProductId(req.params.id);
+        res.status(201).send(Product);
+    }
 }

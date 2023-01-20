@@ -1,65 +1,65 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: product-mongo-pvc
-spec:
-  storageClassName: ""
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 500M
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: product-mongo-data
-spec:
-  capacity:
-    storage: 500M
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: ""
-  hostPath:
-    path: /data/product
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: product-mongo-depl
-spec:
-  selector:
-    matchLabels:
-      app: product-mongo
-  template:
-    metadata:
-      labels:
-        app: product-mongo
-    spec:
-      containers:
-        - name: product-mongo
-          image: mongo
-          volumeMounts:
-            - name: "product-mongo-data-dir"
-              mountPath: "/data/db"
-      volumes:
-        - name: "product-mongo-data-dir"
-          persistentVolumeClaim:
-            claimName: "product-mongo-pvc"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: product-mongo-srv
-spec:
-  type: NodePort
-  selector:
-    app: product-mongo
-  ports:
-    - name: db
-      protocol: TCP
-      port: 27017
-      targetPort: 27017
-      nodePort: 30704
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: product-mongo-pvc
+# spec:
+#   storageClassName: ""
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 500M
+# ---
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: product-mongo-data
+# spec:
+#   capacity:
+#     storage: 500M
+#   volumeMode: Filesystem
+#   accessModes:
+#     - ReadWriteOnce
+#   persistentVolumeReclaimPolicy: Retain
+#   storageClassName: ""
+#   hostPath:
+#     path: /data/product
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: product-mongo-depl
+# spec:
+#   selector:
+#     matchLabels:
+#       app: product-mongo
+#   template:
+#     metadata:
+#       labels:
+#         app: product-mongo
+#     spec:
+#       containers:
+#         - name: product-mongo
+#           image: mongo
+#           volumeMounts:
+#             - name: "product-mongo-data-dir"
+#               mountPath: "/data/db"
+#       volumes:
+#         - name: "product-mongo-data-dir"
+#           persistentVolumeClaim:
+#             claimName: "product-mongo-pvc"
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: product-mongo-srv
+# spec:
+#   type: NodePort
+#   selector:
+#     app: product-mongo
+#   ports:
+#     - name: db
+#       protocol: TCP
+#       port: 27017
+#       targetPort: 27017
+#       nodePort: 30704

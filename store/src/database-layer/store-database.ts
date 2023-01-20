@@ -48,6 +48,12 @@ export class StoreDatabaseLayer {
             const stateCheck = await State.findById(stateId);
             const cityCheck = await City.findById(cityId);
 
+            console.log('BusinessProfileCheck,',BusinessProfileCheck);
+            console.log('BusinessSubCategoryCheck',BusinessSubCategoryCheck);
+            console.log('countryCheck',countryCheck);
+            console.log('stateCheck',stateCheck);
+            console.log('cityCheck',cityCheck);
+            
             if (BusinessProfileCheck && BusinessSubCategoryCheck && countryCheck && stateCheck && cityCheck) {
                 const data = Store.build({
                     phoneNumber: phoneNumber,

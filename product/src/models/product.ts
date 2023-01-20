@@ -50,6 +50,7 @@ export interface ProductDoc extends mongoose.Document {
     isCancellation: boolean;
     relatableProducts: ProductDoc[];
     createdBy:string;
+    rating:number;
 }
 
 const ProductSchema = new mongoose.Schema({
@@ -67,6 +68,7 @@ const ProductSchema = new mongoose.Schema({
     isInvoiceAvailable: { type: Boolean, default: false },
     isCancellation: { type: Boolean, default: false },
     storeId:{type:String,ref:'Store'},
+    rating:{type:Number, default:4.9},
     relatableProducts: [
         {_id:false},
          { type: String, ref: 'Product' }

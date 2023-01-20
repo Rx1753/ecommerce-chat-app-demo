@@ -7,6 +7,7 @@ import { BusinessSubCategory } from '../models/business-sub-category';
 import { BusinessUser } from '../models/business-user';
 import { Product } from "../models/product";
 import { ProductCategory } from '../models/product-category';
+import { ProductReview } from '../models/product-review';
 import { ProductSubCategory } from '../models/product-sub-category';
 import { Store } from '../models/store';
 import { ProductWhishlist } from '../models/whislist-product';
@@ -15,7 +16,7 @@ import { natsWrapper } from '../nats-wrapper';
 export class ProductDatabaseLayer {
 
     static async createProduct(req: any) {
-        const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, mrpPrice, addOns, quantity, isInvoiceAvailable,  isCancellation, relatableProducts,attributeVariant } = req.body;
+        const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, mrpPrice, addOns, quantity, isInvoiceAvailable, isCancellation, relatableProducts } = req.body;
 
         var permission = false;
         console.log('type', req.currentUser.id);
@@ -105,7 +106,6 @@ export class ProductDatabaseLayer {
                 } catch (error: any) {
                     throw new BadRequestError(error.message);
                 }
-
             } else {
                 throw new BadRequestError("Given id is not valid");
             }
@@ -115,7 +115,7 @@ export class ProductDatabaseLayer {
     }
 
     static async updateProduct(req: any, id: string) {
-        const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, mrpPrice, addOns, quantity, isInvoiceAvailable,  isCancellation, relatableProducts } = req.body;
+        const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, mrpPrice, addOns, quantity, isInvoiceAvailable, isCancellation, relatableProducts } = req.body;
 
         var permission = false;
         console.log('type', req.currentUser.type);
@@ -247,21 +247,74 @@ export class ProductDatabaseLayer {
     }
 
     static async getProductList(req: any) {
-        const data = await Product.find().populate({
-            path: 'productSubCategoryId', populate: {
-                path: 'productCategoryId'
+        var pageSize: any = (req.query.pagesize);
+        var page: any = (req.query.page);
+        var sortBy: any = req.query.sortby;
+
+        console.log('pageSize', pageSize);
+        console.log('page', page);
+
+
+
+        var sort: any;
+        console.log('sortBy', sortBy);
+        if (sortBy === "LTH") {
+            sort = { 'basePrice': 1 };
+        } else if (sortBy === "HTL") {
+            sort = { 'basePrice': -1 };
+        } else if (sortBy === "NewFirst") {
+            sort = { createdAt: -1 }
+        } else if (sortBy === "Popularity") {
+            sort = { rating: -1 };
+        }
+
+        var totalPage: number;
+
+        if ((pageSize === undefined || pageSize === null) && (page === undefined || page === null)) {
+            throw new BadRequestError("PageSize and page is not passed in query params")
+        }
+        const dataLength = await Product.find({ $and: [{ isActive: true }, { quantity: { $gte: 0 } }] });
+        console.log('sort', sort);
+
+        const data = await Product.aggregate([{ $match: { $and: [{ isActive: true }, { quantity: { $gte: 0 } }] } },
+        {
+            "$sort": sort,
+        },
+        {
+            "$project": {
+                "productId": "$_id",
+                "productTitle": "$name",
+                "productShortDescription": "$description",
+                "imageUrl": 1,
+                "basePrice": 1,
+                "rating": 1,
+                "_id": 0
 
             }
-        }).populate('storeId').populate('relatableProducts');
+        }]).skip((parseInt(pageSize) * (parseInt(page) - 1))).limit(parseInt(pageSize));
+
+        totalPage = Math.round(dataLength.length / pageSize);
+        console.log('data', data.length);
+
         if (data) {
-        const dataStr= JSON.parse(JSON.stringify(data));
-        if(req.currentUser){
-            await Promise.all(dataStr.map(async (e:any)=>{
-                const wishData=await ProductWhishlist.findOne({$and:[{productId:e._id},{customerId:req.currentUser.id}]});
-                dataStr.isInWishList= wishData ? true : false;
+            const dataStr = JSON.parse(JSON.stringify(data));
+            await Promise.all(dataStr.map(async (e: any) => {
+                if (req.currentUser) {
+                    const wishData = await ProductWhishlist.findOne({ $and: [{ productId: e.ProductId }, { customerId: req.currentUser.id }] });
+                    e.isInWishList = wishData ? true : false;
+                } else {
+                    e.isInWishList = false;
+                }
+                const reviewData = await ProductReview.find({ productId: e.ProductId });
+                e.totalRating = reviewData.length;
+                e.productImage = e.imageUrl[0];
+                delete e['imageUrl'];
             }))
-        }
-            return dataStr;
+            return {
+                page: page,
+                totalPage: totalPage,
+                result: dataStr
+            };
         } else {
             throw new BadRequestError("no data found for given id");
         }
@@ -280,6 +333,7 @@ export class ProductDatabaseLayer {
             throw new BadRequestError("no data found for given id");
         }
     }
+
     static async getActiveProductList() {
         const data = await Product.find({ isActive: true }).populate({
             path: 'productSubCategoryId', populate: {
@@ -289,6 +343,7 @@ export class ProductDatabaseLayer {
         }).populate('storeId').populate('relatableProducts');
         return data;
     }
+
     static async getDeactiveProductList() {
         const data = await Product.find({ isActive: false }).populate({
             path: 'productSubCategoryId', populate: {
@@ -324,7 +379,22 @@ export class ProductDatabaseLayer {
         return productData;
     }
 
+    static async getProductDetails(req:any,id:any){
 
+        const data = await Product.findById(id);
+        if(data){
+            var dataStr=JSON.parse(JSON.stringify(data));
+            if (req.currentUser) {
+                const wishData = await ProductWhishlist.findOne({ $and: [{ productId: id }, { customerId: req.currentUser.id }] });
+                dataStr.isInWishList = wishData ? true : false;
+            } else {
+                dataStr.isInWishList = false;
+            }
+        }else{
+            throw new BadRequestError("product id is not valid");
+        }
+
+    }
 
     static async serchData(req: any) {
         const serchData = (req.params.data).trim();
@@ -358,7 +428,7 @@ export class ProductDatabaseLayer {
                 { description: { $regex: `^${serchData}`, $options: 'i' } },
                 { brandName: { $regex: `^${serchData}`, $options: 'i' } },
                 { productSubCategoryId: productSubCategoryArr }]
-            })
+        })
             .populate({
                 path: 'productSubCategoryId', populate: {
                     path: 'productCategoryId', populate: {
@@ -371,5 +441,67 @@ export class ProductDatabaseLayer {
 
         return product;
 
+    }
+
+    static async reviewBasedOnProductId(id: any) {
+        const data = await Product.findById(id);
+        if (data) {
+            const reviewData = await ProductReview.find({ productId: id }).populate('customerId');
+            const totalReviews = reviewData.length;
+
+            //Specific Rating aggregatre
+
+            const specificRating = {
+                "5": 0,
+                "4": 0,
+                "3": 0,
+                "2": 0,
+                "1": 0
+            };
+            const reviewStrData = JSON.parse(JSON.stringify(reviewData));
+            var totalNumberImages = 0;
+
+            var reviewImages: { productImage: string, rating: any, reviewTitle: string, reviewDescription: string, postedBy: string, reviewDate: Date }[] = [];
+            var reviewsByUser: { rating: any, reviewTitle: string, reviewDescription: string,reviewImageUrl:string[],  postedBy: string, reviewDate: Date }[] = []
+            await Promise.all(reviewStrData.map((e: any) => {
+
+                if (e.rate > 0 && e.rate <= 0.9) {
+                    specificRating[1] = specificRating[1] + 1;
+                } else if (e.rate >= 1 && e.rate <= 1.9) {
+                    specificRating[2] = specificRating[2] + 1;
+                } else if (e.rate >= 2 && e.rate <= 2.9) {
+                    specificRating[3] = specificRating[3] + 1;
+                } else if (e.rate >= 3 && e.rate <= 3.9) {
+                    specificRating[4] = specificRating[4] + 1;
+                } else if (e.rate >= 4 && e.rate <= 5) {
+                    specificRating[5] = specificRating[5] + 1;
+                }
+                reviewsByUser.push({
+                    rating: e.rate,
+                    reviewTitle: e.title,
+                    reviewDescription: e.comment,
+                    postedBy: e.customerId.name,
+                    reviewDate: new Date(e.createdAt),
+                    reviewImageUrl:e.imageURL
+                })
+                if (e.imageURL.length != 0 && e.imageURL !== undefined) {
+                    e.imageURL.map((a: any) => {
+                        totalNumberImages = totalNumberImages + 1;
+                        reviewImages.push({
+                            productImage: a,
+                            rating: e.rate,
+                            reviewTitle: e.title,
+                            reviewDescription: e.comment,
+                            postedBy: e.customerId.name,
+                            reviewDate: new Date(e.createdAt)
+                        })
+                    })
+                }
+            }))
+
+            return { totalReviews: totalReviews, specificRating: specificRating, reviewImages: reviewImages, totalNumberImages: totalNumberImages, reviewsByUser:reviewsByUser };
+        } else {
+            throw new BadRequestError("product id is not valid");
+        }
     }
 }

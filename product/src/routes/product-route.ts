@@ -20,12 +20,14 @@ router.put('/api/product/update/:id',verifyToken,ProductDomain.updateProduct)
 router.delete('/api/product/delete/:id',verifyToken,ProductDomain.deleteProduct);
 
 // get all Product
-router.get('/api/product/get',verifyGetToken,ProductDomain.getProductList);
+router.get('/api/product/get',verifyGetToken,validateRequest,ProductDomain.getProductList);
 router.get('/api/product/getactive',ProductDomain.getActiveProductList);
 router.get('/api/product/getdeactive',ProductDomain.getDeactiveProductList);
 
 // get all Product based on businessId
 router.get('/api/product/getproductsubcategory/:id',ProductDomain.getProductSubCategoryIdList);
 router.get('/api/product/getproductwithaddonsandproductitem',ProductDomain.getProductWithAddOnsAndProductItem);
+
+router.get('/api/product/getreviewbasedonproductid/:id',ProductDomain.reviewBasedOnProductId);
 
 export { router as ProductRouter };
