@@ -1,5 +1,4 @@
 import mongoose, { ObjectId } from "mongoose";
-import { Password } from "../services/password";
 import { CustomerDoc } from "./customer";
 
 // intetface that describe the prooerties
@@ -48,10 +47,10 @@ const ProductReviewSchema = new mongoose.Schema({
 });
 
 ProductReviewSchema.pre('save', async function (done) {
-
+    done();
 })
 ProductReviewSchema.pre('update', async function (done) {
-
+    done();
 })
 
 ProductReviewSchema.statics.build = (attrs: ProductReviewAttrs) => {

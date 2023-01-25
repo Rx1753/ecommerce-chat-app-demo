@@ -1,8 +1,12 @@
 import mongoose, { ObjectId } from "mongoose";
+import { AttributeDoc } from "./attribute";
+import { AttributeValueDoc } from "./attribute-value";
+import { SKUSDoc } from "./product-skus";
 
 export interface ProductVariantCombinationAttrs {
-    name:string,
-    type:string
+    productSKUsId: string,
+    attributeValueId: string,
+    attributeId:string,
 }
 
 interface ProductVariantCombinationModel extends mongoose.Model<ProductVariantCombinationDoc> {
@@ -10,14 +14,15 @@ interface ProductVariantCombinationModel extends mongoose.Model<ProductVariantCo
 }
 
 export interface ProductVariantCombinationDoc extends mongoose.Document {
-    name:string,
-    type:string
+    productSKUsId: SKUSDoc,
+    attributeValueId: AttributeValueDoc,
+    attributeId:AttributeDoc,
 }
 
 const ProductVariantCombinationSchema = new mongoose.Schema({
-    productId: { type: String,ref:'Product' },
-    price:{type:Number,},
-    qty:{type:Number},
+    productSKUsId: { type: String,ref:'SKUS' },
+    attributeId:{type:String,ref:'Attribute'},
+    attributeValueId:{type:String,ref:'AttributeValue'},
     createdAt: { type: Number, default: () => Date.now() },
     updatedAt: { type: Number, default: () => Date.now() },
 }, {
@@ -34,9 +39,6 @@ const ProductVariantCombinationSchema = new mongoose.Schema({
 });
 
 ProductVariantCombinationSchema.pre('update', async function (done) {
-    const currentDate = new Date();
-    const updatedAt = currentDate.getTime();
-    this.set('updatedAt', updatedAt);
     done();
 })
 

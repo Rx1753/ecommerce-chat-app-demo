@@ -17,9 +17,9 @@ export class AttributeDatabaseLayer {
 
     static async updateAttribute(req: any, id: string) {
         const data= await Attribute.findById(id);
-        const {name,type}=req.body;
+        const {name,}=req.body;
         if(data){
-            const attributeUpdate = await Attribute.findByIdAndUpdate(id,{name:name,type:type});
+            const attributeUpdate = await Attribute.findByIdAndUpdate(id,{name:name,});
             return await Attribute.findById(id);
         }else{
             throw new BadRequestError("Data not exist for this passsed id");

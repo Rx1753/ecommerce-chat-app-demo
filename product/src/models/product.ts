@@ -13,15 +13,19 @@ export interface ProductAttrs {
     storeId: string;
     brandName: string;
     warrenty?: boolean;
+    highlights:string,
     guaranty?: boolean;
     basePrice: number;
-    mrpPrice: number;
     addOns?: boolean;
     quantity: number;
     isInvoiceAvailable?: boolean;
     isCancellation?: boolean;
     relatableProducts?: string[],
     createdBy:string,
+    isDiscountPercentage:boolean,
+    discount:number,
+    discountedValue:number,
+    maxDiscount:number,
 }
 
 // interface for categorymodel pass
@@ -35,6 +39,7 @@ export interface ProductDoc extends mongoose.Document {
     updatedAt: Date;
     name: string;
     description: string;
+    highlights:string,
     isActive: boolean;
     productSubCategoryId: ProductSubCategoryDoc;
     imageUrl: string[];
@@ -43,7 +48,6 @@ export interface ProductDoc extends mongoose.Document {
     warrenty: boolean;
     guaranty: boolean;
     basePrice: number;
-    mrpPrice: number;
     addOns: boolean;
     quantity: number;
     isInvoiceAvailable: boolean;
@@ -51,18 +55,22 @@ export interface ProductDoc extends mongoose.Document {
     relatableProducts: ProductDoc[];
     createdBy:string;
     rating:number;
+    isDiscountPercentage:boolean,
+    discount:number,
+    discountedValue:number,
+    maxDiscount:number,
 }
 
 const ProductSchema = new mongoose.Schema({
     name: { type: String },
     description: { type: String },
+    highlights:{type:String},
     isActive: { type: Boolean, default: true },
     imageUrl: [{ type: String }],
     brandName: { type: String },
     warrenty: { type: Boolean, default: false },
     guaranty: { type: Boolean, default: false },
     basePrice: { type: Number },
-    mrpPrice: { type: Number },
     addOns: { type: Boolean, default: false },
     quantity: { type: Number },
     isInvoiceAvailable: { type: Boolean, default: false },
@@ -74,7 +82,11 @@ const ProductSchema = new mongoose.Schema({
          { type: String, ref: 'Product' }
     ],
     productSubCategoryId: { type: String, ref: 'ProductSubCategory' },
+    isDiscountPercentage:{type:Boolean, require:true},
+    discount:{type:Number},
+    discountedValue:{type:Number,},
     createdBy:{type:String,ref:'user'},
+    maxDiscount:{type:Number},
     createdAt: { type: Number, default: () => Date.now() },
     updatedAt: { type: Number, default: () => Date.now() },
 }, {

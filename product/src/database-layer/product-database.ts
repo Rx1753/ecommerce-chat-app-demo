@@ -1,6 +1,8 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import mongoose from 'mongoose';
 import { ProductCreatedPublisher } from '../event/publisher/product-publisher';
+import { Attribute } from '../models/attribute';
+import { AttributeValue } from '../models/attribute-value';
 import { BusinessCategory } from '../models/business-category';
 import { BusinessRoleMapping } from '../models/business-role-mapping';
 import { BusinessSubCategory } from '../models/business-sub-category';
@@ -8,7 +10,9 @@ import { BusinessUser } from '../models/business-user';
 import { Product } from "../models/product";
 import { ProductCategory } from '../models/product-category';
 import { ProductReview } from '../models/product-review';
+import { SKUS } from '../models/product-skus';
 import { ProductSubCategory } from '../models/product-sub-category';
+import { ProductVariantCombination } from '../models/product-variant-combination';
 import { Store } from '../models/store';
 import { ProductWhishlist } from '../models/whislist-product';
 import { natsWrapper } from '../nats-wrapper';
@@ -16,7 +20,7 @@ import { natsWrapper } from '../nats-wrapper';
 export class ProductDatabaseLayer {
 
     static async createProduct(req: any) {
-        const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, mrpPrice, addOns, quantity, isInvoiceAvailable, isCancellation, relatableProducts } = req.body;
+        const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, highlights, addOns, quantity, isInvoiceAvailable, isCancellation, relatableProducts, isDiscountPercentage, discount, maxDiscount, } = req.body;
 
         var permission = false;
         console.log('type', req.currentUser.id);
@@ -50,6 +54,7 @@ export class ProductDatabaseLayer {
             var productCheck = true;
             if (relatableProducts != null && relatableProducts != 'undefined' && relatableProducts) {
                 await Promise.all(relatableProducts.map(async (e: any) => {
+
                     if (!mongoose.isValidObjectId(e)) {
                         throw new BadRequestError('Requested id is not id type');
                     }
@@ -59,10 +64,21 @@ export class ProductDatabaseLayer {
                     if (!productData) {
                         productCheck = false;
                     }
+
                 }))
             }
             if (ProductSubCategoryCheck && storeCheck && productCheck) {
                 try {
+                    var discountedValue: number;
+                    if (isDiscountPercentage == true) {
+                        discountedValue = basePrice - ((basePrice * discount) / 100);
+                        if (((basePrice * discount) / 100) > maxDiscount) {
+                            discountedValue = maxDiscount;
+                        }
+                    } else {
+                        discountedValue = basePrice - (discount);
+                    }
+
                     const data = Product.build({
                         name: name,
                         description: description,
@@ -71,20 +87,29 @@ export class ProductDatabaseLayer {
                         storeId: storeId,
                         brandName: brandName,
                         basePrice: basePrice,
-                        mrpPrice: mrpPrice,
                         quantity: quantity,
                         warrenty: warrenty,
                         addOns: addOns,
                         isInvoiceAvailable: isInvoiceAvailable,
                         isCancellation: isCancellation,
                         relatableProducts: relatableProducts,
-                        createdBy: req.currentUser.id
+                        createdBy: req.currentUser.id,
+                        isDiscountPercentage: isDiscountPercentage,
+                        discount: discount,
+                        discountedValue: discountedValue,
+                        maxDiscount: maxDiscount,
+                        highlights: highlights
                     })
+
                     await data.save();
+
                     var rProduct: string[] = [];
+
                     data.relatableProducts.forEach((e: any) => {
                         rProduct.push(e.toString());
                     })
+
+                    //TODO discount add in publisher pending
                     await new ProductCreatedPublisher(natsWrapper.client).publish({
                         id: data.id,
                         name: data.name,
@@ -95,12 +120,14 @@ export class ProductDatabaseLayer {
                         storeId: data.storeId.toString(),
                         brandName: data.brandName,
                         basePrice: data.basePrice,
-                        mrpPrice: data.mrpPrice,
+                        //TODO mrpPrice remove
+                        mrpPrice: data.basePrice,
                         quantity: data.quantity,
                         createdBy: data.createdBy,
                         relatableProducts: rProduct,
                         isActive: true
                     });
+
                     return data;
 
                 } catch (error: any) {
@@ -114,7 +141,83 @@ export class ProductDatabaseLayer {
         }
     }
 
+    static async createProductVariant(req: any, id: string) {
+        const { productId, attribute, qty, price, isVariantBasedPrice, isVariantHasImage, name, imageUrl, description } = req.body;
+        var attributeArr: string[] = [];
+        var attributeValueArrr: string[] = [];
+
+        var attributeCheckArr: string[] = [];
+        await Promise.all(attribute.map(async (e: any) => {
+            if (e.attributeId === undefined || e.attributeId === null || e.attributeValueId === undefined || e.attributeValueId === null) {
+                console.log('data not given');
+                throw new BadRequestError("passed body data is insuficent")
+
+            } else {
+                if (attributeArr.includes(e.attributeId) || attributeValueArrr.includes(e.attributeValueId)) {
+                    throw new BadRequestError("Attribute Id is repeating, Pls first verify it");
+                } else {
+
+                    attributeArr.push(e.attributeId);
+                    attributeValueArrr.push(e.attributeValueId)
+
+                    const attributeCheck = await AttributeValue.findOne({ $and: [{ attributeId: e.attributeId }, { _id: new mongoose.Types.ObjectId(e.attributeValueId) }] })
+
+                    if (!attributeCheck) {
+                        throw new BadRequestError("Sended Attribute Id is not valid");
+                    }
+
+                }
+            }
+        }))
+
+        var skusDataCheck = await SKUS.find({ productId: productId });
+
+        await Promise.all(skusDataCheck.map(async (e: any) => {
+            console.log('e', e._id.toHexString());
+
+            // const attributeCheckProduct=
+
+            const productVariantCombinationData = await ProductVariantCombination.find({ productSKUsId: e._id });
+            var variantArr: string[] = [];
+            await Promise.all(productVariantCombinationData.map(async (b: any) => {
+                variantArr.push(b.attributeValueId);
+            }))
+            var flag = false;
+            if (variantArr.length == attributeValueArrr.length) {
+                for (let i = 0; i < attributeValueArrr.length; i++) {
+                    if (!variantArr.includes(attributeValueArrr[i])) {
+                        flag = true;
+                    }
+
+                }
+            }
+            if (flag == false) {
+                throw new BadRequestError("already exist attribute combination");
+            }
+        }))
+
+        const skusData = SKUS.build({
+            productId: productId,
+            name: name,
+            description: description,
+            isVariantBasedPrice: isVariantBasedPrice,
+            price: price,
+            qty: qty,
+            isVariantHasImage: isVariantHasImage,
+            imageUrl: imageUrl,
+        })
+
+        await Promise.all(attribute.map(async (e: any) => {
+            const productVariantCombinationData = ProductVariantCombination.build({ attributeId: e.attributeId, attributeValueId: e.attributeValueId, productSKUsId: skusData._id.toHexString() })
+            await productVariantCombinationData.save();
+        }))
+        await skusData.save();
+        return skusData;
+
+    }
+
     static async updateProduct(req: any, id: string) {
+        //TODO discount field add pending
         const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, mrpPrice, addOns, quantity, isInvoiceAvailable, isCancellation, relatableProducts } = req.body;
 
         var permission = false;
@@ -249,12 +352,8 @@ export class ProductDatabaseLayer {
     static async getProductList(req: any) {
         var pageSize: any = (req.query.pagesize);
         var page: any = (req.query.page);
-        var sortBy: any = req.query.sortby;
-
-        console.log('pageSize', pageSize);
-        console.log('page', page);
-
-
+        var sortBy: any = req.query.sortby === undefined || req.query.sortby === null ? null : req.query.sortby;
+        console.log('sortBy', sortBy);
 
         var sort: any;
         console.log('sortBy', sortBy);
@@ -266,6 +365,8 @@ export class ProductDatabaseLayer {
             sort = { createdAt: -1 }
         } else if (sortBy === "Popularity") {
             sort = { rating: -1 };
+        } else {
+            sort = { _id: -1 };
         }
 
         var totalPage: number;
@@ -274,7 +375,6 @@ export class ProductDatabaseLayer {
             throw new BadRequestError("PageSize and page is not passed in query params")
         }
         const dataLength = await Product.find({ $and: [{ isActive: true }, { quantity: { $gte: 0 } }] });
-        console.log('sort', sort);
 
         const data = await Product.aggregate([{ $match: { $and: [{ isActive: true }, { quantity: { $gte: 0 } }] } },
         {
@@ -285,11 +385,12 @@ export class ProductDatabaseLayer {
                 "productId": "$_id",
                 "productTitle": "$name",
                 "productShortDescription": "$description",
+                "originalPrice": "$basePrice",
+                "discountedPrice": "$discountedValue",
+                "discountPercentage": "$discount",
                 "imageUrl": 1,
-                "basePrice": 1,
                 "rating": 1,
                 "_id": 0
-
             }
         }]).skip((parseInt(pageSize) * (parseInt(page) - 1))).limit(parseInt(pageSize));
 
@@ -379,21 +480,44 @@ export class ProductDatabaseLayer {
         return productData;
     }
 
-    static async getProductDetails(req:any,id:any){
+    static async getProductDetails(req: any, id: any) {
 
-        const data = await Product.findById(id);
-        if(data){
-            var dataStr=JSON.parse(JSON.stringify(data));
+        const data = await Product.aggregate([
+            { $match: { $and: [{ isActive: true }, { _id: new mongoose.Types.ObjectId(id) }, { quantity: { $gte: 0 } }] } },
+            {
+                "$project": {
+                    "productId": "$_id",
+                    "productName": "$name",
+                    "productShortDescription": "$description",
+                    "imageUrl": 1,
+                    "originalPrice": "$basePrice",
+                    "discountedPrice": "$discountedValue",
+                    "discountPercentage": "$discount",
+                    "productHighlights": "$highlights",
+                    "rating": 1,
+                    "_id": 0
+                }
+            }
+        ]);
+
+        if (data) {
+            var dataStr = JSON.parse(JSON.stringify(data[0]));
             if (req.currentUser) {
                 const wishData = await ProductWhishlist.findOne({ $and: [{ productId: id }, { customerId: req.currentUser.id }] });
                 dataStr.isInWishList = wishData ? true : false;
+                const reviewData = await ProductReview.find({ productId: dataStr.ProductId });
+                dataStr.totalRating = reviewData.length;
             } else {
                 dataStr.isInWishList = false;
             }
-        }else{
+            dataStr.productImages = dataStr.imageUrl;
+            delete dataStr['imageUrl'];
+            dataStr.review = await this.reviewBasedOnProductId(id);
+            return dataStr
+
+        } else {
             throw new BadRequestError("product id is not valid");
         }
-
     }
 
     static async serchData(req: any) {
@@ -462,7 +586,7 @@ export class ProductDatabaseLayer {
             var totalNumberImages = 0;
 
             var reviewImages: { productImage: string, rating: any, reviewTitle: string, reviewDescription: string, postedBy: string, reviewDate: Date }[] = [];
-            var reviewsByUser: { rating: any, reviewTitle: string, reviewDescription: string,reviewImageUrl:string[],  postedBy: string, reviewDate: Date }[] = []
+            var reviewsByUser: { rating: any, reviewTitle: string, reviewDescription: string, reviewImageUrl: string[], postedBy: string, reviewDate: Date }[] = []
             await Promise.all(reviewStrData.map((e: any) => {
 
                 if (e.rate > 0 && e.rate <= 0.9) {
@@ -482,7 +606,7 @@ export class ProductDatabaseLayer {
                     reviewDescription: e.comment,
                     postedBy: e.customerId.name,
                     reviewDate: new Date(e.createdAt),
-                    reviewImageUrl:e.imageURL
+                    reviewImageUrl: e.imageURL
                 })
                 if (e.imageURL.length != 0 && e.imageURL !== undefined) {
                     e.imageURL.map((a: any) => {
@@ -499,9 +623,357 @@ export class ProductDatabaseLayer {
                 }
             }))
 
-            return { totalReviews: totalReviews, specificRating: specificRating, reviewImages: reviewImages, totalNumberImages: totalNumberImages, reviewsByUser:reviewsByUser };
+            return { totalReviews: totalReviews, specificRating: specificRating, reviewImages: reviewImages, totalNumberImages: totalNumberImages, reviewsByUser: reviewsByUser };
         } else {
             throw new BadRequestError("product id is not valid");
         }
+    }
+
+    static async getProduct(req: any) {
+
+        //main logic of getting product data with thier attribue variant
+        const data = await Product.aggregate([
+            {
+                "$lookup": {
+                    "from": "skus",
+                    "let": { "proId": { "$toString": "$_id" } },
+                    "pipeline": [
+                        { "$match": { "$expr": { "$eq": ["$productId", "$$proId"] } } },
+                        {
+                            "$lookup": {
+                                "from": "productvariantcombinations",
+                                "let": { "pSKUsId": { "$toString": '$_id' } },
+                                "pipeline": [
+                                    { "$match": { "$expr": { "$eq": ['$productSKUsId', "$$pSKUsId"] } } },
+                                    {
+                                        "$lookup": {
+                                            "from": "attributevalues",
+                                            "let": { "avId": '$attributeValueId' },
+                                            "pipeline": [
+                                                { "$match": { "$expr": { "$eq": [{ "$toString": "$_id" }, "$$avId"] } } },
+                                                {
+                                                    "$lookup": {
+                                                        "from": "attributes",
+                                                        "let": { "aId": '$attributeId' },
+                                                        "pipeline": [
+                                                            { "$match": { "$expr": { "$eq": [{ "$toString": "$_id" }, "$$aId"] } } },
+
+                                                        ],
+                                                        "as": "attributeData"
+                                                    }
+                                                }
+                                            ],
+                                            "as": "attributevaluesData"
+                                        }
+                                    }
+                                ],
+                                "as": "productVariantData"
+                            }
+                        }
+                    ],
+                    "as": "SKUsId"
+                }
+            }
+        ])
+        return data;
+    }
+
+    static async getProductWithVariant(req: any) {
+
+        const data = await Product.aggregate([
+            {
+                "$lookup": {
+                    "from": "skus",
+                    "let": { "proId": { "$toString": "$_id" } },
+                    "pipeline": [
+                        { "$match": { "$expr": { "$eq": ["$productId", "$$proId"] } } },
+                        {
+                            "$lookup": {
+                                "from": "productvariantcombinations",
+                                "let": { "pSKUsId": { "$toString": '$_id' } },
+                                "pipeline": [
+                                    { "$match": { "$expr": { "$eq": ['$productSKUsId', "$$pSKUsId"] } } },
+                                    {
+                                        "$lookup": {
+                                            "from": "attributevalues",
+                                            "let": { "avId": '$attributeValueId' },
+                                            "pipeline": [
+                                                { "$match": { "$expr": { "$eq": [{ "$toString": "$_id" }, "$$avId"] } } },
+                                                {
+                                                    "$lookup": {
+                                                        "from": "attributes",
+                                                        "let": { "aId": '$attributeId' },
+                                                        "pipeline": [
+                                                            { "$match": { "$expr": { "$eq": [{ "$toString": "$_id" }, "$$aId"] } } },
+                                                        ],
+                                                        "as": "attributeData"
+                                                    }
+                                                }
+                                            ],
+                                            "as": "attributevaluesData"
+                                        }
+                                    }
+                                ],
+                                "as": "productVariantData"
+                            }
+                        }
+                    ],
+                    "as": "ProductIteamData"
+                }
+            },
+            {
+                $project: {
+
+                    "createdAt": 0,
+                    "updatedAt": 0,
+                    "__v": 0,
+
+                    "ProductIteamData.__v": 0,
+                    "ProductIteamData.createdAt": 0,
+                    "ProductIteamData.updatedAt": 0,
+                    "ProductIteamData.isVariantBasedPrice": 0,
+                    "ProductIteamData.isVariantHasImage": 0,
+                    "ProductIteamData.productVariantData.__v": 0,
+                    "ProductIteamData.productVariantData.createdAt": 0,
+                    "ProductIteamData.productVariantData.updatedAt": 0,
+                    "ProductIteamData.productVariantData._id": 0,
+
+
+                    "ProductIteamData.productVariantData.attributevaluesData.__v": 0,
+                    "ProductIteamData.productVariantData.attributevaluesData.createdAt": 0,
+                    "ProductIteamData.productVariantData.attributevaluesData.updatedAt": 0,
+                    "ProductIteamData.productVariantData.attributevaluesData._id": 0,
+
+                    "ProductIteamData.productVariantData.attributevaluesData.attributeData.__v": 0,
+                    "ProductIteamData.productVariantData.attributevaluesData.attributeData.createdAt": 0,
+                    "ProductIteamData.productVariantData.attributevaluesData.attributeData.updatedAt": 0,
+                    "ProductIteamData.productVariantData.attributevaluesData.attributeData._id": 0,
+                    "ProductIteamData.productVariantData.productSKUsId": 0,
+                    "ProductIteamData.productVariantData.attributeId": 0,
+
+
+                }
+            }
+        ])
+        return data;
+
+    }
+
+    static async getProductVariant(req: any, id: any) {
+        const data = await SKUS.findById(id);
+        var skusIdArr: string[] = [];
+        var productAttributeValueIdArr: any[] = [];
+        var productAttributeIdArr: any[] = [];
+
+        if (data) {
+            const productData = await Product.aggregate([
+                { $match: { $and: [{ isActive: true }, { _id: new mongoose.Types.ObjectId(data.productId.toString()) }, { quantity: { $gte: 0 } }] } },
+                {
+                    "$project": {
+                        "productId": "$_id",
+                        "productName": "$name",
+                        "productShortDescription": "$description",
+                        "imageUrl": 1,
+                        "originalPrice": "$basePrice",
+                        "discountedPrice": "$discountedValue",
+                        "discountPercentage": "$discount",
+                        "productHighlights": "$highlights",
+                        "relatableProducts": 1,
+                        "rating": 1,
+                        "_id": 0
+                    }
+                }
+            ]);
+
+            if (productData) {
+                const productSkusData = await SKUS.find({ productId: productData[0].productId });
+
+                await Promise.all(productSkusData.map((e: any) => {
+                    skusIdArr.push(e._id.toHexString())
+                }))
+
+                const productAttributValueData = await ProductVariantCombination.aggregate([
+                    { $match: { productSKUsId: { $in: skusIdArr } } },
+                    { $group: { _id: '$attributeValueId' } }
+                ])
+
+                await Promise.all(productAttributValueData.map((e: any) => {
+                    productAttributeValueIdArr.push(new mongoose.Types.ObjectId(e._id));
+
+                }))
+
+                const productAttributeData = await AttributeValue.aggregate([
+                    { $match: { _id: { $in: productAttributeValueIdArr } } },
+                    { $group: { _id: '$attributeId' } }
+                ])
+
+                await Promise.all(productAttributeData.map((e: any) => {
+                    productAttributeIdArr.push(new mongoose.Types.ObjectId(e._id));
+                }))
+
+                const attributeData = await Attribute.aggregate([
+                    { $match: { _id: { $in: productAttributeIdArr } } },
+                    {
+                        $lookup: {
+                            from: 'attributevalues',
+                            let: { "aId": '$_id' },
+                            pipeline: [
+                                { $match: { $and: [{ $expr: { "$eq": [{ "$toObjectId": "$attributeId" }, "$$aId"] } }, { '_id': { $in: productAttributeValueIdArr } }] } },
+                            ],
+                            as: 'attributeValues',
+                        },
+
+                    },
+                    {
+                        $project: {
+                            '__v': 0,
+                            'createdAt': 0,
+                            'updatedAt': 0,
+                            'attributeValues.__v': 0,
+                            'attributeValues.createdAt': 0,
+                            'attributeValues.updatedAt': 0,
+                            'attributeValues.attributeId': 0,
+                        }
+                    }
+                ])
+                const attributeStrData = JSON.parse(JSON.stringify(attributeData));
+                await Promise.all(attributeStrData.map(async (e: any) => {
+                    e.attributeId = e._id
+                    delete e['_id'];
+                    await Promise.all(e.attributeValues.map(async (b: any) => {
+                        const p = await ProductVariantCombination.findOne({ $and: [{ productSKUsId: { $in: skusIdArr } }, { attributeValueId: b._id }] }).populate('productSKUsId');
+                        b.attributeValueId = b._id
+                        delete b['_id'];
+                        if (p) {
+                            b.attributeValueTitle = p.productSKUsId.name;
+                            b.attributeValueDescription = p.productSKUsId.description;
+                            b.attributeValueImage = p.productSKUsId.imageUrl;
+                            b.isSelected = p.productSKUsId._id == id ? true : false
+                        }
+
+                    }))
+
+                }))
+
+                var dataStr = JSON.parse(JSON.stringify(productData[0]));
+                dataStr.productIteamId = id;
+                if (req.currentUser) {
+                    const wishData = await ProductWhishlist.findOne({ $and: [{ productId: id }, { customerId: req.currentUser.id }] });
+                    dataStr.isInWishList = wishData ? true : false;
+                } else {
+                    dataStr.isInWishList = false;
+                }
+
+                var similarProductArr:any[]=[];
+                await Promise.all(productData[0].relatableProducts.map((e:any)=>{
+                    similarProductArr.push(new mongoose.Types.ObjectId(e));
+                }))
+                console.log('similarProductArr',similarProductArr);
+                
+                dataStr.productImages = dataStr.imageUrl;
+                delete dataStr['imageUrl'];
+                
+                const productSimilarData = await Product.aggregate([
+                    { $match: { _id: {$in:similarProductArr} } },
+                    {
+                        "$project": {
+                            "productId": "$_id",
+                            "productTitle": "$name",
+                            "imageUrl": 1,
+                            "originalPrice": "$basePrice",
+                            "discountedPrice": "$discountedValue",
+                            "discountPercentage": "$discount",
+                            "rating": 1,
+                            "_id": 0
+                        }
+                    }
+                ]); 
+                
+                dataStr.similarProduct = productSimilarData;
+                dataStr.attributes = attributeStrData;
+                return dataStr;
+            }
+        }
+
+    }
+
+
+    static async checkProductCombination(req:any){
+        const productIteamId=req.query.productIteamId;
+        const attribute=req.query.attribute;
+        
+        const attributeData=[{attributeId:"63cf6793674d8e489c7d62e7",attributeValueId:"63cf67b9674d8e489c7d62f6"},{attributeId:"63cf679a674d8e489c7d62e9",attributeValueId:"63cf67a9674d8e489c7d62ef"}];
+        var skusIdArr: string[] = [];
+        var productAttributeValueIdArr: any[] = [];
+        var productAttributeIdArr: any[] = [];
+
+       if(productIteamId===undefined || productIteamId===null || attribute===undefined || attribute===null){
+        throw new BadRequestError("productIteam or attribute undefiend");
+       } 
+       const attributeParse=JSON.parse(JSON.stringify(attribute));
+        if (!mongoose.isValidObjectId(productIteamId)) {
+            throw new BadRequestError('productIteamId is not mongoes Id type');
+        }
+
+       const skusProductData = await SKUS.findById(productIteamId);
+       if(skusProductData){    
+            const productSkusData = await SKUS.find({ productId: skusProductData.productId });
+            await Promise.all(productSkusData.map((e: any) => {
+                skusIdArr.push(e._id.toHexString())
+            }))
+
+            const productAttributValueData = await ProductVariantCombination.aggregate([
+                { $match: { productSKUsId: { $in: skusIdArr } } },
+                { $group: { _id: '$attributeValueId' } }
+            ])
+
+            await Promise.all(productAttributValueData.map((e: any) => {
+                productAttributeValueIdArr.push(new mongoose.Types.ObjectId(e._id));
+
+            }))
+
+            const productAttributeData = await AttributeValue.aggregate([
+                { $match: { _id: { $in: productAttributeValueIdArr } } },
+                { $group: { _id: '$attributeId' } }
+            ])
+
+            await Promise.all(productAttributeData.map((e: any) => {
+                productAttributeIdArr.push(new mongoose.Types.ObjectId(e._id));
+            }))
+
+            
+
+            if(attributeData.length!=productAttributeData.length){
+                throw new BadRequestError("attribute array is not completed")
+            }
+            console.log('skusIdArr',skusIdArr);
+            
+            await Promise.all(attributeData.map(async(e:any)=>{
+                const check = await AttributeValue.findOne({$and:[{_id: new mongoose.Types.ObjectId(e.attributeValueId)},{attributeId:e.attributeId}]})
+                if(!check){
+                    throw new BadRequestError("passed attributeId is not valid")
+                }
+            }))
+
+            await Promise.all(skusIdArr.map(async (e:any)=>{
+                
+              
+                    const combinationData = await ProductVariantCombination.find({productSKUsId:e});
+                    console.log('combinationData',combinationData);
+                //TODO main logic is pending
+                    
+              
+
+                    
+                
+            }))
+
+       }else{
+        throw new BadRequestError("ProductIteamId is not valid");
+       }
+
+       
+        
+        return "Hello";
     }
 }

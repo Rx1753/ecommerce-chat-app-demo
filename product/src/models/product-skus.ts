@@ -4,12 +4,13 @@ import { ProductDoc } from "./product";
 export interface SKUSAttrs {
     productId:string;
     name:string;
+    description:string;
     isVariantBasedPrice:boolean;
     price:number;
     qty:number;
     isVariantHasImage:boolean;
     imageUrl:string;
-    barcode:string;
+    
 }
 
 interface SKUSModel extends mongoose.Model<SKUSDoc> {
@@ -19,17 +20,19 @@ interface SKUSModel extends mongoose.Model<SKUSDoc> {
 export interface SKUSDoc extends mongoose.Document {
     productId:ProductDoc;
     name:string;
+    description:string;
     isVariantBasedPrice:boolean;
     price:number;
     qty:number;
     isVariantHasImage:boolean;
     imageUrl:string;
-    barcode:string;
+    
 }
 
 const SKUSSchema = new mongoose.Schema({
     productId: { type: String,ref:'Product' },
     name:{type:String},
+    description:{type:String},
     isVariantBasedPrice:{type:Boolean},
     price:{type:Number,},
     qty:{type:Number},

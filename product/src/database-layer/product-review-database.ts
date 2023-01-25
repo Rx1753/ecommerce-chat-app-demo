@@ -16,16 +16,26 @@ export class ProductReviewDatabaseLayer {
         const productCheck = await Product.findById(productId);
         //TODO:: customer order this product or not
         if (productCheck) {
-            console.log('rate',rate);
-            
             const data = ProductReview.build({ productId:productId,
                 rate:(rate),
                 title:title,
                 customerId:req.currentUser.id,
                 comment:comment,
                 imageURL:imageURL});
-            console.log(data);
             await data.save();
+            
+            //product average rating count
+            const productReviewCheck = await ProductReview.aggregate(
+                [
+                    {$match:{productId:productId}},
+                    {
+                        $group: {
+                            _id: "$productId",
+                            totalRating:{$avg: "$rate"}
+                        }
+                    }
+            ])
+            await Product.findByIdAndUpdate(productId,{rating:productReviewCheck[0].totalRating});
             return data;
         } else {
             throw new BadRequestError('Provided productId is not valid');

@@ -2,7 +2,7 @@ import mongoose, { ObjectId } from "mongoose";
 
 export interface AttributeAttrs {
     name:string,
-    type:string
+    type:string,
 }
 
 interface AttributeModel extends mongoose.Model<AttributeDoc> {
@@ -11,12 +11,12 @@ interface AttributeModel extends mongoose.Model<AttributeDoc> {
 
 export interface AttributeDoc extends mongoose.Document {
     name:string,
-    type:string
+    type:string,
 }
 
 const AttributeSchema = new mongoose.Schema({
     name: { type: String },
-    type: {type: String},
+    type:{type:String,enum:['text','image']},
     createdAt: { type: Number, default: () => Date.now() },
     updatedAt: { type: Number, default: () => Date.now() },
 }, {

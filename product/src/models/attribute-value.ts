@@ -29,7 +29,6 @@ const AttributeValueSchema = new mongoose.Schema({
             delete ret.createdAt;
             delete ret.updatedAt;
         },
-
     }
 });
 
