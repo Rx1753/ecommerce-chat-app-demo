@@ -18,8 +18,24 @@ import { Store } from '../models/store';
 import { ProductWhishlist } from '../models/whislist-product';
 import { natsWrapper } from '../nats-wrapper';
 
-export class ProductDatabaseLayer {
+interface Iresponse{
+    message? : string,
+    result? : any,
+    page? : number,
+    total? : number
+}
 
+export class ProductDatabaseLayer {
+    
+    static responseSuccess(data:Iresponse) {
+        return {
+          success: true,
+          page : data?.page,
+          total : data?.total,
+          message: data?.message || "success",
+          data: data?.result,
+        };
+      }
     static async createProduct(req: any) {
         const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, highlights, addOns, quantity, isInvoiceAvailable, isCancellation, relatableProducts, isDiscountPercentage, discount, maxDiscount, } = req.body;
 
@@ -421,11 +437,7 @@ export class ProductDatabaseLayer {
                 
                 delete e['imageUrl'];
             }))
-            return {
-                page: page,
-                totalPage: totalPage,
-                result: dataStr
-            };
+            return this.responseSuccess({total:totalPage,page: page,result: dataStr});
         } else {
             throw new BadRequestError("no data found for given id");
         }
@@ -904,7 +916,7 @@ export class ProductDatabaseLayer {
 
                 dataStr.similarProduct = productSimilarData;
                 dataStr.attributes = attributeStrData;
-                return dataStr;
+                return this.responseSuccess({result:dataStr});
             }
         } else {
             throw new BadRequestError("ProductIteamId is not valid");
@@ -917,7 +929,8 @@ export class ProductDatabaseLayer {
         const productIteamId = req.query.productIteamId;
         const attribute = req.query.attribute;
 
-        const attributeData = [{ attributeId: "63d35c31f14946782d0448a3", attributeValueId: "63d35c3df14946782d0448a6" }, { attributeId: "63d35c50f14946782d0448ae", attributeValueId: "63d35d34f14946782d0448b4" }];
+        //TODO query params logic pending
+        const attributeData = [{ attributeId: "63d35c31f14946782d0448a3", attributeValueId: "63d35c3df14946782d0448a6" }, { attributeId: "63d35c50f14946782d0448ae", attributeValueId: "63d35d39f14946782d0448b7" }];
         var attributeArr: string[] = [];
         attributeData.map((e: any) => {
             if (!attributeArr.includes(e.attributeValueId)) {
@@ -953,7 +966,7 @@ export class ProductDatabaseLayer {
             }
 
             //productIteamId based combination check
-            const d = this.getProductVariant(req, returnProductIteamId[0]);
+            const d = await this.getProductVariant(req, returnProductIteamId[0]);
             return d;
 
         } else {
