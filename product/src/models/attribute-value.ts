@@ -18,6 +18,7 @@ export interface AttributeValueDoc extends mongoose.Document {
 const AttributeValueSchema = new mongoose.Schema({
     value: { type: String },
     attributeId: { type: String, ref:'Attribute' },
+    isActive:{type:Boolean,default:true},
     createdAt: { type: Number, default: () => Date.now() },
     updatedAt: { type: Number, default: () => Date.now() },
 }, {

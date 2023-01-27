@@ -16,7 +16,8 @@ export interface AttributeDoc extends mongoose.Document {
 
 const AttributeSchema = new mongoose.Schema({
     name: { type: String },
-    type:{type:String,enum:['text','image']},
+    type:{type:String,enum:['text','image','number']},
+    isActive:{type:Boolean,default:true},
     createdAt: { type: Number, default: () => Date.now() },
     updatedAt: { type: Number, default: () => Date.now() },
 }, {
