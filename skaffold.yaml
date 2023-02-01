@@ -40,14 +40,14 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: . 
-    - image: nidhi9521/chat-service
-      context: chat-service
-      docker:
-        dockerfile: Dockerfile
-      sync:
-        manual:
-          - src: "src/**/*.ts"
-            dest: .
+    # - image: nidhi9521/chat-service
+    #   context: chat-service
+    #   docker:
+    #     dockerfile: Dockerfile
+    #   sync:
+    #     manual:
+    #       - src: "src/**/*.ts"
+    #         dest: .
     - image: nidhi9521/expiration
       context: expiration
       docker:

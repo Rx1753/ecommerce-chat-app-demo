@@ -1,48 +1,48 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: chat-service-depl
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: chat-service
-  template:
-    metadata:
-      labels:
-        app: chat-service
-    spec:
-      containers:
-        - name: chat-service
-          image: nidhi9521/chat-service
-          env:
-            - name: NATS_CLIENT_ID
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: NATS_URI
-              value: http://nats-srv:4222
-            - name: NATS_CLUSTER_ID
-              value: rxshop
-            - name: MONGO_URI
-              value: 'mongodb://chat-service-mongo-srv:27017/chat-service'   
-            - name: PORT
-              value: '3001'
-            - name: JWT_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: jwt-secret
-                  key: JWT_KEY                    
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: chat-service-srv
-spec:
-  selector:
-    app: chat-service
-  ports:
-    - name: chat-service
-      protocol: TCP
-      port: 3001
-      targetPort: 3001
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: chat-service-depl
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: chat-service
+#   template:
+#     metadata:
+#       labels:
+#         app: chat-service
+#     spec:
+#       containers:
+#         - name: chat-service
+#           image: nidhi9521/chat-service
+#           env:
+#             - name: NATS_CLIENT_ID
+#               valueFrom:
+#                 fieldRef:
+#                   fieldPath: metadata.name
+#             - name: NATS_URI
+#               value: http://nats-srv:4222
+#             - name: NATS_CLUSTER_ID
+#               value: rxshop
+#             - name: MONGO_URI
+#               value: 'mongodb://chat-service-mongo-srv:27017/chat-service'   
+#             - name: PORT
+#               value: '3001'
+#             - name: JWT_KEY
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: jwt-secret
+#                   key: JWT_KEY                    
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: chat-service-srv
+# spec:
+#   selector:
+#     app: chat-service
+#   ports:
+#     - name: chat-service
+#       protocol: TCP
+#       port: 3001
+#       targetPort: 3001

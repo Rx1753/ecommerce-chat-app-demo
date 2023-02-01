@@ -10,7 +10,6 @@ export interface SKUSAttrs {
     qty:number;
     isVariantHasImage:boolean;
     imageUrl:string;
-    
 }
 
 interface SKUSModel extends mongoose.Model<SKUSDoc> {

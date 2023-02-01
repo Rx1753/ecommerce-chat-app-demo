@@ -46,10 +46,10 @@ spec:
                 name: order-srv
                 port:
                   number: 3000      
-          - path: /api/chats/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: chat-service-srv
-                port:
-                  number: 3001
+          # - path: /api/chats/?(.*)
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: chat-service-srv
+          #       port:
+          #         number: 3001

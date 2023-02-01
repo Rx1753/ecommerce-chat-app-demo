@@ -2,8 +2,7 @@ import { Subjects } from "../enums/subjects";
 export interface AdminPermissionUserCreatedEvent{
     subject:Subjects.AdminPermissionCreated,
     data:{
-        id:string;
-        
+        id:string;     
         tableName: string;
         isCreate: boolean;
         isDelete: boolean;
