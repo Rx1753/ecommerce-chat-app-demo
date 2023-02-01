@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import { AdminPermissionsDoc } from './admin-permissions';
 import { AdminRoleDoc } from "./admin-role";
 // An interface that describe the properties
@@ -24,18 +24,10 @@ interface AdminRoleMappingModel extends mongoose.Model<AdminRoleMappingDoc> {
 // Schema
 const AdminRoleMappingSchema = new mongoose.Schema(
     {
-        roleId:{type:String,ref:'AdminRole'},
-        permissionId:{type:String,ref:'adminPermissions'},
-        createdAt: { type: Number, default: () => Date.now() },
-        updatedAt: { type: Number, default: () => Date.now() },
-    },
-    {
-        toJSON: {
-            transform(doc, ret) {
-                delete ret._id;
-                delete ret.__v;
-            },
-        },
+        roleId:{type:mongoose.Schema.Types.ObjectId,ref:'AdminRole'},
+        permissionId:{type:mongoose.Schema.Types.ObjectId,ref:'adminPermissions'},
+        createdAt: { type: Date, default: () => Date.now() },
+        updatedAt: { type: Date, default: () => Date.now() },
     }
 );
 

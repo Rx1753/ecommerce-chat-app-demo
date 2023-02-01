@@ -30,25 +30,14 @@ export interface storeWorkingDayDoc extends mongoose.Document {
 
 const storeWorkingDaySchema = new mongoose.Schema({
     day: { type: String,enum:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday' ] },
-    storeId: { type: String, ref: 'store'},
+    storeId: { type: mongoose.Schema.Types.ObjectId, ref: 'store'},
     startTime:{type:String},
     closeTime:{type:String},
     startBreakTime:{type:String},
     endBreakTime:{type:String},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.storeWorkingDayId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 storeWorkingDaySchema.pre('save', async function (done) {
 

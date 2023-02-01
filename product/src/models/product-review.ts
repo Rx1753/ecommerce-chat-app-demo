@@ -28,23 +28,15 @@ export interface ProductReviewDoc extends mongoose.Document {
 }
 
 const ProductReviewSchema = new mongoose.Schema({
-    customerId:{type:String,ref:'CustomerUser'},
-    productId: { type: String},
+    customerId:{type:mongoose.Schema.Types.ObjectId,ref:'CustomerUser'},
+    productId: { type: mongoose.Schema.Types.ObjectId, ref:'Product'},
     title:{type:String},
     rate: { type: Number,default:1.1 },
     comment: { type: String },
     imageURL:[{type:String}],
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.ProductReviewId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-        },
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 ProductReviewSchema.pre('save', async function (done) {
     done();

@@ -59,27 +59,15 @@ const BusinessUserSchema = new mongoose.Schema({
     isDelete: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
     isApproved: { type: Boolean, default: false },
-    createdBy: { type: String || null, default: null, ref: 'BusinessUser' },
-    accountType: { type: String, ref: 'AccountType' },
+    createdBy: { type: mongoose.Schema.Types.ObjectId || null, default: null, ref: 'BusinessUser' },
+    accountType: { type: mongoose.Schema.Types.ObjectId, ref: 'AccountType' },
     refreshToken: { type: String },
     allowChangePassword: { type: Boolean, default: true},
     broadcastCount: {type:Number, default:0},
-    store:{type:String,ref:'Store',default:null},
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.BusinessUserId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.password;
-            delete ret.created_at;
-            delete ret.updated_at;
-        },
-
-    }
-});
+    store:{type:mongoose.Schema.Types.ObjectId,ref:'Store',default:null},
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 BusinessUserSchema.pre('save', async function (done) {
     if (this.isModified('password')) {

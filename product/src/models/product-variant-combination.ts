@@ -20,23 +20,12 @@ export interface ProductVariantCombinationDoc extends mongoose.Document {
 }
 
 const ProductVariantCombinationSchema = new mongoose.Schema({
-    productSKUsId: { type: String,ref:'SKUS' },
-    attributeId:{type:String,ref:'Attribute'},
-    attributeValueId:{type:String,ref:'AttributeValue'},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.ProductVariantCombinationId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    productSKUsId: { type: mongoose.Schema.Types.ObjectId,ref:'SKUS' },
+    attributeId:{type:mongoose.Schema.Types.ObjectId,ref:'Attribute'},
+    attributeValueId:{type:mongoose.Schema.Types.ObjectId,ref:'AttributeValue'},
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+},);
 
 ProductVariantCombinationSchema.pre('update', async function (done) {
     done();

@@ -27,17 +27,7 @@ const customerSchema = new mongoose.Schema({
     phoneNumber: { type: Number || null, },
     name: { type: String },
 
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.customerId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-
-        },
-
-    }
-});
+}, );
 
 customerSchema.pre('save', async function (done) {
 

@@ -75,7 +75,7 @@ const customerSchema = new mongoose.Schema({
     isApproved: { type: Boolean, default: false },
     inviteCode: { type: String, required: true, unique: true },
     referalType:{type:String,enum:['Admin','CustomerUser']},
-    referalId: { type: String, default: null, ref: 'CustomerUser' },
+    referalId: { type: mongoose.Schema.Types.ObjectId, default: null, ref: 'CustomerUser' },
     noOfFriend: { type: Number, default: 0 },
     status: { type: String, enum: ['New', 'pending', 'Approved'], default: 'New' },
     noOfFollowedBusiness: { type: Number, default: 0 },
@@ -89,23 +89,9 @@ const customerSchema = new mongoose.Schema({
     isAllowToChatStranger: { type: Boolean, default: true },
     hideChatPassword: { type: String, default: null },
     refreshToken: { type: String },
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.customerId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.password;
-            delete ret.isActive;
-            delete ret.isDelete;
-            delete ret.created_at;
-            delete ret.updated_at;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 customerSchema.pre('save', async function (done) {
     if (this.isModified('password')) {

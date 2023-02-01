@@ -30,22 +30,12 @@ export interface BusinessProfileKycDoc extends mongoose.Document {
 const BusinessProfileKycSchema = new mongoose.Schema({
     documentUrl: { type: String },
     documentType: {type: String,enum:['PAN card','driving license']},
-    businessProfileId:{type:String,ref:'BusinessProfile'},
+    businessProfileId:{type:mongoose.Schema.Types.ObjectId,ref:'BusinessProfile'},
     isApproved:{type:Boolean,default:false},
-    uploadedBy:{type:String,ref:'BusinessUser'},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.BusinessProfileKycId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-    }
-});
+    uploadedBy:{type:mongoose.Schema.Types.ObjectId,ref:'BusinessUser'},
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 BusinessProfileKycSchema.pre('save', async function (done) {
     done();

@@ -27,7 +27,7 @@ interface AdminDoc extends mongoose.Document {
   isSuperAdmin: boolean;
   //permissionId :
   roleId: AdminRoleDoc;
-  createdBy: string;
+  createdBy: AdminDoc;
   updatedBy: string;
   isActive: boolean;
   refreshToken: string;
@@ -54,25 +54,15 @@ const AdminSchema = new mongoose.Schema(
     isMobileVerified: { type: Boolean, default: false },
     imageUrl: { type: String, default: '' },
     isSuperAdmin: { type: Boolean, default: false },
-    createdBy: { type: String, default: null, ref: 'admin' },
-    updatedBy: { type: String, default: '' },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, default: null, ref: 'admin' },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, default: '' },
     isActive: { type: Boolean, default: true },
     refreshToken: { type: String },
     allowChangePassword: { type: Boolean, default: true },
-    roleId: { type: String, ref: 'AdminRole', required: true },
-    createdAt: { type: Number, default: () => Date.now() },
+    roleId: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminRole', required: true },
+    createdAt: { type: Date, default: () => Date.now() },
     updatedAt: { type: Number, default: () => Date.now() }  },
-  {
-    toJSON: {
-      transform(doc, ret) {
-        ret.id = ret._id;
-        delete ret._id;
-        delete ret.password;
-        delete ret.__v;
-      },
-    },
-    timestamps: true,
-  }
+ 
 );
 
 // This is middleware function

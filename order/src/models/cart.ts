@@ -24,17 +24,9 @@ export interface CartDoc extends mongoose.Document {
 }
 
 const CartSchema = new mongoose.Schema({
-    customerId: { type: String, ref: 'CustomerUser' },
-    cartList: [{_id: false, productId: { type: String, ref: 'Product' }, productItemId: { type: String, ref: 'ProductItem' }, purchaseQuantity: { type: Number } }]
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.CartId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-        },
-    }
-});
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'CustomerUser' },
+    cartList: [{_id: false, productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }, productItemId: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductItem' }, purchaseQuantity: { type: Number } }]
+}, );
 
 CartSchema.pre('save', async function (done) {
 })

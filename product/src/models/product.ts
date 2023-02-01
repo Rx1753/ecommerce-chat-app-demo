@@ -75,34 +75,21 @@ const ProductSchema = new mongoose.Schema({
     quantity: { type: Number },
     isInvoiceAvailable: { type: Boolean, default: false },
     isCancellation: { type: Boolean, default: false },
-    storeId:{type:String,ref:'Store'},
+    storeId:{type:mongoose.Schema.Types.ObjectId,ref:'Store'},
     rating:{type:Number, default:4.9},
     relatableProducts: [
         {_id:false},
-         { type: String, ref: 'Product' }
+         { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }
     ],
-    productSubCategoryId: { type: String, ref: 'ProductSubCategory' },
+    productSubCategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductSubCategory' },
     isDiscountPercentage:{type:Boolean, require:true},
     discount:{type:Number},
     discountedValue:{type:Number,},
-    createdBy:{type:String,ref:'user'},
+    createdBy:{type:mongoose.Schema.Types.ObjectId,ref:'user'},
     maxDiscount:{type:Number},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.productId = ret._id;
-            ret.productName=ret.name;
-            
-            delete ret._id;
-            delete ret.name;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 ProductSchema.pre('save', async function (done) {
     done();

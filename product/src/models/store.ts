@@ -46,26 +46,15 @@ const StoreSchema = new mongoose.Schema({
     email: { type: String, default: null, require: true },
     description: { type: String, },
     imageUrl: { type: String, },
-    businessSubCategoryId: { type: String, ref: 'BusinessSubCategory' },
-    businessProfileId: { type: String, ref: 'BusinessProfileId' },
+    businessSubCategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessSubCategory' },
+    businessProfileId: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessProfileId' },
     rating: { type: Number, default: 0 },
     phoneNumber: { type: Number },
     isActive: { type: Boolean, default: false },
-    createdBy: { type: String, ref: 'BusinessUser' },
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.StoreId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
-        },
-
-    }
-});
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessUser' },
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 StoreSchema.pre('save', async function (done) {
 })

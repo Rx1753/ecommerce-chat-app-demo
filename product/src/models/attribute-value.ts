@@ -17,21 +17,11 @@ export interface AttributeValueDoc extends mongoose.Document {
 
 const AttributeValueSchema = new mongoose.Schema({
     value: { type: String },
-    attributeId: { type: String, ref:'Attribute' },
+    attributeId: { type: mongoose.Schema.Types.ObjectId, ref:'Attribute' },
     isActive:{type:Boolean,default:true},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.AttributeValueId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 AttributeValueSchema.pre('update', async function (done) {
     const currentDate = new Date();

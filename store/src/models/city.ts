@@ -21,22 +21,11 @@ export interface CityDoc extends mongoose.Document {
 
 const citySchema = new mongoose.Schema({
     cityName: { type: String, required: true, unique: true},
-    stateId: { type: String, ref: 'state'},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
+    stateId: { type: mongoose.Schema.Types.ObjectId, ref: 'state'},
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
     is_delete: { type: Boolean, default: false }
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.cityId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+}, );
 
 citySchema.pre('save', async function (done) {
 

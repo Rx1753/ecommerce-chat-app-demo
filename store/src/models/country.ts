@@ -22,20 +22,9 @@ export interface CountryDoc extends mongoose.Document {
 const countrySchema = new mongoose.Schema({
     countryName: {type: String,required: true,unique: true},
     isDelete: { type: Boolean, default: false },
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.countryId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 countrySchema.pre('save', async function (done) {
 

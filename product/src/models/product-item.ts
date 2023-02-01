@@ -40,23 +40,11 @@ const ProductItemSchema = new mongoose.Schema({
     imageUrl: { type: String },
     mrpPrice: { type: Number },
     quantity: { type: Number },
-    productId: { type: String, ref: 'Product' },
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
     createdBy:{type:String,},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.ProductItemId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.isActive;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 ProductItemSchema.pre('save', async function (done) {
     done();

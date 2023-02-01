@@ -25,17 +25,10 @@ const adminSwitchesSchema = new mongoose.Schema(
   {
    name:{type:String},
    status:{type:Boolean},
-   created_at: { type: Number, default: () => Date.now() },
-   updated_at: { type: Number, default: () => Date.now() },
+   createdAt: { type: Date, default: () => Date.now() },
+   updatedAt: { type: Date, default: () => Date.now() },
   },
-  {
-    toJSON: {
-      transform(doc, ret) {
-        delete ret._id;
-        delete ret.__v;
-      },
-    },
-  }
+  
 );
 
 // This is middleware function

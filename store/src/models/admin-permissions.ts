@@ -29,16 +29,7 @@ const adminPermissionSchema = new mongoose.Schema(
     isUpdate: { type: Boolean, required: true, default: true },
     isRead: { type: Boolean, required: true, default: true },
   },
-  {
-    toJSON: {
-      transform(doc, ret) {
-        ret.id = ret._id;
-        delete ret._id;
-        delete ret.__v;
-      },
-    },
-    timestamps: true,
-  }
+  
 );
 
 // Adding statics property in schema

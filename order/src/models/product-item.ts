@@ -35,18 +35,9 @@ const ProductItemSchema = new mongoose.Schema({
     description: { type: String },
     mrpPrice: { type: Number },
     quantity: { type: Number },
-    productId: { type: String, ref: 'Product' },
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
     createdBy: { type: String, },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.ProductItemId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-        },
-
-    }
-});
+}, );
 
 ProductItemSchema.pre('save', async function (done) {
     done();

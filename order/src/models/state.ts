@@ -25,22 +25,11 @@ export interface StateDoc extends mongoose.Document {
 
 const stateSchema = new mongoose.Schema({
     stateName: { type: String, required: true, unique: true },
-    countryId: { type: String, ref: 'country' },
+    countryId: { type: mongoose.Schema.Types.ObjectId, ref: 'country' },
     isActive: { type: Boolean, default: true },
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.stateId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 stateSchema.pre('save', async function (done) {
 

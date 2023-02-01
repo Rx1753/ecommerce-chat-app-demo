@@ -19,9 +19,6 @@ interface ProductWhishlistModel extends mongoose.Model<ProductWhishlistDoc> {
 
 // interface for single category properties
 export interface ProductWhishlistDoc extends mongoose.Document {
-    name: any;
-    isActive: any;
-    businessSubCategoryId: any;
     createdAt: Date;
     updatedAt: Date;
     customerId:string;
@@ -31,20 +28,9 @@ export interface ProductWhishlistDoc extends mongoose.Document {
 const ProductWhishlistSchema = new mongoose.Schema({
     customerId:{type:String,},
     productId:{type:String},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.ProductWhishlistId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 ProductWhishlistSchema.pre('save', async function (done) {
     done();

@@ -32,25 +32,11 @@ const BusinessUserSchema = new mongoose.Schema({
     phoneNumber: { type: Number || null, },
     name: { type: String },
     isActive: { type: Boolean, default: true },
-    createdBy: { type: String || null, default: null, ref: 'BusinessUser' },
-    accountType: { type: String, ref: 'AccountType' },
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.BusinessUserId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.password;
-            delete ret.isActive;
-            delete ret.isDelete;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdBy: { type: mongoose.Schema.Types.ObjectId || null, default: null, ref: 'BusinessUser' },
+    accountType: { type: mongoose.Schema.Types.ObjectId, ref: 'AccountType' },
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 BusinessUserSchema.pre('save', async function (done) {
     if (this.isModified('password')) {

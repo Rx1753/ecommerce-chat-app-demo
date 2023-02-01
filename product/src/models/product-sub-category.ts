@@ -31,21 +31,10 @@ const ProductSubCategorySchema = new mongoose.Schema({
     name: { type: String },
     description: {type: String},
     isActive: { type: Boolean, default: true },
-    productCategoryId:{type:String,ref:'ProductCategory'},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.ProductSubCategoryId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    productCategoryId:{type:mongoose.Schema.Types.ObjectId,ref:'ProductCategory'},
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 ProductSubCategorySchema.pre('save', async function (done) {
     done();

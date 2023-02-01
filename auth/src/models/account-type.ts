@@ -18,20 +18,9 @@ export interface AccountTypeDoc extends mongoose.Document {
 
 const AccountTypeSchema = new mongoose.Schema({
     accountType: { type: String, required: true, unique: true},
-    created_at: { type: Number, default: () => Date.now()},
-    updated_at: { type: Number, default: () => Date.now() },
-    is_delete: { type: Boolean, default: false }
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.accountTypeId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
-        },
-
-    }
+    createdAt: { type: Date, default: () => Date.now()},
+    updatedAt: { type: Date, default: () => Date.now() },
+    isDelete: { type: Boolean, default: false }
 });
 
 AccountTypeSchema.pre('save', async function (done) {

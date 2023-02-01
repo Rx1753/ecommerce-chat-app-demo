@@ -42,12 +42,12 @@ export interface BusinessProfileDoc extends mongoose.Document {
 }
 
 const BusinessProfileSchema = new mongoose.Schema({
-    BusinessUsers: [{ type: String, ref: 'BusinessUser' },],
+    BusinessUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BusinessUser' },],
     name: { type: String },
     tagLine: { type: String, default: null },
     description: { type: String, },
     coverPhoto: { type: String, },
-    businessSubCategoryId: { type: String, ref: 'BusinessSubCategory' },
+    businessSubCategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessSubCategory' },
     privacyPolicy: { type: String, default: null },
     termsAndCondition: { type: String, default: null },
     qrCode: { type: String, default: null },
@@ -60,20 +60,9 @@ const BusinessProfileSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     minOrderAmount: { type: Number, default: 0 },
     welcomeMessage: { type: String, default: "Welcome to My business profile" },
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.BusinessProfileId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 BusinessProfileSchema.pre('save', async function (done) {
 })

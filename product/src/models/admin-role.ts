@@ -22,17 +22,10 @@ interface AdminRoleModel extends mongoose.Model<AdminRoleDoc> {
 const AdminRoleSchema = new mongoose.Schema(
     {
         name: { type: String },
-        createdAt: { type: Number, default: () => Date.now() },
-        updatedAt: { type: Number, default: () => Date.now() },
+        createdAt: { type: Date, default: () => Date.now() },
+        updatedAt: { type: Date, default: () => Date.now() },
     },
-    {
-        toJSON: {
-            transform(doc, ret) {
-                delete ret._id;
-                delete ret.__v;
-            },
-        },
-    }
+    
 );
 
 // This is middleware function

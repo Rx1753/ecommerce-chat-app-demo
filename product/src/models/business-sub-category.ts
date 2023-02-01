@@ -34,21 +34,10 @@ const BusinessSubCategorySchema = new mongoose.Schema({
     name: { type: String },
     description: {type: String},
     isActive: { type: Boolean, default: true },
-    businessCategoryId:{type:String,ref:'BusinessCategory'},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.BusinessSubCategoryId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    businessCategoryId:{type:mongoose.Schema.Types.ObjectId,ref:'BusinessCategory'},
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 BusinessSubCategorySchema.pre('save', async function (done) {
     done();

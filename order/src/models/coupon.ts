@@ -55,19 +55,9 @@ const CouponSchema = new mongoose.Schema({
     couponAuthor:{type:String,enum:['Admin','Vendor']},
     imageUrl:[{type:String}],
     isActive:{type:Boolean,default:true},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.CouponId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 CouponSchema.pre('save', async function (done) {
     done();

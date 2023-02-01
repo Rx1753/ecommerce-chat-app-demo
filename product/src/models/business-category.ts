@@ -27,20 +27,9 @@ const BusinessCategorySchema = new mongoose.Schema({
     name: { type: String },
     description: {type: String},
     isActive: { type: Boolean, default: true },
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.BusinesscategoryId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 BusinessCategorySchema.pre('save', async function (done) {
  

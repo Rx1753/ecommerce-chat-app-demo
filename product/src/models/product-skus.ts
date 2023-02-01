@@ -29,7 +29,7 @@ export interface SKUSDoc extends mongoose.Document {
 }
 
 const SKUSSchema = new mongoose.Schema({
-    productId: { type: String,ref:'Product' },
+    productId: { type: mongoose.Schema.Types.ObjectId,ref:'Product' },
     name:{type:String},
     description:{type:String},
     isVariantBasedPrice:{type:Boolean},
@@ -37,20 +37,9 @@ const SKUSSchema = new mongoose.Schema({
     qty:{type:Number},
     isVariantHasImage:{type:Boolean},
     imageUrl:{type:String},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.SKUSId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 SKUSSchema.pre('update', async function (done) {
     const currentDate = new Date();

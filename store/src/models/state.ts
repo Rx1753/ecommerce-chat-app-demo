@@ -16,7 +16,7 @@ interface StateModel extends mongoose.Model<StateDoc> {
 // interface for single user properties
 export interface StateDoc extends mongoose.Document {
     stateName: string;
-    country_id: CountryDoc;
+    countryId: CountryDoc;
     createdAt: Date;
     updatedAt: Date;
 
@@ -24,22 +24,11 @@ export interface StateDoc extends mongoose.Document {
 
 const stateSchema = new mongoose.Schema({
     stateName: { type: String, required: true, unique: true },
-    countryId: { type: String, ref: 'country' },
+    countryId: { type: mongoose.Schema.Types.ObjectId, ref: 'country' },
     isDelete: { type: Boolean, default: false },
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.stateId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 stateSchema.pre('save', async function (done) {
 

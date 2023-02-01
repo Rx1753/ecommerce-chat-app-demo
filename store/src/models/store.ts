@@ -69,12 +69,12 @@ const StoreSchema = new mongoose.Schema({
     email: { type: String, default: null, require: true },
     description: { type: String, },
     imageUrl: { type: String, },
-    businessSubCategoryId: { type: String, ref: 'BusinessSubCategory' },
-    businessProfileId: { type: String, ref: 'BusinessProfileId' },
+    businessSubCategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessSubCategory' },
+    businessProfileId: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessProfileId' },
     rating: { type: Number, default: 0 },
-    city: { type: String, ref: 'City' },
-    state: { type: String, ref: 'State' },
-    country: { type: String, ref: 'Country' },
+    city: { type: mongoose.Schema.Types.ObjectId, ref: 'City' },
+    state: { type: mongoose.Schema.Types.ObjectId, ref: 'State' },
+    country: { type: mongoose.Schema.Types.ObjectId, ref: 'Country' },
     latitude: { type: Number, default: null },
     longitude: { type: Number, default: null },
     addressLine1: { type: String },
@@ -84,25 +84,14 @@ const StoreSchema = new mongoose.Schema({
     pauseOrder: { type: Boolean, default: false },
     phoneNumber: { type: Number },
     isActive: { type: Boolean, default: false },
-    membershipId: { type: String, ref: 'Membership', default: null },
+    membershipId: { type: mongoose.Schema.Types.ObjectId, ref: 'Membership', default: null },
     isApprovedByAdmin: { type: Boolean, default: false },
     welcomeMessage: { type: String, default: "Welcome to My business profile" },
     brodcastCount: { type: Number, default: 0 },
-    createdBy: { type: String, ref: 'BusinessUser' },
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.StoreId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessUser' },
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+},);
 
 StoreSchema.pre('save', async function (done) {
 })

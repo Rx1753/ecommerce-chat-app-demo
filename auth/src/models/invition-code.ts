@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 
 // An interface that describe the properties
 // that are required to create invitionCode
@@ -42,17 +42,10 @@ const invitionCodeSchema = new mongoose.Schema(
         isUsed:{type:Boolean,defaul:false},
         expirationDays: { type: Number, default: 10 },
         created_By:{type:String},
-        created_at: { type: Number, default: () => Date.now() },
-        updated_at: { type: Number, default: () => Date.now() },
+        createdAt: { type: Date, default: () => Date.now() },
+        updatedAt: { type: Date, default: () => Date.now() },
     },
-    {
-        toJSON: {
-            transform(doc, ret) {
-                delete ret._id;
-                delete ret.__v;
-            },
-        },
-    }
+    
 );
 
 // This is middleware function

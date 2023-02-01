@@ -2,7 +2,6 @@ import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 
 import { JwtService } from '../services/jwt';
 import { Password } from '../services/password';
-import { AdminUser, AdminUserAttrs } from '../models/admin-user';
 import { PayloadType, Strings } from '../services/string-values';
 import {
   AdminPermissions,
@@ -198,9 +197,9 @@ export class AuthDatabaseLayer {
   }
 
   //not in use
-  static async signUpUser(data: AdminUserAttrs) {
+  static async signUpUser(data: AdminAttrs) {
     const hashPassword = await Password.toHash(data.password);
-    const user = AdminUser.build(data);
+    const user = Admin.build(data);
     var payload = {
       id: user.id,
       email: user.email,
@@ -211,7 +210,6 @@ export class AuthDatabaseLayer {
     user.refreshToken = jwtToken;
     user.isActive = true;
     user.isSuperAdmin = false;
-    console.log(`SignUp User :: ${user.permissionId}`);
     await user.save();
 
     return jwtToken;

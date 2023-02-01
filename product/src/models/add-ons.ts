@@ -40,21 +40,9 @@ const AddOnsSchema = new mongoose.Schema({
     quantity: { type: Number },
     productId: { type: String, ref: 'Product' },
     createdBy:{type:String},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.AddOnsId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.isActive;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 AddOnsSchema.pre('save', async function (done) {
     done();

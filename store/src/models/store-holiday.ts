@@ -23,23 +23,12 @@ export interface storeHolidayDoc extends mongoose.Document {
 }
 
 const storeHolidaySchema = new mongoose.Schema({
-    storeId: { type: String, ref: 'store'},
+    storeId: { type: mongoose.Schema.Types.ObjectId, ref: 'store'},
     startDate:{type:Date},
     endDate:{type:Date},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.storeHolidayId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 storeHolidaySchema.pre('save', async function (done) {
 

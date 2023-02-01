@@ -39,28 +39,18 @@ export interface OrderDoc extends mongoose.Document {
 }
 
 const OrderSchema = new mongoose.Schema({
-    customerId: { type: String, ref: 'CustomerUser' },
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'CustomerUser' },
     rewardPoints: { type: Number},
-    addressId: { type: String, ref:'CustomerAddress' },
+    addressId: { type: mongoose.Schema.Types.ObjectId, ref:'CustomerAddress' },
     deliveryMode: { type: String , enum: ['DeliveryMode','PickUpMode']},
     payableAmount:{type:Number},
-    couponId:{type:String,ref:'Coupon'},
+    couponId:{type:mongoose.Schema.Types.ObjectId,ref:'Coupon'},
     discountPrice:{type:Number,},
     totalPrice:{type:Number},
     remarks:{type:String},
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.OrderId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.created_at;
-            delete ret.updated_at;
-        },
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 OrderSchema.pre('save', async function (done) {
 })

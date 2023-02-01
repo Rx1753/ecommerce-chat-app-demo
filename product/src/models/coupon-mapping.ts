@@ -46,20 +46,10 @@ const CouponMappingSchema = new mongoose.Schema({
     isProductCategory:{type:Boolean,default:false},
     isProductSubCategory:{type:Boolean,default:false},
     baseType:{type:String,enum:baseIdEnum},
-    baseId:{type:String,ref:'baseType'},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.CouponMappingId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-    }
-});
+    baseId:{type:mongoose.Schema.Types.ObjectId,ref:'baseType'},
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, );
 
 CouponMappingSchema.pre('save', async function (done) {
     done();

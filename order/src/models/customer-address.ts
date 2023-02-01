@@ -48,22 +48,14 @@ const customerAddressSchema = new mongoose.Schema(
     isDefalultAddress: { type: Boolean },
     addressLine1: { type: String },
     addressLine2: { type: String },
-    cityId: { type: String ,ref:'city' },
-    stateId: { type: String , ref:'state'},
-    countryId: { type: String , ref:'country'},
+    cityId: { type: mongoose.Schema.Types.ObjectId ,ref:'city' },
+    stateId: { type: mongoose.Schema.Types.ObjectId , ref:'state'},
+    countryId: { type: mongoose.Schema.Types.ObjectId , ref:'country'},
     zipCode: {type:Number,},
-    created_at: { type: Number, default: () => Date.now() },
-    updated_at: { type: Number, default: () => Date.now() },
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
   },
-  {
-    toJSON: {
-      transform(doc, ret) {
-        ret.customerAddressId = ret._id;
-        delete ret._id;
-        delete ret.__v;
-      },
-    },
-  }
+  
 );
 
 // This is middleware function

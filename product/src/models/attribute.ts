@@ -18,20 +18,10 @@ const AttributeSchema = new mongoose.Schema({
     name: { type: String },
     type:{type:String,enum:['text','image','number']},
     isActive:{type:Boolean,default:true},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.AttributeId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-            delete ret.createdAt;
-            delete ret.updatedAt;
-        },
-
-    }
-});
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
+}, 
+);
 
 AttributeSchema.pre('update', async function (done) {
     const currentDate = new Date();

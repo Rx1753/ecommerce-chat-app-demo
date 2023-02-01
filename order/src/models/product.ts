@@ -51,22 +51,14 @@ const ProductSchema = new mongoose.Schema({
     basePrice: { type: Number },
     mrpPrice: { type: Number },
     quantity: { type: Number },
-    productSubCategoryId:{type:String, ref:'ProductSubCategory'},
+    productSubCategoryId:{type:mongoose.Schema.Types.ObjectId, ref:'ProductSubCategory'},
     calculateOnBasePrice: { type: Boolean, default: true },
-    storeId: { type: String, ref: 'Store' },
+    storeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Store' },
     relatableProducts: [
-        { type: String, ref: 'Product' }
+        { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }
     ],
-    createdBy: { type: String, ref: 'user' },
-}, {
-    toJSON: {
-        transform(doc, ret) {
-            ret.ProductId = ret._id;
-            delete ret._id;
-            delete ret.__v;
-        },
-    }
-});
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
+}, );
 
 ProductSchema.pre('save', async function (done) {
     done();
