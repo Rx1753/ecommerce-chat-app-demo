@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { TokenExpiredError } from 'jsonwebtoken';
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
-import { AdminUser } from '../models/admin-user';
+
 import { Admin } from '../models/admin';
 
 interface UserPayload {

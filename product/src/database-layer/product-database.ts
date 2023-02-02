@@ -658,13 +658,13 @@ export class ProductDatabaseLayer {
             {
                 "$lookup": {
                     "from": "skus",
-                    "let": { "proId": { "$toString": "$_id" } },
+                    "let": { "proId":  "$_id"  },
                     "pipeline": [
                         { "$match": { "$expr": { "$eq": ["$productId", "$$proId"] } } },
                         {
                             "$lookup": {
                                 "from": "productvariantcombinations",
-                                "let": { "pSKUsId": { "$toString": '$_id' } },
+                                "let": { "pSKUsId":'$_id'  },
                                 "pipeline": [
                                     { "$match": { "$expr": { "$eq": ['$productSKUsId', "$$pSKUsId"] } } },
                                     {
@@ -672,13 +672,13 @@ export class ProductDatabaseLayer {
                                             "from": "attributevalues",
                                             "let": { "avId": '$attributeValueId' },
                                             "pipeline": [
-                                                { "$match": { "$expr": { "$eq": [{ "$toString": "$_id" }, "$$avId"] } } },
+                                                { "$match": { "$expr": { "$eq": [ "$_id" , "$$avId"] } } },
                                                 {
                                                     "$lookup": {
                                                         "from": "attributes",
                                                         "let": { "aId": '$attributeId' },
                                                         "pipeline": [
-                                                            { "$match": { "$expr": { "$eq": [{ "$toString": "$_id" }, "$$aId"] } } },
+                                                            { "$match": { "$expr": { "$eq": [ "$_id" , "$$aId"] } } },
 
                                                         ],
                                                         "as": "attributeData"
@@ -706,13 +706,13 @@ export class ProductDatabaseLayer {
             {
                 "$lookup": {
                     "from": "skus",
-                    "let": { "proId": { "$toString": "$_id" } },
+                    "let": { "proId":  "$_id"  },
                     "pipeline": [
                         { "$match": { "$expr": { "$eq": ["$productId", "$$proId"] } } },
                         {
                             "$lookup": {
                                 "from": "productvariantcombinations",
-                                "let": { "pSKUsId": { "$toString": '$_id' } },
+                                "let": { "pSKUsId":  '$_id'  },
                                 "pipeline": [
                                     { "$match": { "$expr": { "$eq": ['$productSKUsId', "$$pSKUsId"] } } },
                                     {
@@ -720,13 +720,13 @@ export class ProductDatabaseLayer {
                                             "from": "attributevalues",
                                             "let": { "avId": '$attributeValueId' },
                                             "pipeline": [
-                                                { "$match": { "$expr": { "$eq": [{ "$toString": "$_id" }, "$$avId"] } } },
+                                                { "$match": { "$expr": { "$eq": [ "$_id" , "$$avId"] } } },
                                                 {
                                                     "$lookup": {
                                                         "from": "attributes",
                                                         "let": { "aId": '$attributeId' },
                                                         "pipeline": [
-                                                            { "$match": { "$expr": { "$eq": [{ "$toString": "$_id" }, "$$aId"] } } },
+                                                            { "$match": { "$expr": { "$eq": [ "$_id", "$$aId"] } } },
                                                         ],
                                                         "as": "attributeData"
                                                     }
@@ -814,7 +814,7 @@ export class ProductDatabaseLayer {
                 console.log('productSkusData', productSkusData);
 
                 await Promise.all(productSkusData.map((e: any) => {
-                    skusIdArr.push(e._id.toHexString())
+                    skusIdArr.push(e._id)
                 }))
 
                 const productAttributValueData = await ProductVariantCombination.aggregate([
@@ -924,13 +924,13 @@ export class ProductDatabaseLayer {
 
     }
 
-
     static async checkProductCombination(req: any) {
         const productIteamId = req.query.productIteamId;
+        
         const attribute = req.query.attribute;
 
         //TODO query params logic pending
-        const attributeData = [{ attributeId: "63d35c31f14946782d0448a3", attributeValueId: "63d35c3df14946782d0448a6" }, { attributeId: "63d35c50f14946782d0448ae", attributeValueId: "63d35d39f14946782d0448b7" }];
+        const attributeData = [{ attributeId: "63da6fab9dac386f5fcbdb21", attributeValueId: "63da6fb19dac386f5fcbdb24" }, { attributeId: "63da6fc09dac386f5fcbdb2c", attributeValueId: "63da6fcc9dac386f5fcbdb32" }];
         var attributeArr: string[] = [];
         attributeData.map((e: any) => {
             if (!attributeArr.includes(e.attributeValueId)) {

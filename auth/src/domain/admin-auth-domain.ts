@@ -2,10 +2,9 @@ import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { Request, Response } from 'express';
 import { Auth } from 'googleapis';
 import mongoose from 'mongoose';
-import { createVariableDeclaration } from 'typescript';
 import { AuthDatabaseLayer } from '../database-layer/admin-auth-database';
+import { AdminAttrs } from '../models/admin';
 import { AdminPermissionsAttrs } from '../models/admin-permissions';
-import { AdminUserAttrs } from '../models/admin-user';
 import { JwtService } from '../services/jwt';
 import { PayloadType, Strings } from '../services/string-values';
 
@@ -60,7 +59,7 @@ export class AuthDomain {
 
       var userPermission = await AuthDatabaseLayer.findPermission(permissionId);
       if (userPermission) {
-        const data: AdminUserAttrs = req.body;
+        const data: AdminAttrs = req.body;
         var jwtToken = await AuthDatabaseLayer.signUpUser(data);
         req.session = { jwt: jwtToken };
         return res

@@ -1,8 +1,8 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { ProductCategoryCreatedPublisher } from '../event/publisher/product-category-publisher';
-import { Admin } from '../models/admin';
+
 import { AdminRoleMapping } from '../models/admin-role-mapping';
-import { AdminUser } from '../models/admin-user';
+import { Admin } from '../models/admin';
 import { BusinessCategory } from '../models/business-category';
 import { BusinessSubCategory } from '../models/business-sub-category';
 import { ProductCategory } from "../models/product-category";

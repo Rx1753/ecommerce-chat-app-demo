@@ -2,7 +2,7 @@ import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { ProductSubCategoryCreatedPublisher } from '../event/publisher/product-sub-category-publisher';
 import { Admin } from '../models/admin';
 import { AdminRoleMapping } from '../models/admin-role-mapping';
-import { AdminUser } from '../models/admin-user';
+
 import { ProductCategory } from '../models/product-category';
 import { ProductSubCategory } from "../models/product-sub-category";
 import { natsWrapper } from '../nats-wrapper';

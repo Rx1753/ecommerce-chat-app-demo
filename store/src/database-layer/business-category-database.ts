@@ -1,10 +1,10 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import mongoose from 'mongoose';
 import { BusinessCategoryUpdatePublisher } from '../event/publisher/business-caegory-updated-publisher';
 import { BusinessCategoryCreatedPublisher } from '../event/publisher/business-category-publisher';
 import { BusinessSubCategoryUpdatePublisher } from '../event/publisher/business-sub-category-updated-publisher';
 import { Admin } from '../models/admin';
 import { AdminRoleMapping } from '../models/admin-role-mapping';
-import { AdminUser } from '../models/admin-user';
 import { BusinessCategory } from "../models/business-category";
 import { BusinessSubCategory } from '../models/business-sub-category';
 import { natsWrapper } from '../nats-wrapper';
@@ -54,15 +54,16 @@ export class BusinessCategoryDatabaseLayer {
             if (data) {
                 const status = data.isActive ? false : true;
                 const catData = await BusinessCategory.findByIdAndUpdate(id, { isActive: status });
+                console.log("63da35d87d7052c0f4e63a9d")
                 const businessSubCategoryData = await BusinessSubCategory.find({ businessCategoryId: id });
                 await new BusinessCategoryUpdatePublisher(natsWrapper.client).publish({
                     id:id,
                     name:data.name,
                     description:data.description,
                     isActive:status
-                })
-                await BusinessSubCategory.updateMany({ businessCategoryId: id }, { $set: { isActive: status } });
-                businessSubCategoryData.forEach(async (e:any)=>{
+                }) 
+                await BusinessSubCategory.updateMany({ businessCategoryId: new mongoose.Schema.Types.ObjectId(id) }, { $set: { isActive: status } });
+                await Promise.all(businessSubCategoryData.map(async (e:any)=>{
                     console.log('businessS',e.id);
                     await new BusinessSubCategoryUpdatePublisher(natsWrapper.client).publish({
                         id: e.id,
@@ -71,7 +72,7 @@ export class BusinessCategoryDatabaseLayer {
                         isActive: status,
                         businessCategoryId: e.businessCategoryId
                     })
-                })
+                }))
                 return;
             } else {
                 throw new BadRequestError('Data not found for given id');

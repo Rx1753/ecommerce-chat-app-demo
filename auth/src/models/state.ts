@@ -1,4 +1,6 @@
 import mongoose, { ObjectId } from "mongoose";
+import { CountryCreatedPublisher } from "../events/publisher/country-publisher";
+import { natsWrapper } from "../nats-wrapper";
 import { CountryDoc } from "./country";
 
 // intetface that describe the prooerti
@@ -32,7 +34,11 @@ const stateSchema = new mongoose.Schema({
 }, );
 
 stateSchema.pre('save', async function (done) {
-
+     await new CountryCreatedPublisher(natsWrapper.client).publish({
+        id: (new mongoose.Types.ObjectId()).toHexString(),
+        countryName: "poi"
+    })
+    done();
 })
 
 stateSchema.statics.build = (attrs: StateAttrs) => {

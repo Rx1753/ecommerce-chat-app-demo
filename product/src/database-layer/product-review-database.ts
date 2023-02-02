@@ -1,7 +1,7 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import { Admin } from '../models/admin';
 import { AdminRoleMapping } from '../models/admin-role-mapping';
-import { AdminUser } from '../models/admin-user';
+
 import { BusinessCategory } from '../models/business-category';
 import { BusinessSubCategory } from '../models/business-sub-category';
 import { Product } from '../models/product';

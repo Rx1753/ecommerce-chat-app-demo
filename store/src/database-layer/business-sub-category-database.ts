@@ -3,7 +3,7 @@ import { BusinessSubCategoryCreatedPublisher } from '../event/publisher/business
 import { BusinessSubCategoryUpdatePublisher } from '../event/publisher/business-sub-category-updated-publisher';
 import { Admin } from '../models/admin';
 import { AdminRoleMapping } from '../models/admin-role-mapping';
-import { AdminUser } from '../models/admin-user';
+
 import { BusinessCategory } from '../models/business-category';
 import { BusinessSubCategory } from "../models/business-sub-category";
 import { natsWrapper } from '../nats-wrapper';
