@@ -12,15 +12,17 @@ export class ProductCreatedListener extends Listener<ProductCreatedEvent>{
             name: name,
             description: description,
             productSubCategoryId: productSubCategoryId,
-            imageUrl: imageUrl,
+            imageUrl: [imageUrl],
             storeId: storeId,
             brandName: brandName,
+            highlights: "",
             basePrice: basePrice,
-            mrpPrice: mrpPrice,
             quantity: quantity,
             createdBy: createdBy,
-            relatableProducts:relatableProducts,
-            calculateOnBasePrice:calculateOnBasePrice
+            isDiscountPercentage: false,
+            discount: 0,
+            discountedValue: 0,
+            maxDiscount: 0
         })
         userData._id = id
         await userData.save();

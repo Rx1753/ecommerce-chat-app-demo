@@ -6,7 +6,7 @@ import { CustomerDoc } from "./customer";
 export interface ProductReviewAttrs {
    productId:string;
    customerId:string;
-   rate:number;
+   rating:number;
    comment:string;
    title:string;
    imageURL:string[];
@@ -21,7 +21,7 @@ interface ProductReviewModel extends mongoose.Model<ProductReviewDoc> {
 export interface ProductReviewDoc extends mongoose.Document {
     customerId:CustomerDoc;
     productId:string;
-    rate:number;
+    rating:number;
     comment:string;
     title:string,
     imageURL:string[];
@@ -31,7 +31,7 @@ const ProductReviewSchema = new mongoose.Schema({
     customerId:{type:mongoose.Schema.Types.ObjectId,ref:'CustomerUser'},
     productId: { type: mongoose.Schema.Types.ObjectId, ref:'Product'},
     title:{type:String},
-    rate: { type: Number,default:1.1 },
+    rating: { type: Number,default:1.1 },
     comment: { type: String },
     imageURL:[{type:String}],
     createdAt: { type: Date, default: () => Date.now() },

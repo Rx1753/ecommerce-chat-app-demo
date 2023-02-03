@@ -1,13 +1,10 @@
 import mongoose, { ObjectId } from "mongoose";
+import { ProductDoc } from "./product";
+import { SKUSDoc } from "./product-skus";
 
-// import { BusinessProfileDoc } from "./business-profile";
-// import { BusinessSubCategoryDoc } from "./business-sub-category";
-
-// intetface that describe the prooerties
-// that are required to cretae new user
 export interface CartAttrs {
     customerId: string;
-    cartList: { _id: string, productItemId?: string, purchaseQuantity: number }[]
+    cartList: { productId: ProductDoc, productItemId?: SKUSDoc, purchaseQuantity: number }[]
 }
 
 // interface for usermodel pass
@@ -20,17 +17,20 @@ export interface CartDoc extends mongoose.Document {
     createdAt: Date;
     updatedAt: Date;
     customerId: string;
-    cartList: { productId: string, productItemId?: string, purchaseQuantity: number }[]
+    cartList: { productId: ProductDoc, productItemId?: SKUSDoc | null, purchaseQuantity: number }[]
 }
 
 const CartSchema = new mongoose.Schema({
     customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'CustomerUser' },
-    cartList: [{_id: false, productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }, productItemId: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductItem' }, purchaseQuantity: { type: Number } }]
+    cartList: [{_id: false, 
+        productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }, 
+        productItemId: { type: mongoose.Schema.Types.ObjectId || null, ref: 'SKUS' }, 
+        purchaseQuantity: { type: Number } }]
 }, );
 
-CartSchema.pre('save', async function (done) {
+CartSchema.pre('save', async function (done) { 
 })
-
+ 
 CartSchema.pre('update', async function (done) {
     const currentDate = new Date();
     const updated_at = currentDate.getTime();

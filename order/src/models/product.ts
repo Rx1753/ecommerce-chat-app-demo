@@ -1,5 +1,5 @@
 import mongoose, { ObjectId } from "mongoose";
-import { ProductCategoryDoc } from "./product-category";
+import { BusinessSubCategoryDoc } from "./business-sub-category";
 import { ProductSubCategoryDoc } from "./product-sub-category";
 import { StoreDoc } from "./store";
 
@@ -9,15 +9,23 @@ export interface ProductAttrs {
     name: string;
     description: string;
     productSubCategoryId: string;
-    imageUrl: string;
+    imageUrl: string[];
     storeId: string;
     brandName: string;
+    warrenty?: boolean;
+    highlights:string,
+    guaranty?: boolean;
     basePrice: number;
-    mrpPrice: number;
+    addOns?: boolean;
     quantity: number;
-    calculateOnBasePrice?: boolean;
+    isInvoiceAvailable?: boolean;
+    isCancellation?: boolean;
     relatableProducts?: string[],
-    createdBy: string,
+    createdBy:string,
+    isDiscountPercentage:boolean,
+    discount:number,
+    discountedValue:number,
+    maxDiscount:number,
 }
 
 // interface for categorymodel pass
@@ -30,34 +38,45 @@ export interface ProductDoc extends mongoose.Document {
 
     name: string;
     description: string;
-    isActive: boolean;
-    imageUrl: string;
-    brandName: string;
-    storeId: StoreDoc;
+    imageUrl: string[];
     basePrice: number;
-    mrpPrice: number;
-    quantity: number;
-    calculateOnBasePrice: boolean;
-    relatableProducts: ProductDoc[];
-    createdBy: string;
-    productSubCategoryId:ProductSubCategoryDoc;
+    quantity:number;
+    createdBy:string;
+    rating:number;
+    isDiscountPercentage:boolean,
+    discount:number,
+    discountedValue:number,
+    maxDiscount:number,
 }
 
 const ProductSchema = new mongoose.Schema({
     name: { type: String },
     description: { type: String },
-    imageUrl: { type: String },
+    highlights:{type:String},
+    isActive: { type: Boolean, default: true },
+    imageUrl: [{ type: String }],
     brandName: { type: String },
+    warrenty: { type: Boolean, default: false },
+    guaranty: { type: Boolean, default: false },
     basePrice: { type: Number },
-    mrpPrice: { type: Number },
+    addOns: { type: Boolean, default: false },
     quantity: { type: Number },
-    productSubCategoryId:{type:mongoose.Schema.Types.ObjectId, ref:'ProductSubCategory'},
-    calculateOnBasePrice: { type: Boolean, default: true },
-    storeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Store' },
+    isInvoiceAvailable: { type: Boolean, default: false },
+    isCancellation: { type: Boolean, default: false },
+    storeId:{type:mongoose.Schema.Types.ObjectId,ref:'Store'},
+    rating:{type:Number, default:4.9},
     relatableProducts: [
-        { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }
+        {_id:false},
+         { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }
     ],
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
+    productSubCategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductSubCategory' },
+    isDiscountPercentage:{type:Boolean, require:true},
+    discount:{type:Number},
+    discountedValue:{type:Number,},
+    createdBy:{type:mongoose.Schema.Types.ObjectId,ref:'BusinessUser'},
+    maxDiscount:{type:Number},
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
 }, );
 
 ProductSchema.pre('save', async function (done) {

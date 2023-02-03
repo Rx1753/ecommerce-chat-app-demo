@@ -644,8 +644,10 @@ export class ProductDatabaseLayer {
                     })
                 }
             }))
-
-            return { totalReviews: totalReviews, specificRating: specificRating, reviewImages: reviewImages, totalNumberImages: totalNumberImages, reviewsByUser: reviewsByUser };
+            // at signle API
+            return (this.responseSuccess({result:{ totalReviews: totalReviews, specificRating: specificRating, reviewImages: reviewImages, totalNumberImages: totalNumberImages, reviewsByUser: reviewsByUser }}));
+            // function calling
+            return (this.responseSuccess({result:{ totalReviews: totalReviews, specificRating: specificRating, reviewImages: reviewImages, totalNumberImages: totalNumberImages, reviewsByUser: reviewsByUser }}));
         } else {
             throw new BadRequestError("product id is not valid");
         }
@@ -913,7 +915,7 @@ export class ProductDatabaseLayer {
                         }
                     }
                 ]);
-
+                dataStr.review = await this.reviewBasedOnProductId(productData[0].productId);
                 dataStr.similarProduct = productSimilarData;
                 dataStr.attributes = attributeStrData;
                 return this.responseSuccess({result:dataStr});

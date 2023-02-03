@@ -85,7 +85,7 @@ const ProductSchema = new mongoose.Schema({
     isDiscountPercentage:{type:Boolean, require:true},
     discount:{type:Number},
     discountedValue:{type:Number,},
-    createdBy:{type:mongoose.Schema.Types.ObjectId,ref:'user'},
+    createdBy:{type:mongoose.Schema.Types.ObjectId,ref:'BusinessUser'},
     maxDiscount:{type:Number},
     createdAt: { type: Date, default: () => Date.now() },
     updatedAt: { type: Date, default: () => Date.now() },

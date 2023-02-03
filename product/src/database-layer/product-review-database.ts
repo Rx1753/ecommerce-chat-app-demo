@@ -1,4 +1,5 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
+import mongoose from 'mongoose';
 import { Admin } from '../models/admin';
 import { AdminRoleMapping } from '../models/admin-role-mapping';
 
@@ -12,38 +13,45 @@ import { natsWrapper } from '../nats-wrapper';
 export class ProductReviewDatabaseLayer {
 
     static async createProductReview(req: any) {
-        const { productId,rate,comment,imageURL,title } = req.body;
+        const { productId, rate, comment, imageURL, title } = req.body;
         const productCheck = await Product.findById(productId);
         //TODO:: customer order this product or not
         if (productCheck) {
-            const data = ProductReview.build({ productId:productId,
-                rate:(rate),
-                title:title,
-                customerId:req.currentUser.id,
-                comment:comment,
-                imageURL:imageURL});
+            const data = ProductReview.build({
+                productId: productId,
+                rating: (rate),
+                title: title,
+                customerId: req.currentUser.id,
+                comment: comment,
+                imageURL: imageURL
+            });
             await data.save();
-            
+
             //product average rating count
             const productReviewCheck = await ProductReview.aggregate(
                 [
-                    {$match:{productId:productId}},
+                    { $match: { productId: productCheck._id } },
                     {
                         $group: {
                             _id: "$productId",
-                            totalRating:{$avg: "$rate"}
+                            totalRating: { $avg: "$rating" }
                         }
                     }
-            ])
-            await Product.findByIdAndUpdate(productId,{rating:productReviewCheck[0].totalRating});
-            return data;
+                ])
+            console.log('productReviewCheck', productReviewCheck);
+            if (productReviewCheck) {
+                await Product.findByIdAndUpdate(productId, { rating: productReviewCheck[0].totalRating });
+                return data;
+            } else {
+                console.log('not worked');
+            }
         } else {
             throw new BadRequestError('Provided productId is not valid');
         }
     }
 
     static async deleteProductReview(id: string) {
-        const data= await ProductReview.findById(id);
+        const data = await ProductReview.findById(id);
         if (data) {
             try {
                 await ProductReview.findByIdAndRemove(id);
@@ -60,11 +68,11 @@ export class ProductReviewDatabaseLayer {
 
     static async getProductReviewList(req: any) {
         const data = await ProductReview.find()
-            // .populate({
-            //     path: '', populate: {
-            //         path: 'businessCategoryId'
-            //     }
-            // });
+        // .populate({
+        //     path: '', populate: {
+        //         path: 'businessCategoryId'
+        //     }
+        // });
         return data;
     }
 

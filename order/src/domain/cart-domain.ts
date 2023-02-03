@@ -23,6 +23,12 @@ export class CartDomain {
         await CartDatabaseLayer.removeCart(req);
         res.status(201).send({ deleted: true });
     }
+    
+
+    static async removeProductCart(req: Request, res: Response) {
+        await CartDatabaseLayer.removeProductCart(req);
+        res.status(201).send({ deleted: true });
+    }
 
     static async getCart(req: Request, res: Response) {
         const Cart =  await CartDatabaseLayer.getCart(req);

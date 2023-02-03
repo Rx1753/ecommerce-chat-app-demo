@@ -1,6 +1,7 @@
 import { BadRequestError } from '@rx-ecommerce-chat/common_lib';
 import e from 'express';
 import { privateca } from 'googleapis/build/src/apis/privateca';
+import mongoose from 'mongoose';
 import { BusinessRoleMapping } from '../models/business-role-mapping';
 import { BusinessSubCategory } from '../models/business-sub-category';
 import { BusinessUser } from '../models/business-user';
@@ -12,17 +13,22 @@ import { Order } from '../models/order';
 import { OrderProduct } from '../models/order-product';
 import { Product } from '../models/product';
 import { ProductItem } from '../models/product-item';
+import { SKUS } from '../models/product-skus';
+import { ProductVariantCombination } from '../models/product-variant-combination';
 import { Store } from '../models/store';
 
 export class OrderDatabaseLayer {
 
     static async createOrderBasedOnCart(req: any) {
+        var totalAmount = 0;
+        var totalDiscountedPrice = 0;
+        var totalBasePrice = 0;
+        var deliverCharges = 0;
         if (req.currentUser.id) {
-            console.log('req.currentUser.id', req.currentUser.id);
 
             const cartData = await Cart.findOne({ customerId: req.currentUser.id });
             const cartStrData = JSON.parse(JSON.stringify(cartData));
-            console.log('2');
+
             const OrderData: any[] = [];
             var payableAmount: any = 0;
             if (cartData) {
@@ -36,19 +42,97 @@ export class OrderDatabaseLayer {
                         console.log('element', element);
 
                         if (pItem) {
-                            const productItemData = await ProductItem.findById(element.productItemId).populate('productId');
+                            const productItemData = await SKUS.findById(element.productItemId)
                             if (productItemData) {
-                                if (productItemData.quantity >= element.purchaseQuantity) {
-                                    const q = productItemData.quantity - element.purchaseQuantity;
-                                    await ProductItem.findByIdAndUpdate(element.productItemId, { quantity: q });
-                                    const qty = productItemData.productId.quantity - element.purchaseQuantity;
-                                    await Product.findByIdAndUpdate(element.productId, { quantity: qty });
-                                    const amount = (element.purchaseQuantity * productItemData.mrpPrice);
-                                    element.amount = amount;
-                                    element.storeId = productItemData.productId.storeId;
-                                    element.price = productItemData.mrpPrice;
-                                    payableAmount = Number(payableAmount + amount);
-                                    OrderData.push(element);
+                                if (productItemData.qty >= element.purchaseQuantity) {
+                                    //qty update logic
+                                    console.log('lement.productId', element.productId);
+
+                                    //price calculation
+                                    const productData = await Product.aggregate([
+                                        { $match: { _id: new mongoose.Types.ObjectId(element.productId) } }, {
+                                            $project: {
+                                                "productId": "$_id",
+                                                "originalPrice": "$basePrice",
+                                                "discountedPrice": "$discountedValue",
+                                                "discountPercentage": "$discount",
+                                                "storeId": 1,
+                                                "_id": 0
+                                            }
+                                        }
+                                    ]);
+                                    console.log('productData', productData);
+
+                                    const productStrData = JSON.parse(JSON.stringify(productData[0]));
+                                    productStrData.productItemId = productItemData._id;
+                                    productStrData.discountedPrice = productStrData.discountedPrice * element.purchaseQuantity;
+                                    //attribute logic
+                                    const attributeData = await ProductVariantCombination.aggregate([
+                                        { $match: { productSKUsId: productItemData._id } },
+                                        {
+                                            "$lookup": {
+                                                "from": "attributevalues",
+                                                "let": { "avId": '$attributeValueId' },
+                                                "pipeline": [
+                                                    { "$match": { "$expr": { "$eq": ["$_id", "$$avId"] } } },
+                                                    {
+                                                        "$lookup": {
+                                                            "from": "attributes",
+                                                            "let": { "aId": '$attributeId' },
+                                                            "pipeline": [
+                                                                { "$match": { "$expr": { "$eq": ["$_id", "$$aId"] } } },
+
+                                                            ],
+                                                            "as": "attributeData"
+                                                        }
+                                                    }
+                                                ],
+                                                "as": "attributevaluesData"
+                                            }
+                                        },
+                                        {
+                                            $project: {
+
+                                                "createdAt": 0,
+                                                "updatedAt": 0,
+                                                "__v": 0,
+                                                "_id": 0,
+                                                "productSKUsId": 0,
+                                                "attributeId": 0,
+                                                "attributevaluesData.__v": 0,
+                                                "attributevaluesData.createdAt": 0,
+                                                "attributevaluesData.updatedAt": 0,
+                                                "attributevaluesData.isActive": 0,
+                                                "attributevaluesData._id": 0,
+                                                "attributevaluesData.attributeData.__v": 0,
+                                                "attributevaluesData.attributeData.createdAt": 0,
+                                                "attributevaluesData.attributeData.updatedAt": 0,
+                                                "attributevaluesData.attributeData.isActive": 0,
+                                                "attributevaluesData.attributeData._id": 0,
+                                            }
+                                        }
+                                    ])
+
+                                    var attributeArr: any[] = [];
+
+                                    attributeData.map((c: any) => {
+                                        attributeArr.push(c.attributevaluesData);
+                                    })
+
+                                    productStrData.attribute = attributeData;
+                                    productStrData.qty = element.purchaseQuantity;
+                                    if (productItemData.isVariantBasedPrice) {
+                                        productStrData.originalPrice = (productStrData.originalPrice + productItemData.price) * element.purchaseQuantity;
+                                    } else {
+                                        productStrData.originalPrice = productStrData.originalPrice * element.purchaseQuantity;
+                                    }
+                                    productStrData.payableAmount = productStrData.originalPrice - productStrData.discountedPrice
+                                    totalDiscountedPrice = totalDiscountedPrice + productStrData.discountedPrice;
+                                    totalBasePrice = totalBasePrice + productStrData.originalPrice
+
+
+
+                                    OrderData.push(productStrData);
                                 } else {
                                     throw new BadRequestError("quantity is high for this productItemId" + element.productItemId);
                                 }
@@ -57,14 +141,23 @@ export class OrderDatabaseLayer {
                             const productData = await Product.findById(element.productId);
                             if (productData) {
                                 if (productData.quantity >= element.purchaseQuantity) {
-                                    const qty = productData.quantity - element.purchaseQuantity;
-                                    await Product.findByIdAndUpdate(element.productId, { quantity: qty });
-                                    const amount = (element.purchaseQuantity * productData.mrpPrice);
-                                    element.amount = amount;
-                                    element.storeId = productData.storeId;
-                                    element.price = productData.mrpPrice;
-                                    payableAmount = Number(payableAmount + amount);
-                                    OrderData.push(element);
+                                    //qty logic pending
+
+
+
+                                    const productStrData = JSON.parse(JSON.stringify(productData));
+                                    productStrData.productId = productStrData._id;
+                                    productStrData.productItemId = null;
+                                    productStrData.attribute = null;
+                                    productStrData.originalPrice = productStrData.basePrice * element.purchaseQuantity;
+                                    productStrData.discountedPrice = productStrData.discountedValue * element.purchaseQuantity;
+                                    totalDiscountedPrice = totalDiscountedPrice + productStrData.discountedPrice;
+                                    totalBasePrice = totalBasePrice + productStrData.originalPrice
+                                    productStrData.qty = element.purchaseQuantity;
+                                    productStrData.payableAmount = productStrData.originalPrice - productStrData.discountedPrice
+
+                                    OrderData.push(productStrData);
+
                                 } else {
                                     throw new BadRequestError("quantity is high for this productId" + element.productId);
                                 }
@@ -73,36 +166,38 @@ export class OrderDatabaseLayer {
 
                     }))
 
+
                     const { deliveryMode } = req.body;
                     // return OrderData;
                     const order = Order.build({
                         customerId: req.currentUser.id,
                         rewardPoints: 0,
-                        addressId: addressId?._id.toString(),
-                        zipCode: addressId?.zipCode,
+                        addressId: addressId._id,
+                        zipCode: addressId.zipCode,
                         deliveryMode: deliveryMode,
-                        payableAmount: payableAmount,
-                        discountPrice: 0,
-                        totalPrice: payableAmount,
+                        payableAmount: totalBasePrice - totalDiscountedPrice,
+                        discountPrice: totalDiscountedPrice,
+                        totalPrice: totalBasePrice,
                         remarks: ''
                     });
                     OrderData.forEach((e: any) => {
                         const orderProductData = OrderProduct.build({
                             productId: e.productId,
-                            productItemId: (e.productItemId === undefined || e.productItemId === null) ? e.productItemId : null,
+                            productItemId: e.productItemId,
                             addOnsId: null,
                             storeId: e.storeId,
-                            quantity: e.purchaseQuantity,
-                            orderId: order._id.toString(),
+                            quantity: e.qty,
+                            orderId: order._id,
                             refundAmount: 0,
                             penaltyAmount: 0,
                             orderStatus: 'pending',
                             couponId: null,
-                            discountPrice: 0,
-                            price: e.price,
-                            mrpPrice: e.price,
+                            discountPrice: e.discountedPrice,
+                            originalPrice: e.originalPrice,
+                            payableAmount: e.payableAmount
                         });
                         orderProductData.save();
+
                     })
                     order.save();
                     return;
@@ -114,129 +209,129 @@ export class OrderDatabaseLayer {
     }
 
     static async couponSuggestion(req: any,) {
-        if (req.currentUser.id) {
-            const today: Date = new Date();
-            const couponData = await Coupon.find({ $and: [{ startDate: { $lte: today } }, { endDate: { $gte: today } }, { isActive: true }] })
+        //     if (req.currentUser.id) {
+        //         const today: Date = new Date();
+        //         const couponData = await Coupon.find({ $and: [{ startDate: { $lte: today } }, { endDate: { $gte: today } }, { isActive: true }] })
 
-            const cartData = await Cart.findOne({ customerId: req.currentUser.id });
+        //         const cartData = await Cart.findOne({ customerId: req.currentUser.id });
 
-            const cartStrData = JSON.parse(JSON.stringify(cartData));
+        //         const cartStrData = JSON.parse(JSON.stringify(cartData));
 
-            const couponStrData = JSON.parse(JSON.stringify(couponData));
+        //         const couponStrData = JSON.parse(JSON.stringify(couponData));
 
-            const OrderData: any[] = [];
+        //         const OrderData: any[] = [];
 
-            var payableAmount: any = 0;
+        //         var payableAmount: any = 0;
 
-            if (cartData) {
-                await Promise.all(cartStrData.cartList.map(async (element: any) => {
-                    var pItem: boolean;
-                    (element.productItemId === undefined || element.productItemId === null || element.productItemId.length == 0) ? pItem = false : pItem = true;
-                    console.log('element', element);
+        //         if (cartData) {
+        //             await Promise.all(cartStrData.cartList.map(async (element: any) => {
+        //                 var pItem: boolean;
+        //                 (element.productItemId === undefined || element.productItemId === null || element.productItemId.length == 0) ? pItem = false : pItem = true;
+        //                 console.log('element', element);
 
-                    if (pItem) {
-                        const productItemData = await ProductItem.findById(element.productItemId).populate({
-                            path: 'productId', populate: {
-                                path: 'productSubCategoryId', populate: {
-                                    path: 'productCategoryId'
-                                }
-                            }
-                        });
-                        console.log('productItemData', productItemData);
+        //                 if (pItem) {
+        //                     const productItemData = await ProductItem.findById(element.productItemId).populate({
+        //                         path: 'productId', populate: {
+        //                             path: 'productSubCategoryId', populate: {
+        //                                 path: 'productCategoryId'
+        //                             }
+        //                         }
+        //                     });
+        //                     console.log('productItemData', productItemData);
 
-                        if (productItemData) {
-                            if (productItemData.quantity >= element.purchaseQuantity) {
-                                const q = productItemData.quantity - element.purchaseQuantity;
-                                const qty = productItemData.productId.quantity - element.purchaseQuantity;
-                                const amount = (element.purchaseQuantity * productItemData.mrpPrice);
-                                element.amount = amount;
-                                element.storeId = productItemData.productId.storeId;
-                                element.price = productItemData.mrpPrice;
-                                payableAmount = Number(payableAmount + amount);
-                                const CouponProductArr: any[] = [];
-                                await Promise.all(couponStrData.map(async (a: any) => {
-                                    const couponMappingData = await CouponMapping.find(
-                                        {
-                                            $and: [{ couponId: a.CouponId },
-                                            {
-                                                $or: [{ $and: [{ isProduct: true }, { baseId: element.productId }] },
-                                                {
-                                                    $and: [{ isProductCategory: true }, { baseId: productItemData.productId.productSubCategoryId.productCategoryId._id.toHexString() },
-                                                    {
-                                                        $and: [{ isProductSubCategory: true }, { baseId: productItemData.productId.productSubCategoryId._id.toHexString() }
-                                                        ]
-                                                    }]
-                                                }]
-                                            }]
-                                        }
-                                    )
-                                    if (couponMappingData.length != 0) {
-                                        a.couponData = couponMappingData;
-                                        CouponProductArr.push(a);
-                                    }
-                                }))
-                                element.Coupon = CouponProductArr;
+        //                     if (productItemData) {
+        //                         if (productItemData.quantity >= element.purchaseQuantity) {
+        //                             const q = productItemData.quantity - element.purchaseQuantity;
+        //                             const qty = productItemData.productId.quantity - element.purchaseQuantity;
+        //                             const amount = (element.purchaseQuantity * productItemData.mrpPrice);
+        //                             element.amount = amount;
+        //                             element.storeId = productItemData.productId.storeId;
+        //                             element.price = productItemData.mrpPrice;
+        //                             payableAmount = Number(payableAmount + amount);
+        //                             const CouponProductArr: any[] = [];
+        //                             await Promise.all(couponStrData.map(async (a: any) => {
+        //                                 const couponMappingData = await CouponMapping.find(
+        //                                     {
+        //                                         $and: [{ couponId: a.CouponId },
+        //                                         {
+        //                                             $or: [{ $and: [{ isProduct: true }, { baseId: element.productId }] },
+        //                                             {
+        //                                                 $and: [{ isProductCategory: true }, { baseId: productItemData.productId.productSubCategoryId.productCategoryId._id.toHexString() },
+        //                                                 {
+        //                                                     $and: [{ isProductSubCategory: true }, { baseId: productItemData.productId.productSubCategoryId._id.toHexString() }
+        //                                                     ]
+        //                                                 }]
+        //                                             }]
+        //                                         }]
+        //                                     }
+        //                                 )
+        //                                 if (couponMappingData.length != 0) {
+        //                                     a.couponData = couponMappingData;
+        //                                     CouponProductArr.push(a);
+        //                                 }
+        //                             }))
+        //                             element.Coupon = CouponProductArr;
 
-                                OrderData.push(element);
-                            } else {
-                                throw new BadRequestError("quantity is high for this productItemId" + element.productItemId);
-                            }
-                        } else { throw new BadRequestError("Product Item not found"); }
-                    } else {
-                        const productData = await Product.findById(element.productId).populate({
-                            path: 'productSubCategoryId', populate: {
-                                path: 'productCategoryId'
-                            }
-                        });
-                        console.log('productData', productData);
+        //                             OrderData.push(element);
+        //                         } else {
+        //                             throw new BadRequestError("quantity is high for this productItemId" + element.productItemId);
+        //                         }
+        //                     } else { throw new BadRequestError("Product Item not found"); }
+        //                 } else {
+        //                     const productData = await Product.findById(element.productId).populate({
+        //                         path: 'productSubCategoryId', populate: {
+        //                             path: 'productCategoryId'
+        //                         }
+        //                     });
+        //                     console.log('productData', productData);
 
-                        if (productData) {
-                            if (productData.quantity >= element.purchaseQuantity) {
-                                const qty = productData.quantity - element.purchaseQuantity;
-                                const amount = (element.purchaseQuantity * productData.mrpPrice);
-                                element.amount = amount;
-                                element.storeId = productData.storeId;
-                                element.price = productData.mrpPrice;
-                                payableAmount = Number(payableAmount + amount);
-                                const CouponProductArr: any[] = [];
-                                await Promise.all(couponStrData.map(async (a: any) => {
-                                    const couponMappingData = await CouponMapping.find({
-                                        $and: [{ couponId: a.CouponId },
-                                        {
-                                            $or: [{ $and: [{ isProduct: true }, { baseId: element.productId }] },
-                                            {
-                                                $and: [{ isProductCategory: true }, { baseId: productData.productSubCategoryId.productCategoryId._id.toHexString() },
-                                                {
-                                                    $and: [{ isProductSubCategory: true }, { baseId: productData.productSubCategoryId._id.toHexString() }
-                                                    ]
-                                                }]
-                                            }]
-                                        }]
-                                    })
-                                    if (couponMappingData.length != 0) {
-                                        a.couponData = couponMappingData;
-                                        // element.Coupon = a;
-                                        CouponProductArr.push(a);
-                                    }
-                                }))
-                                element.Coupon = CouponProductArr;
+        //                     if (productData) {
+        //                         if (productData.quantity >= element.purchaseQuantity) {
+        //                             const qty = productData.quantity - element.purchaseQuantity;
+        //                             const amount = (element.purchaseQuantity * productData.mrpPrice);
+        //                             element.amount = amount;
+        //                             element.storeId = productData.storeId;
+        //                             element.price = productData.mrpPrice;
+        //                             payableAmount = Number(payableAmount + amount);
+        //                             const CouponProductArr: any[] = [];
+        //                             await Promise.all(couponStrData.map(async (a: any) => {
+        //                                 const couponMappingData = await CouponMapping.find({
+        //                                     $and: [{ couponId: a.CouponId },
+        //                                     {
+        //                                         $or: [{ $and: [{ isProduct: true }, { baseId: element.productId }] },
+        //                                         {
+        //                                             $and: [{ isProductCategory: true }, { baseId: productData.productSubCategoryId.productCategoryId._id.toHexString() },
+        //                                             {
+        //                                                 $and: [{ isProductSubCategory: true }, { baseId: productData.productSubCategoryId._id.toHexString() }
+        //                                                 ]
+        //                                             }]
+        //                                         }]
+        //                                     }]
+        //                                 })
+        //                                 if (couponMappingData.length != 0) {
+        //                                     a.couponData = couponMappingData;
+        //                                     // element.Coupon = a;
+        //                                     CouponProductArr.push(a);
+        //                                 }
+        //                             }))
+        //                             element.Coupon = CouponProductArr;
 
-                                OrderData.push(element);
-                            } else {
-                                throw new BadRequestError("quantity is high for this productId" + element.productId);
-                            }
-                        } else { throw new BadRequestError("Product Item not found"); }
-                    }
+        //                             OrderData.push(element);
+        //                         } else {
+        //                             throw new BadRequestError("quantity is high for this productId" + element.productId);
+        //                         }
+        //                     } else { throw new BadRequestError("Product Item not found"); }
+        //                 }
 
-                }))
+        //             }))
 
-            }
-            return OrderData;
-        }
+        //         }
+        //         return OrderData;
+        //     }
     }
 
     static async getSignleOrder(req: any, id: any) {
-        const currentUserOrder = await Order.findOne({ customerId: req.currentUser.id });
+        const currentUserOrder = await Order.findOne({ $and: [{ customerId: req.currentUser.id }, { _id: id }] });
         if (currentUserOrder) {
             return currentUserOrder;
         } else {
@@ -248,14 +343,14 @@ export class OrderDatabaseLayer {
         // const data = await Order.find({ customerId: req.currentUser.id });
         const data = await Order.aggregate([
             { $match: { customerId: req.currentUser.id } },
-            { "$addFields": { "oId": { "$toString": "$_id" } } },
+
             {
                 $lookup:
                 {
                     from: "orderproducts",
-                    localField: "oId",
+                    localField: "_id",
                     foreignField: "orderId",
-                    as: "orderID"
+                    as: "orderProducts"
                 }
             },
         ])
@@ -274,7 +369,7 @@ export class OrderDatabaseLayer {
             storeData = await OrderProduct.find({ storeId: e._id });
             price = 0;
             storeData.map((a: any) => {
-                price = a.mrpPrice + price;
+                price = a.payableAmount + price;
             })
             resData.push({ storeId: e._id, price: price });
         }))
@@ -294,7 +389,7 @@ export class OrderDatabaseLayer {
             storeData = await OrderProduct.find({ storeId: e._id });
             price = 0;
             storeData.map((a: any) => {
-                price = a.mrpPrice + price;
+                price = a.payableAmount + price;
             })
             resData.push({ storeId: e._id, price: price });
         }))
@@ -399,6 +494,7 @@ export class OrderDatabaseLayer {
             return rest;
         });
         return newArrRes;
+
     }
     static async totalRevnueFromEachBusinessCategory(req: any) {
         const data = await OrderProduct.aggregate([
@@ -411,7 +507,7 @@ export class OrderDatabaseLayer {
             storeData = await OrderProduct.find({ storeId: e._id });
             price = 0;
             storeData.map((a: any) => {
-                price = a.mrpPrice + price;
+                price = a.payableAmount + price;
             })
             resData.push({ storeId: e._id, price: price });
             storeIdArr.push(e._id);
@@ -535,10 +631,10 @@ export class OrderDatabaseLayer {
 
 
             } else {
-                
+
                 const storeData = await Store.findById(userData.store);
 
-                if(!storeData){
+                if (!storeData) {
                     throw new BadRequestError("Store Id is wrong");
                 }
                 const orderData = await OrderProduct.find({ storeId: storeData.id });
@@ -546,19 +642,19 @@ export class OrderDatabaseLayer {
                     seal = seal + Number(e.mrpPrice);
                 })
             }
-            return {seal:seal};
+            return { seal: seal };
         } else {
             throw new BadRequestError('Id is wrong');
         }
 
     }
 
-    static async totalCustomerBasedBusinessUser(req:any,id:any){
+    static async totalCustomerBasedBusinessUser(req: any, id: any) {
         const userData = await BusinessUser.findById(id);
         console.log("userData", userData);
         const userIdArr: any[] = [];
         const storeIdArr: any[] = [];
-        const customerIdArr:any[]=[];
+        const customerIdArr: any[] = [];
         if (userData) {
             if (userData._id == userData.createdBy) {
                 console.log('both are equal');
@@ -582,33 +678,33 @@ export class OrderDatabaseLayer {
                 console.log('orderData', orderData);
 
                 orderData.map((e: any) => {
-                    if(!customerIdArr.includes(e.customerId)){
+                    if (!customerIdArr.includes(e.customerId)) {
                         customerIdArr.push(e.customerId);
                     }
                 })
                 console.log('customerIdArr', customerIdArr);
-                console.log('customerIdArr.length',customerIdArr.length);
-                 
+                console.log('customerIdArr.length', customerIdArr.length);
+
 
 
             } else {
-                
+
                 const storeData = await Store.findById(userData.store);
 
-                if(!storeData){
+                if (!storeData) {
                     throw new BadRequestError("Store Id is wrong");
                 }
                 const orderData = await OrderProduct.find({ storeId: storeData.id });
                 orderData.map((e: any) => {
-                    if(!customerIdArr.includes(e.customerId)){
+                    if (!customerIdArr.includes(e.customerId)) {
                         customerIdArr.push(e.customerId);
                     }
                 })
                 console.log('customerIdArr', customerIdArr);
-                console.log('customerIdArr.length',customerIdArr.length);
-                 
+                console.log('customerIdArr.length', customerIdArr.length);
+
             }
-            return {customerCount:customerIdArr.length};
+            return { customerCount: customerIdArr.length };
         } else {
             throw new BadRequestError('Id is wrong');
         }
