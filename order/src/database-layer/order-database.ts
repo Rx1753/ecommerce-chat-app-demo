@@ -13,6 +13,7 @@ import { Order } from '../models/order';
 import { OrderProduct } from '../models/order-product';
 import { Product } from '../models/product';
 import { ProductItem } from '../models/product-item';
+import { ProductReview } from '../models/product-review';
 import { SKUS } from '../models/product-skus';
 import { ProductVariantCombination } from '../models/product-variant-combination';
 import { Store } from '../models/store';
@@ -331,7 +332,25 @@ export class OrderDatabaseLayer {
     }
 
     static async getSignleOrder(req: any, id: any) {
-        const currentUserOrder = await Order.findOne({ $and: [{ customerId: req.currentUser.id }, { _id: id }] });
+        const currentUserOrder = await Order.aggregate([
+            { $match: { $and: [{ customerId: new mongoose.Types.ObjectId(req.currentUser.id) }, { _id: new mongoose.Types.ObjectId(id) }] } },
+            {
+                $lookup:{
+                    from:'orderproducts',
+                    localField:'_id',
+                    foreignField:'orderId',
+                    as:'orderProduct'
+                },
+            },
+            {
+                $lookup:{
+                    from:'customeraddresses',
+                    localField:'addressId',
+                    foreignField:'_id',
+                    as:'customerAddress'
+                }
+            },        
+        ]);
         if (currentUserOrder) {
             return currentUserOrder;
         } else {
@@ -340,21 +359,45 @@ export class OrderDatabaseLayer {
     }
 
     static async getOrder(req: any) {
-        // const data = await Order.find({ customerId: req.currentUser.id });
-        const data = await Order.aggregate([
-            { $match: { customerId: req.currentUser.id } },
+        const data = await Order.find({ customerId: req.currentUser.id });
 
-            {
-                $lookup:
-                {
-                    from: "orderproducts",
-                    localField: "_id",
-                    foreignField: "orderId",
-                    as: "orderProducts"
+        var orderId: any[] = [];
+        data.map((e: any) => {
+            orderId.push(e._id);
+        })
+
+        const orderProductData = await OrderProduct.find({ orderId: { $in: orderId } }, { _id: 1, estimatedDeliverDate: 1, productItemId: 1, productId: 1, orderStatus: 1, orderId: 1 });
+        const orderProductStrData = JSON.parse(JSON.stringify(orderProductData));
+        await Promise.all(orderProductStrData.map(async (e: any) => {
+            e.orderProductId = e._id;
+            delete e._id;
+            e.orderProductStatus = e.orderStatus;
+            delete e.orderStatus;
+            e.orderProductDeliveredDate = e.estimatedDeliverDate;
+            delete e.orderProductDeliveredDate;
+            const productData = await Product.findById(e.productId);
+            if (e.productItemId != null) {
+                const skusData = await SKUS.findById(e.productItemId);
+                if (skusData?.isVariantHasImage) {
+                    e.productImage = skusData.imageUrl;
+                } else {
+                    e.productImage = productData?.imageUrl[0];
                 }
-            },
-        ])
-        return data;
+            } else {
+                e.productImage = productData?.imageUrl[0];
+            }
+            e.orderProductDescription = productData?.description;
+            const rateData = await ProductReview.findOne({ customerId: new mongoose.Types.ObjectId(req.currentUser._id) })
+            if (rateData) {
+                e.isReviewByUser = true;
+                e.ratingByUser = rateData.rating;
+            } else {
+                e.isReviewByUser = false;
+                e.ratingByUser = 0;
+            }
+
+        }))
+        return orderProductStrData;
     }
 
     static async revenue(req: any) {
