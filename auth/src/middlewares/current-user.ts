@@ -42,18 +42,18 @@ export const verifyToken = async (
     console.log('payload',payload);
     
       if (payload.type == "Admin") {
-        const data = await Admin.findOne({ $and: [ { _id: payload.id}, { isActive: true }] })
+        const data = await Admin.findOne({ $and: [ { id: payload.id}, { isActive: true }] })
         if(!data){
           throw new BadRequestError('token/session you login is no more authorized');
         }
       }else if (payload.type == "Vendor") {
-        const data = await BusinessUser.findOne({ $and: [ { _id: payload.id }, { isActive: true }] })
+        const data = await BusinessUser.findOne({ $and: [ { id: payload.id }, { isActive: true }] })
         console.log(data);
         if(!data){
           throw new BadRequestError('token/session you login is no more authorized');
         }
       }else if(payload.type=="Customer"){
-        const data = await Customer.findOne({ $and: [ { _id: payload.id }, { isActive: true }] })
+        const data = await Customer.findOne({ $and: [ { id: payload.id }, { isActive: true }] })
         if(!data){
           throw new BadRequestError('token/session you login is no more authorized');
         }

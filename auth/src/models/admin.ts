@@ -26,7 +26,7 @@ interface AdminDoc extends mongoose.Document {
   imageUrl: string;
   isSuperAdmin: boolean;
   //permissionId :
-  roleId: AdminRoleDoc;
+  roleId: String;
   createdBy: AdminDoc;
   updatedBy: string;
   isActive: boolean;

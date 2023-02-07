@@ -19,6 +19,7 @@ import { AdminRole } from '../models/admin-role';
 import { AdminRoleMapping } from '../models/admin-role-mapping';
 import { AdminAttrs,Admin } from '../models/admin';
 import { Customer } from '../models/customer';
+import mongoose, { mongo } from 'mongoose';
 
 export class AuthDatabaseLayer {
 
@@ -397,15 +398,21 @@ export class AuthDatabaseLayer {
 
 
   static async getCurrentUser(id: any) {
-    var data = await Admin.findOne({ _id: id }).populate('roleId')
-    console.log('(data?.roleId.id).toHexString()',data?.roleId.id);
+    var data = await Admin.findOne({_id: new mongoose.Types.ObjectId(id)})
+   console.log('1',data);
+   
+   if(data?.roleId?.toString()){ 
+    console.log('data?.roleId?.toString()',data?.roleId?.toString());
     
-    const roleData= await AdminRoleMapping.find({roleId:(data?.roleId.id)}).populate('permissionId');
-    console.log('roleData',roleData);
-    
+    const roleData= await AdminRoleMapping.find({roleId: new mongoose.Types.ObjectId(data?.roleId?.toString())}).populate('permissionId');
+
     var resData = JSON.parse(JSON.stringify(data))
     resData.role=roleData;
     return resData;
+   }else{
+    return data;
+   }
+    
   }
 
   static async statusChangeId(req: any, id: any) {

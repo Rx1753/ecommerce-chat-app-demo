@@ -6,7 +6,7 @@ import {
 } from '@rx-ecommerce-chat/common_lib';
 import { AuthDomain } from '../domain/admin-auth-domain';
 import { Validation } from '../validations/admin-validation';
-import { verifyAdminToken } from '../middlewares/current-user';
+import { verifyAdminToken, verifyToken } from '../middlewares/current-user';
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router.post('/api/users/admin/login', Validation.signInValidation, validateReque
 router.post('/api/users/admin/addadmin', Validation.addAdminValidation, verifyAdminToken, validateRequest, AuthDomain.addAdmin);
 
 // CURRENT_USER
-router.get('/api/users/admin/currentuser', verifyAdminToken, validateRequest, AuthDomain.currentUser);
+router.get('/api/users/admin/currentuser', verifyToken, validateRequest, AuthDomain.currentUser);
 
 //Delete Single User
 router.put('/api/users/admin/statuschange/:id', verifyAdminToken, validateRequest, AuthDomain.statusChangeId);

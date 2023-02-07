@@ -12,15 +12,10 @@ router.post('/api/order/cart/create',verifyCustomerToken,CartValidation.CartCrea
 //cart delete
 router.post('/api/order/cart/remove',verifyCustomerToken,CartDomain.removeCart);
 
-
+//product remove
 router.put('/api/order/cart/remove/product',verifyCustomerToken,CartDomain.removeProductCart);
-
-// delete product from cart
-router.post('/api/order/cart/removeproduct/:id',verifyCustomerToken,CartDomain.removeSignleCart);
 
 // get all cart
 router.get('/api/order/cart/get',verifyToken,CartDomain.getCart);
-
-
 
 export { router as cartRouter };
