@@ -6,7 +6,7 @@ import { CouponCreatedPublisher } from '../event/publisher/coupon-publsher';
 import { BusinessRoleMapping } from '../models/business-role-mapping';
 import { BusinessUser } from '../models/business-user';
 import { Coupon } from '../models/coupon';
-import { baseIdEnum, CouponMapping } from '../models/coupon-mapping';
+import { CouponMapping } from '../models/coupon-mapping';
 import { Customer } from '../models/customer';
 import { Product } from '../models/product';
 import { ProductCategory } from '../models/product-category';
@@ -80,7 +80,8 @@ export class CouponDatabaseLayer {
                 endDate: endDate,
                 isMonthlyActive: isMonthlyActive,
                 couponAuthor: req.currentUser.type,
-                imageUrl: imageUrl
+                imageUrl: imageUrl,
+                isActive: true
             });
             if (productId != null && productId != undefined && productId.length != 0) {
                 console.log('you are safe productId');
@@ -102,7 +103,6 @@ export class CouponDatabaseLayer {
                         isProductCategory: false,
                         isProductSubCategory: false,
                         baseId: e,
-                        baseType: baseIdEnum.Product
                     })
                     CouponMappingData.save();
                    await new CouponMappingCreatedPublisher(natsWrapper.client).publish({
@@ -140,7 +140,6 @@ export class CouponDatabaseLayer {
                         isProductCategory: false,
                         isProductSubCategory: false,
                         baseId: e,
-                        baseType: baseIdEnum.Customer
                     })
                     await CouponMappingData.save();
 
@@ -177,8 +176,7 @@ export class CouponDatabaseLayer {
                         isStore: false,
                         isProductCategory: true,
                         isProductSubCategory: false,
-                        baseId: e,
-                        baseType: baseIdEnum.ProductCategory
+                        baseId: e
                     })
                     await CouponMappingData.save();
                     await new CouponMappingCreatedPublisher(natsWrapper.client).publish({
@@ -214,8 +212,7 @@ export class CouponDatabaseLayer {
                         isStore: false,
                         isProductCategory: false,
                         isProductSubCategory: true,
-                        baseId: e,
-                        baseType: baseIdEnum.ProductSubCategory
+                        baseId: e
                     })
                     await CouponMappingData.save();
                     await new CouponMappingCreatedPublisher(natsWrapper.client).publish({
@@ -252,8 +249,7 @@ export class CouponDatabaseLayer {
                             isStore: true,
                             isProductCategory: false,
                             isProductSubCategory: false,
-                            baseId: e,
-                            baseType: baseIdEnum.Store
+                            baseId: e
                         })
                         CouponMappingData.save();
                         await new CouponMappingCreatedPublisher(natsWrapper.client).publish({

@@ -12,7 +12,7 @@ export class CustomerAddressDatabaseLayer {
         if (isDefault == true) {
             const data = await customerAddress.findOneAndUpdate({ $and: [{ customerId: req.currentUser.id }, { isDefalultAddress: true }] }, { $set: { isDefalultAddress: false } });
         } else {
-            const data = await customerAddress.find({ coustomerId: req.currentUser.id });
+            const data = await customerAddress.find({ customerId: req.currentUser.id });
             if (data.length == 0) {
                 isDefault = true;
             }

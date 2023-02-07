@@ -17,8 +17,90 @@ import { ProductReview } from '../models/product-review';
 import { SKUS } from '../models/product-skus';
 import { ProductVariantCombination } from '../models/product-variant-combination';
 import { Store } from '../models/store';
-
+interface Iresponse {
+    message?: string,
+    result?: any,
+    page?: number,
+    total?: number
+}
 export class OrderDatabaseLayer {
+
+    static responseSuccess(data?: Iresponse) {
+        return {
+            success: true,
+            page: data?.page,
+            total: data?.total,
+            message: data?.message || "success",
+            data: data?.result,
+        };
+    }
+
+    static async productOrder(req: any) {
+        const { productId, productItemId, qty } = req.body;
+        var discountedPrice=0;
+        var payableAmount=0
+        const addressId = await customerAddress.findOne({ $and: [{ customerId: req.currentUser.id }, { isDefalultAddress: true }] })
+        if (addressId) {
+
+            const productCheck = await Product.findById(productId);
+            if (productCheck) {
+                discountedPrice = productCheck.discountedValue * qty;
+                if (productItemId != null || productItemId != undefined) {
+                    const productSkusCheck = await SKUS.findById({ $and: [{ _id: new mongoose.Types.ObjectId(productItemId) }, { productId: new mongoose.Types.ObjectId(productId) }] });
+                    if (productSkusCheck) {
+                        if (productSkusCheck.qty >= qty) {
+                           if(productSkusCheck.isVariantBasedPrice){
+                            payableAmount = ((productCheck.basePrice+productSkusCheck.price)*qty)-discountedPrice;
+                           }else{
+                            payableAmount = (productCheck.basePrice*qty) - discountedPrice
+                           }
+                        } else {
+                            throw new BadRequestError("you ask for more qty");
+                        }
+                    } else {
+                        throw new BadRequestError("productIteamId is not valid");
+                    }
+                } else {
+                    console.log('productCheck.quantity',productCheck);
+                    
+                    if (productCheck.quantity >= qty) {
+                        payableAmount = (productCheck.basePrice*qty) - discountedPrice
+                    } else {
+                        throw new BadRequestError("you ask for more qty product");
+                    }
+                }
+                const order= Order.build({
+                    customerId: req.currentUser.id,
+                    rewardPoints: 0,
+                    addressId: addressId._id,
+                    zipCode: addressId.zipCode,
+                    deliveryMode: 'DeliveryMode',
+                    payableAmount: payableAmount,
+                    discountPrice: discountedPrice,
+                    originalPrice: (productCheck.basePrice*qty),
+                    remarks: ''
+                })
+                const orderProduct= OrderProduct.build({
+                    productId: productId,
+                    productItemId:productItemId,
+                    storeId: productCheck.storeId,
+                    quantity: qty,
+                    orderId: order._id,
+                    orderStatus: 'pending',
+                    discountPrice: discountedPrice,
+                    originalPrice: (productCheck.basePrice*qty),
+                    payableAmount: payableAmount
+                })
+                await order.save();
+                await orderProduct.save();
+                return this.responseSuccess();
+            } else {
+                throw new BadRequestError("ProductId is not valid");
+            }
+        } else {
+            throw new BadRequestError("Address not found for current user pls write address first");
+        }
+    }
 
     static async createOrderBasedOnCart(req: any) {
         var totalAmount = 0;
@@ -66,7 +148,7 @@ export class OrderDatabaseLayer {
 
                                     const productStrData = JSON.parse(JSON.stringify(productData[0]));
                                     productStrData.productItemId = productItemData._id;
-                                    productStrData.discountedPrice = productStrData.discountedPrice * element.purchaseQuantity;
+                                    productStrData.discountedPrice = productStrData.discoutedPrice * element.purchaseQuantity;
                                     //attribute logic
                                     const attributeData = await ProductVariantCombination.aggregate([
                                         { $match: { productSKUsId: productItemData._id } },
@@ -115,7 +197,7 @@ export class OrderDatabaseLayer {
                                     ])
 
                                     var attributeArr: any[] = [];
-
+                                    
                                     attributeData.map((c: any) => {
                                         attributeArr.push(c.attributevaluesData);
                                     })
@@ -130,9 +212,6 @@ export class OrderDatabaseLayer {
                                     productStrData.payableAmount = productStrData.originalPrice - productStrData.discountedPrice
                                     totalDiscountedPrice = totalDiscountedPrice + productStrData.discountedPrice;
                                     totalBasePrice = totalBasePrice + productStrData.originalPrice
-
-
-
                                     OrderData.push(productStrData);
                                 } else {
                                     throw new BadRequestError("quantity is high for this productItemId" + element.productItemId);
@@ -143,9 +222,6 @@ export class OrderDatabaseLayer {
                             if (productData) {
                                 if (productData.quantity >= element.purchaseQuantity) {
                                     //qty logic pending
-
-
-
                                     const productStrData = JSON.parse(JSON.stringify(productData));
                                     productStrData.productId = productStrData._id;
                                     productStrData.productItemId = null;
@@ -170,7 +246,7 @@ export class OrderDatabaseLayer {
 
                     const { deliveryMode } = req.body;
                     // return OrderData;
-                    const order = Order.build({
+                    const order: any = Order.build({
                         customerId: req.currentUser.id,
                         rewardPoints: 0,
                         addressId: addressId._id,
@@ -178,7 +254,7 @@ export class OrderDatabaseLayer {
                         deliveryMode: deliveryMode,
                         payableAmount: totalBasePrice - totalDiscountedPrice,
                         discountPrice: totalDiscountedPrice,
-                        totalPrice: totalBasePrice,
+                        originalPrice: totalBasePrice,
                         remarks: ''
                     });
                     OrderData.forEach((e: any) => {
@@ -201,7 +277,7 @@ export class OrderDatabaseLayer {
 
                     })
                     order.save();
-                    return;
+                    return this.responseSuccess();
                 } else {
                     throw new BadRequestError("Address not found for current user pls write address first");
                 }
@@ -335,24 +411,53 @@ export class OrderDatabaseLayer {
         const currentUserOrder = await Order.aggregate([
             { $match: { $and: [{ customerId: new mongoose.Types.ObjectId(req.currentUser.id) }, { _id: new mongoose.Types.ObjectId(id) }] } },
             {
-                $lookup:{
-                    from:'orderproducts',
-                    localField:'_id',
-                    foreignField:'orderId',
-                    as:'orderProduct'
+                $lookup: {
+                    from: 'orderproducts',
+                    localField: '_id',
+                    foreignField: 'orderId',
+                    as: 'orderProduct'
                 },
             },
+
             {
-                $lookup:{
-                    from:'customeraddresses',
-                    localField:'addressId',
-                    foreignField:'_id',
-                    as:'customerAddress'
+                $lookup: {
+                    from: 'customeraddresses',
+                    localField: 'addressId',
+                    foreignField: '_id',
+                    as: 'customerAddress'
                 }
-            },        
+            },
+
+            {
+                $project: {
+                    "orderProduct._id": 1,
+                    "orderProduct.productId": 1,
+                    "orderProduct.productItemId": 1,
+                    "orderProduct.quantity": 1,
+                    "orderProduct.estimatedDeliverDate": 1,
+                    "orderProduct.discountPrice": 1,
+                    "orderProduct.orderProduct": 1,
+                    "orderProduct.payableAmount": 1,
+                    "orderProduct.addOnsId": 1,
+                    "customerAddress._id": 1,
+                    "customerAddress.phoneNumber": 1,
+                    "customerAddress.addressType": 1,
+                    "customerAddress.addressLine1": 1,
+                    "customerAddress.cityId": 1,
+                    "customerAddress.stateId": 1,
+                    "customerAddress.countryId": 1,
+                    'orderId': '$_id',
+                    'deliveryMode': 1,
+                    'payableAmount': 1,
+                    'discountPrice': 1,
+                    'totalPrice': 1,
+                    'orderDate': '$createdAt',
+                    '_id': 0,
+                }
+            }
         ]);
         if (currentUserOrder) {
-            return currentUserOrder;
+            return this.responseSuccess({ result: currentUserOrder });
         } else {
             throw new BadRequestError("Order Not Found");
         }
@@ -397,7 +502,7 @@ export class OrderDatabaseLayer {
             }
 
         }))
-        return orderProductStrData;
+        return this.responseSuccess({ result: orderProductStrData });
     }
 
     static async revenue(req: any) {
@@ -418,7 +523,6 @@ export class OrderDatabaseLayer {
         }))
         return resData;
     }
-
 
     static async customer(req: any) {
 
@@ -539,6 +643,7 @@ export class OrderDatabaseLayer {
         return newArrRes;
 
     }
+
     static async totalRevnueFromEachBusinessCategory(req: any) {
         const data = await OrderProduct.aggregate([
             { $group: { _id: '$storeId' } },
@@ -752,4 +857,5 @@ export class OrderDatabaseLayer {
             throw new BadRequestError('Id is wrong');
         }
     }
+
 } 

@@ -36,7 +36,7 @@ export class BusinessCategoryDatabaseLayer {
         try {
             const data=await BusinessCategory.findById(id);
             if(data){
-            await BusinessCategory.findByIdAndUpdate(id, { name: req.body.name, description: req.body.description, isActive: req.body.isActive, update_at: updatedAt });
+            await BusinessCategory.findByIdAndUpdate(id, { name: req.body.name, description: req.body.description, isActive: req.body.isActive, updateAt: updatedAt });
             return;
             }else{
                 throw new BadRequestError("given id is not valid")
@@ -54,7 +54,6 @@ export class BusinessCategoryDatabaseLayer {
             if (data) {
                 const status = data.isActive ? false : true;
                 const catData = await BusinessCategory.findByIdAndUpdate(id, { isActive: status });
-                console.log("63da35d87d7052c0f4e63a9d")
                 const businessSubCategoryData = await BusinessSubCategory.find({ businessCategoryId: id });
                 await new BusinessCategoryUpdatePublisher(natsWrapper.client).publish({
                     id:id,

@@ -14,7 +14,7 @@ export interface OrderAttrs {
     payableAmount: number;
     couponId?: string | null;
     discountPrice: number;
-    totalPrice: number;
+    originalPrice: number;
     remarks: string;
 }
 
@@ -34,7 +34,7 @@ export interface OrderDoc extends mongoose.Document {
     payableAmount: number;
     couponId?: string;
     discountPrice: number;
-    totalPrice: number;
+    originalPrice: number;
     remarks: string;
 }
 
@@ -46,7 +46,7 @@ const OrderSchema = new mongoose.Schema({
     payableAmount: { type: Number },
     couponId: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
     discountPrice: { type: Number, },
-    totalPrice: { type: Number },
+    originalPrice: { type: Number },
     remarks: { type: String },
     createdAt: { type: Date, default: () => Date.now() },
     updatedAt: { type: Date, default: () => Date.now() },

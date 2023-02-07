@@ -7,8 +7,13 @@ export class OrderDomain {
 
     static async createOrder(req: Request, res: Response) {
         const Order = await OrderDatabaseLayer.createOrderBasedOnCart(req);
-        res.status(201).send({orderPlace:true});
+        res.status(201).send(Order);
     }
+    static async productOrder(req: Request, res: Response) {
+        const Order = await OrderDatabaseLayer.productOrder(req);
+        res.status(201).send(Order);
+    }
+
 
     static async getSignleOrder(req: Request, res: Response) {
         if (!mongoose.isValidObjectId(req.params.id)) {

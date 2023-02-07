@@ -9,6 +9,10 @@ const router = express.Router();
 // Order create
 router.post('/api/order/create',verifyCustomerToken,validateRequest,OrderDomain.createOrder);
 
+// Order create
+router.post('/api/order/product/create',verifyCustomerToken,validateRequest,OrderDomain.productOrder);
+
+
 // delete product from Order
 router.get('/api/order/getorder/:id',verifyCustomerToken,OrderDomain.getSignleOrder);
 
