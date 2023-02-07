@@ -20,7 +20,7 @@ export interface BusinessRoleMappingDoc extends mongoose.Document {
 }
 
 const BusinessRoleMappingSchema = new mongoose.Schema({
-    businessUserId:{type:mongoose.Schema.Types.ObjectId,ref:'BusinessUserUser'},
+    businessUserId:{type:mongoose.Schema.Types.ObjectId,ref:'BusinessUser'},
     businessRoleId:{type:mongoose.Schema.Types.ObjectId,ref:'BusinessRoleType'},
     createdAt: { type: Date, default: () => Date.now() },
     updatedAt: { type: Date, default: () => Date.now() },

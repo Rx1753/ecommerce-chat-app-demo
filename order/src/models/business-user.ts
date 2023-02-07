@@ -59,6 +59,6 @@ BusinessUserSchema.statics.build = (attrs: BusinessUserAttrs) => {
     return new BusinessUser(attrs);
 }
 
-const BusinessUser = mongoose.model<BusinessUserDoc, BusinessUserModel>('BusinessUserUser', BusinessUserSchema);
+const BusinessUser = mongoose.model<BusinessUserDoc, BusinessUserModel>('BusinessUser', BusinessUserSchema);
 
 export { BusinessUser };

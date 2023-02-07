@@ -9,7 +9,7 @@ import { BusinessProfileKycRouter } from './routes/buisness-profile-kyc-route';
 import { StoreRouter } from './routes/store-route';
 import { StoreWorkingDayRouter } from './routes/store-working-day-route';
 import { StoreHolidayRouter } from './routes/store-holiday-route';
-
+import cors from "cors";
 const app = express();
 
 // The reason for this that traffic is being prixy to our app through ingress nginx
@@ -23,7 +23,11 @@ app.use(
     secure: process.env.NODE_ENV !== 'test',
   })
 );
-
+var corsOptions = {
+  origin: '*', 
+  
+}
+app.use(cors(corsOptions));
 // Router
 app.use(BusinessProfileRouter);
 app.use(BusinessCategoryRouter);

@@ -37,6 +37,7 @@ kind: Service
 metadata:
   name: product-srv
 spec:
+  type: NodePort
   selector:
     app: product
   ports:
@@ -44,3 +45,4 @@ spec:
       protocol: TCP
       port: 3000
       targetPort: 3000
+      nodePort: 30711

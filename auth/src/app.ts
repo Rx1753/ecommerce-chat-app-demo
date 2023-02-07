@@ -10,7 +10,7 @@ import { countryRouter } from './routes/country-route';
 import { cityRouter } from './routes/city-route';
 import { BusinessUserRouter } from './routes/business-user-auth-route';
 import bodyParser from "body-parser";
-
+import cors from "cors";
 const app = express();
 
 // The reason for this that traffic is being prixy to our app through ingress nginx
@@ -24,6 +24,11 @@ app.use(
     // secure: process.env.NODE_ENV !== 'test',
   })
 );
+var corsOptions = {
+  origin: '*', 
+  
+}
+app.use(cors(corsOptions));
 
 // Router
 app.use(adminAuthRouter);

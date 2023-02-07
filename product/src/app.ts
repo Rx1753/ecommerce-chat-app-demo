@@ -13,7 +13,7 @@ import { ProductWhishlistRouter } from './routes/product-whislist-route';
 import { AttributeRouter } from './routes/attribute-route';
 import { AttributeValueRouter } from './routes/attribute-value-route';
 import { ProductReviewRouter } from './routes/product-review';
-
+import cors from "cors";
 const app = express();
 
 // The reason for this that traffic is being prixy to our app through ingress nginx
@@ -27,6 +27,11 @@ app.use(
     secure: process.env.NODE_ENV !== 'test',
   })
 );
+var corsOptions = {
+  origin: '*', 
+  
+}
+app.use(cors(corsOptions));
 
 // Router
 app.use(ProductWhishlistRouter);

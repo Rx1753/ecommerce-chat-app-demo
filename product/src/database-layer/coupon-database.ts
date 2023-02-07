@@ -11,7 +11,6 @@ import { Customer } from '../models/customer';
 import { Product } from '../models/product';
 import { ProductCategory } from '../models/product-category';
 import { ProductSubCategory } from '../models/product-sub-category';
-
 import { Store } from '../models/store';
 import { natsWrapper } from '../nats-wrapper';
 

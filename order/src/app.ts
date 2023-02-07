@@ -5,7 +5,7 @@ import { errorHandler, NotFoundError } from '@rx-ecommerce-chat/common_lib';
 import { cartRouter } from './routes/cart-route';
 import { OrderRouter } from './routes/order-route';
 const app = express();
-
+import cors from "cors";
 // The reason for this that traffic is being prixy to our app through ingress nginx
 app.set('trust proxy', true);
 app.use(express.json());
@@ -17,7 +17,11 @@ app.use(
     secure: process.env.NODE_ENV !== 'test',
   })
 );
-
+var corsOptions = {
+  origin: '*', 
+  
+}
+app.use(cors(corsOptions));
 // Router
 app.use(cartRouter);
 app.use(OrderRouter);
