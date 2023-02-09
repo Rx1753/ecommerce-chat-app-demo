@@ -25,6 +25,6 @@ router.get('/api/order/totalsalebusinessuserbased/:id',OrderDomain.totalSaleBusi
 router.get('/api/order/totalcustomer/:id',OrderDomain.totalCustomerBasedBusinessUser);
 
 
-router.get('/api/order/coupon',verifyToken,OrderDomain.couponSuggestion);
-
+router.get('/api/order/coupon/:id',verifyToken,OrderDomain.couponSuggestion);
+router.post('/api/order/coupon/apply',verifyToken,OrderDomain.applyCoupon);
 export { router as OrderRouter };

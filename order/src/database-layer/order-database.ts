@@ -37,8 +37,8 @@ export class OrderDatabaseLayer {
 
     static async productOrder(req: any) {
         const { productId, productItemId, qty } = req.body;
-        var discountedPrice=0;
-        var payableAmount=0
+        var discountedPrice = 0;
+        var payableAmount = 0
         const addressId = await customerAddress.findOne({ $and: [{ customerId: req.currentUser.id }, { isDefalultAddress: true }] })
         if (addressId) {
 
@@ -49,11 +49,11 @@ export class OrderDatabaseLayer {
                     const productSkusCheck = await SKUS.findById({ $and: [{ _id: new mongoose.Types.ObjectId(productItemId) }, { productId: new mongoose.Types.ObjectId(productId) }] });
                     if (productSkusCheck) {
                         if (productSkusCheck.qty >= qty) {
-                           if(productSkusCheck.isVariantBasedPrice){
-                            payableAmount = ((productCheck.basePrice+productSkusCheck.price)*qty)-discountedPrice;
-                           }else{
-                            payableAmount = (productCheck.basePrice*qty) - discountedPrice
-                           }
+                            if (productSkusCheck.isVariantBasedPrice) {
+                                payableAmount = ((productCheck.basePrice + productSkusCheck.price) * qty) - discountedPrice;
+                            } else {
+                                payableAmount = (productCheck.basePrice * qty) - discountedPrice
+                            }
                         } else {
                             throw new BadRequestError("you ask for more qty");
                         }
@@ -61,15 +61,15 @@ export class OrderDatabaseLayer {
                         throw new BadRequestError("productIteamId is not valid");
                     }
                 } else {
-                    console.log('productCheck.quantity',productCheck);
-                    
+                    console.log('productCheck.quantity', productCheck);
+
                     if (productCheck.quantity >= qty) {
-                        payableAmount = (productCheck.basePrice*qty) - discountedPrice
+                        payableAmount = (productCheck.basePrice * qty) - discountedPrice
                     } else {
                         throw new BadRequestError("you ask for more qty product");
                     }
                 }
-                const order= Order.build({
+                const order = Order.build({
                     customerId: req.currentUser.id,
                     rewardPoints: 0,
                     addressId: addressId._id,
@@ -77,18 +77,20 @@ export class OrderDatabaseLayer {
                     deliveryMode: 'DeliveryMode',
                     payableAmount: payableAmount,
                     discountPrice: discountedPrice,
-                    originalPrice: (productCheck.basePrice*qty),
-                    remarks: ''
+                    originalPrice: (productCheck.basePrice * qty),
+                    remarks: '',
+                    orderStatus: 'created',
+                    couponDiscountPrice: 0
                 })
-                const orderProduct= OrderProduct.build({
+                const orderProduct = OrderProduct.build({
                     productId: productId,
-                    productItemId:productItemId,
+                    productItemId: productItemId,
                     storeId: productCheck.storeId,
                     quantity: qty,
                     orderId: order._id,
                     orderStatus: 'pending',
                     discountPrice: discountedPrice,
-                    originalPrice: (productCheck.basePrice*qty),
+                    originalPrice: (productCheck.basePrice * qty),
                     payableAmount: payableAmount
                 })
                 await order.save();
@@ -144,11 +146,12 @@ export class OrderDatabaseLayer {
                                             }
                                         }
                                     ]);
-                                    console.log('productData', productData);
+                                    console.log('productData', productData[0]);
 
-                                    const productStrData = JSON.parse(JSON.stringify(productData[0]));
+                                    var productStrData = JSON.parse(JSON.stringify(productData[0]));
+                                    console.log(' productStrData.discountedPrice', productStrData);
                                     productStrData.productItemId = productItemData._id;
-                                    productStrData.discountedPrice = productStrData.discoutedPrice * element.purchaseQuantity;
+                                    productStrData.discountedPrice = Number(productStrData.discountedPrice * element.purchaseQuantity);
                                     //attribute logic
                                     const attributeData = await ProductVariantCombination.aggregate([
                                         { $match: { productSKUsId: productItemData._id } },
@@ -197,7 +200,7 @@ export class OrderDatabaseLayer {
                                     ])
 
                                     var attributeArr: any[] = [];
-                                    
+
                                     attributeData.map((c: any) => {
                                         attributeArr.push(c.attributevaluesData);
                                     })
@@ -205,13 +208,15 @@ export class OrderDatabaseLayer {
                                     productStrData.attribute = attributeData;
                                     productStrData.qty = element.purchaseQuantity;
                                     if (productItemData.isVariantBasedPrice) {
-                                        productStrData.originalPrice = (productStrData.originalPrice + productItemData.price) * element.purchaseQuantity;
+                                        productStrData.originalPrice = Number((productStrData.originalPrice + productItemData.price) * element.purchaseQuantity);
                                     } else {
-                                        productStrData.originalPrice = productStrData.originalPrice * element.purchaseQuantity;
+                                        productStrData.originalPrice = Number(productStrData.originalPrice * element.purchaseQuantity);
                                     }
-                                    productStrData.payableAmount = productStrData.originalPrice - productStrData.discountedPrice
-                                    totalDiscountedPrice = totalDiscountedPrice + productStrData.discountedPrice;
-                                    totalBasePrice = totalBasePrice + productStrData.originalPrice
+                                    console.log(' productStrData.discountedPrice', productStrData);
+
+                                    productStrData.payableAmount = Number(productStrData.originalPrice - productStrData.discountedPrice)
+                                    totalDiscountedPrice = Number(totalDiscountedPrice + productStrData.discountedPrice);
+                                    totalBasePrice = Number(totalBasePrice + productStrData.originalPrice)
                                     OrderData.push(productStrData);
                                 } else {
                                     throw new BadRequestError("quantity is high for this productItemId" + element.productItemId);
@@ -226,12 +231,12 @@ export class OrderDatabaseLayer {
                                     productStrData.productId = productStrData._id;
                                     productStrData.productItemId = null;
                                     productStrData.attribute = null;
-                                    productStrData.originalPrice = productStrData.basePrice * element.purchaseQuantity;
-                                    productStrData.discountedPrice = productStrData.discountedValue * element.purchaseQuantity;
-                                    totalDiscountedPrice = totalDiscountedPrice + productStrData.discountedPrice;
-                                    totalBasePrice = totalBasePrice + productStrData.originalPrice
+                                    productStrData.originalPrice = Number(productStrData.basePrice * element.purchaseQuantity);
+                                    productStrData.discountedPrice = Number(productStrData.discountedValue * element.purchaseQuantity);
+                                    totalDiscountedPrice = Number(totalDiscountedPrice + productStrData.discountedPrice);
+                                    totalBasePrice = Number(totalBasePrice + productStrData.originalPrice)
                                     productStrData.qty = element.purchaseQuantity;
-                                    productStrData.payableAmount = productStrData.originalPrice - productStrData.discountedPrice
+                                    productStrData.payableAmount = Number(productStrData.originalPrice - productStrData.discountedPrice)
 
                                     OrderData.push(productStrData);
 
@@ -252,12 +257,18 @@ export class OrderDatabaseLayer {
                         addressId: addressId._id,
                         zipCode: addressId.zipCode,
                         deliveryMode: deliveryMode,
-                        payableAmount: totalBasePrice - totalDiscountedPrice,
-                        discountPrice: totalDiscountedPrice,
-                        originalPrice: totalBasePrice,
-                        remarks: ''
+                        payableAmount: Number(totalBasePrice - totalDiscountedPrice),
+                        discountPrice: Number(totalDiscountedPrice),
+                        originalPrice: Number(totalBasePrice),
+                        remarks: '',
+                        orderStatus: 'created',
+                        couponDiscountPrice: 0
                     });
-                    OrderData.forEach((e: any) => {
+                    console.log('OrderData', OrderData);
+
+                    await Promise.all(OrderData.map(async (e: any) => {
+                        console.log('e.discountedPrice', e.discountedPrice);
+
                         const orderProductData = OrderProduct.build({
                             productId: e.productId,
                             productItemId: e.productItemId,
@@ -269,15 +280,15 @@ export class OrderDatabaseLayer {
                             penaltyAmount: 0,
                             orderStatus: 'pending',
                             couponId: null,
-                            discountPrice: e.discountedPrice,
-                            originalPrice: e.originalPrice,
-                            payableAmount: e.payableAmount
+                            discountPrice: Number(e.discountedPrice),
+                            originalPrice: Number(e.originalPrice),
+                            payableAmount: Number(e.payableAmount)
                         });
-                        orderProductData.save();
+                        await orderProductData.save();
 
-                    })
-                    order.save();
-                    return this.responseSuccess();
+                    }))
+                    await order.save();
+                    return this.responseSuccess({result:{orderId:order._id}});
                 } else {
                     throw new BadRequestError("Address not found for current user pls write address first");
                 }
@@ -285,127 +296,246 @@ export class OrderDatabaseLayer {
         }
     }
 
-    static async couponSuggestion(req: any,) {
-        //     if (req.currentUser.id) {
-        //         const today: Date = new Date();
-        //         const couponData = await Coupon.find({ $and: [{ startDate: { $lte: today } }, { endDate: { $gte: today } }, { isActive: true }] })
 
-        //         const cartData = await Cart.findOne({ customerId: req.currentUser.id });
+    static async couponSuggestion(req: any, id: any) {
+        const order = await Order.findOne({ _id: new mongoose.Types.ObjectId(id) })
+        const orderProductData = await OrderProduct.find({ orderId: new mongoose.Types.ObjectId(id) }).populate({
+            path: 'productId', populate: {
+                path: 'productSubCategoryId', populate: {
+                    path: 'productCategoryId'
+                }
+            }
+        })
 
-        //         const cartStrData = JSON.parse(JSON.stringify(cartData));
+        if (order) {
+            var orderProductId: any[] = [];
+            var orderProductSubId: any[] = [];
+            var orderProductCatId: any[] = [];
+            orderProductData.map((e: any) => {
+                orderProductId.push(e.productId._id);
+                if (e.productId.productSubCategoryId._id !== undefined) {
+                    orderProductSubId.push(e.productId.productSubCategoryId._id);
+                    if (e.productId.productSubCategoryId.productCategoryId._id !== undefined) {
+                        orderProductCatId.push(e.productId.productSubCategoryId.productCategoryId._id);
+                    }
+                }
+            })
 
-        //         const couponStrData = JSON.parse(JSON.stringify(couponData));
+            const price = order.payableAmount;
+            if (price === undefined || price === null) {
+                throw new BadRequestError('price is not defiend');
+            }
+            const couponMappingData = await CouponMapping.aggregate([
+                {
+                    $match:
+                    {
+                        $or: [
+                            {
+                                $and: [{ isCustomer: true }, { baseId: new mongoose.Types.ObjectId(req.currentUser.id) }]
+                            },
+                            {
+                                $and: [{ isProduct: true }, { baseId: { $in: orderProductId } }]
+                            },
+                            {
+                                $and: [{ isProductSubCategory: true }, { baseId: { $in: orderProductSubId } }]
+                            },
+                            {
+                                $and: [{ isProductCategory: true }, { baseId: { $in: orderProductCatId } }]
+                            }
+                        ]
+                    }
+                },
+                { $group: { _id: '$couponId' } }
+            ]);
 
-        //         const OrderData: any[] = [];
+            var couponIdArr: any[] = []
 
-        //         var payableAmount: any = 0;
+            couponMappingData.map((e) => {
+                couponIdArr.push(e._id);
+            })
 
-        //         if (cartData) {
-        //             await Promise.all(cartStrData.cartList.map(async (element: any) => {
-        //                 var pItem: boolean;
-        //                 (element.productItemId === undefined || element.productItemId === null || element.productItemId.length == 0) ? pItem = false : pItem = true;
-        //                 console.log('element', element);
+            const couponData = await Coupon.aggregate([
+                {
+                    $match: {
+                        $and: [
+                            {
+                                $or: [
+                                    { _id: { $in: couponIdArr } },
+                                    { $and: [{ minOrderAmount: { $lte: Number(price) } }, { createdFor: { $eq: 'isGeneral' } }] }]
+                            },
+                            { isActive: true }
+                        ]
+                    }
+                },
+                {
+                    $project:
+                    {
+                        'couponId': '$_id',
+                        '_id': 0,
+                        'name': 1,
+                        'description': 1,
+                        "startDate": 1,
+                        "endDate": 1,
+                        "isRepeatCoupon": 1,
+                        "maxUserLimit": 1,
+                        "couponCode": 1,
+                        "imageUrl": 1,
+                        "isMonthlyActive": 1,
+                        "expiryOfCoupon": {
+                            "$cond": {
+                                "if": { $and: [{ $lte: ['$startDate', new Date()] }, { $lte: ['$endDate', new Date()] }] },
+                                "then": "expired",
+                                "else": {
+                                    "$cond": {
+                                        "if": { $and: [{ $lte: ['$startDate', new Date()] }, { $gte: ['$endDate', new Date()] }] },
+                                        "then": "ongoing",
+                                        "else": "upcoming",
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }]
+            )
+            var couponStrData = JSON.parse(JSON.stringify(couponData));
+            var year = new Date().getFullYear();
+            var month = new Date().getMonth();
 
-        //                 if (pItem) {
-        //                     const productItemData = await ProductItem.findById(element.productItemId).populate({
-        //                         path: 'productId', populate: {
-        //                             path: 'productSubCategoryId', populate: {
-        //                                 path: 'productCategoryId'
-        //                             }
-        //                         }
-        //                     });
-        //                     console.log('productItemData', productItemData);
 
-        //                     if (productItemData) {
-        //                         if (productItemData.quantity >= element.purchaseQuantity) {
-        //                             const q = productItemData.quantity - element.purchaseQuantity;
-        //                             const qty = productItemData.productId.quantity - element.purchaseQuantity;
-        //                             const amount = (element.purchaseQuantity * productItemData.mrpPrice);
-        //                             element.amount = amount;
-        //                             element.storeId = productItemData.productId.storeId;
-        //                             element.price = productItemData.mrpPrice;
-        //                             payableAmount = Number(payableAmount + amount);
-        //                             const CouponProductArr: any[] = [];
-        //                             await Promise.all(couponStrData.map(async (a: any) => {
-        //                                 const couponMappingData = await CouponMapping.find(
-        //                                     {
-        //                                         $and: [{ couponId: a.CouponId },
-        //                                         {
-        //                                             $or: [{ $and: [{ isProduct: true }, { baseId: element.productId }] },
-        //                                             {
-        //                                                 $and: [{ isProductCategory: true }, { baseId: productItemData.productId.productSubCategoryId.productCategoryId._id.toHexString() },
-        //                                                 {
-        //                                                     $and: [{ isProductSubCategory: true }, { baseId: productItemData.productId.productSubCategoryId._id.toHexString() }
-        //                                                     ]
-        //                                                 }]
-        //                                             }]
-        //                                         }]
-        //                                     }
-        //                                 )
-        //                                 if (couponMappingData.length != 0) {
-        //                                     a.couponData = couponMappingData;
-        //                                     CouponProductArr.push(a);
-        //                                 }
-        //                             }))
-        //                             element.Coupon = CouponProductArr;
+            await Promise.all(couponStrData.map(async (e: any) => {
+                if (e.isRepeatCoupon == false) {
+                    var orderCouponData = await Order.find({ $and: [{ couponId: new mongoose.Types.ObjectId(e.couponId) }, { customerId: new mongoose.Types.ObjectId(req.currentUser.id) }] });
 
-        //                             OrderData.push(element);
-        //                         } else {
-        //                             throw new BadRequestError("quantity is high for this productItemId" + element.productItemId);
-        //                         }
-        //                     } else { throw new BadRequestError("Product Item not found"); }
-        //                 } else {
-        //                     const productData = await Product.findById(element.productId).populate({
-        //                         path: 'productSubCategoryId', populate: {
-        //                             path: 'productCategoryId'
-        //                         }
-        //                     });
-        //                     console.log('productData', productData);
 
-        //                     if (productData) {
-        //                         if (productData.quantity >= element.purchaseQuantity) {
-        //                             const qty = productData.quantity - element.purchaseQuantity;
-        //                             const amount = (element.purchaseQuantity * productData.mrpPrice);
-        //                             element.amount = amount;
-        //                             element.storeId = productData.storeId;
-        //                             element.price = productData.mrpPrice;
-        //                             payableAmount = Number(payableAmount + amount);
-        //                             const CouponProductArr: any[] = [];
-        //                             await Promise.all(couponStrData.map(async (a: any) => {
-        //                                 const couponMappingData = await CouponMapping.find({
-        //                                     $and: [{ couponId: a.CouponId },
-        //                                     {
-        //                                         $or: [{ $and: [{ isProduct: true }, { baseId: element.productId }] },
-        //                                         {
-        //                                             $and: [{ isProductCategory: true }, { baseId: productData.productSubCategoryId.productCategoryId._id.toHexString() },
-        //                                             {
-        //                                                 $and: [{ isProductSubCategory: true }, { baseId: productData.productSubCategoryId._id.toHexString() }
-        //                                                 ]
-        //                                             }]
-        //                                         }]
-        //                                     }]
-        //                                 })
-        //                                 if (couponMappingData.length != 0) {
-        //                                     a.couponData = couponMappingData;
-        //                                     // element.Coupon = a;
-        //                                     CouponProductArr.push(a);
-        //                                 }
-        //                             }))
-        //                             element.Coupon = CouponProductArr;
+                    if (orderCouponData.length != 0) {
+                        e.expiryOfCoupon = "Not Applicable, you already used this coupon.."
+                    }
+                } else {
+                    var orderCouponData = await Order.find({ couponId: new mongoose.Types.ObjectId(e.couponId) });
+                    if (e.maxUserLimit <= orderCouponData.length) {
+                        e.expiryOfCoupon = "Oh No!! Coupon reached maximum usage limit"
+                    }
+                }
+                if (e.isMonthlyActive == true) {
+                    var orderCouponData = await Order.find({ $and: [{ couponId: new mongoose.Types.ObjectId(e.couponId) }, { createdAt: { "$gte": new Date(year, month, 1), "$lt": new Date(year, month + 1, 1) } }] });
+                    if (orderCouponData.length != 0) {
+                        e.expiryOfCoupon = "Not Applicable, Someone already used this coupon.."
+                    }
 
-        //                             OrderData.push(element);
-        //                         } else {
-        //                             throw new BadRequestError("quantity is high for this productId" + element.productId);
-        //                         }
-        //                     } else { throw new BadRequestError("Product Item not found"); }
-        //                 }
+                }
+            }))
 
-        //             }))
-
-        //         }
-        //         return OrderData;
-        //     }
+            return this.responseSuccess({ result: couponStrData });
+        } else {
+            throw new BadRequestError("order id is not right");
+        }
     }
+
+    static async applyCoupon(req: any) {
+        const order = await Order.findOne({ _id: new mongoose.Types.ObjectId(req.body.orderId) })
+        const orderProductData = await OrderProduct.find({ orderId: new mongoose.Types.ObjectId(req.body.orderId) }).populate({
+            path: 'productId', populate: {
+                path: 'productSubCategoryId', populate: {
+                    path: 'productCategoryId'
+                }
+            }
+        })
+
+        if (order) {
+            if(order.couponId==null){
+            var orderProductId: any[] = [];
+            var orderProductSubId: any[] = [];
+            var orderProductCatId: any[] = [];
+            orderProductData.map((e: any) => {
+                orderProductId.push(e.productId._id);
+                if (e.productId.productSubCategoryId._id !== undefined) {
+                    orderProductSubId.push(e.productId.productSubCategoryId._id);
+                    if (e.productId.productSubCategoryId.productCategoryId._id !== undefined) {
+                        orderProductCatId.push(e.productId.productSubCategoryId.productCategoryId._id);
+                    }
+                }
+            })
+
+            const price = order.payableAmount;
+
+            const couponData = await Coupon.findOne({
+                $and: [
+                    { _id: new mongoose.Types.ObjectId(req.body.couponId) },
+                    { isActive: true },
+                    { startDate: { "$lte": new Date() } },
+                    { endDate: { '$gte': new Date() } }]
+            });
+            if (couponData) {
+                const orderCheck = await Order.find({ couponId: new mongoose.Types.ObjectId(req.body.couponId) })
+                if (couponData.isRepeatCoupon == false && orderCheck.length != 0) {
+                    throw new BadRequestError("coupon repeation not possible");
+                } else {
+                    if (couponData.maxUserLimit <= orderCheck.length) {
+                        throw new BadRequestError("coupon use accross maxUserLimit");
+                    }
+                    if (couponData.createdFor == "isGeneral") {
+                        if (price < couponData.minOrderAmount) {
+                            throw new BadRequestError("coupon is not applicable due to not match with minOrderAmount");
+                        }
+                    }
+                    const couponMappingData = await CouponMapping.findOne({
+                        $and:
+                            [
+                                { couponId: new mongoose.Types.ObjectId(req.body.couponId) },
+                                {
+                                    $or: [
+                                        {
+                                            $and: [{ isCustomer: true }, { baseId: new mongoose.Types.ObjectId(req.currentUser.id) }]
+                                        },
+                                        {
+                                            $and: [{ isProduct: true }, { baseId: { $in: orderProductId } }]
+                                        },
+                                        {
+                                            $and: [{ isProductSubCategory: true }, { baseId: { $in: orderProductSubId } }]
+                                        },
+                                        {
+                                            $and: [{ isProductCategory: true }, { baseId: { $in: orderProductCatId } }]
+                                        }
+                                    ]
+
+                                }
+                            ]
+
+                    })
+
+                    if (couponMappingData) {
+
+                        //APPly discount price in order
+
+                       var couponDiscountPrice=( order.payableAmount*couponData.discountPercentage)/100;
+                       couponDiscountPrice =  couponData.maxDiscountAmount>couponDiscountPrice ? couponDiscountPrice : couponData.maxDiscountAmount
+                       
+                       const data = await Order.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(req.body.orderId) }, {
+                           
+                            couponId: new mongoose.Types.ObjectId(req.body.couponId),
+                            couponDiscountPrice:couponDiscountPrice,
+                            payableAmount:(order.payableAmount-couponDiscountPrice)
+                                
+                       })
+                       return this.responseSuccess();
+                    } else {
+                        throw new BadRequestError('coupon ID is not valid')
+                    }
+                }
+
+            } else {
+                throw new BadRequestError("CouponID is not exist");
+            }
+        }else{
+            throw new BadRequestError("already one coupon is Applied");
+        }
+        }
+        else {
+            throw new BadRequestError("order id is not right");
+        }
+    }
+
+    
 
     static async getSignleOrder(req: any, id: any) {
         const currentUserOrder = await Order.aggregate([
@@ -415,22 +545,44 @@ export class OrderDatabaseLayer {
                     from: 'orderproducts',
                     localField: '_id',
                     foreignField: 'orderId',
-                    as: 'orderProduct'
+                    as: 'orderProduct',
+                    pipeline:[
+                        {$addFields:{'orderProductId':"$_id"}}
+                    ]
                 },
             },
-
             {
                 $lookup: {
                     from: 'customeraddresses',
                     localField: 'addressId',
                     foreignField: '_id',
-                    as: 'customerAddress'
+                    as: 'customerAddress',
+                    pipeline:[
+                        {$addFields:{'customerAddressId':"$_id"}}
+                    ]
                 }
             },
-
+            {
+                $lookup:{
+                    from:"coupons",
+                    localField:'couponId',
+                    foreignField:'_id',
+                    as:"couponData",
+                    pipeline:[
+                        {$addFields:{'couponId':"$_id"}}
+                    ]
+                }
+            },
             {
                 $project: {
-                    "orderProduct._id": 1,
+                    "couponData.couponId":1,
+                    "couponData.startDate":1,
+                    "couponData.endDate":1,
+                    "couponData.discountPercentage":1,
+                    "couponData.name":1,
+                    "couponData.imageUrl":1,
+                    "couponData.couponCode":1,
+                    "orderProduct.orderProductId": 1,
                     "orderProduct.productId": 1,
                     "orderProduct.productItemId": 1,
                     "orderProduct.quantity": 1,
@@ -439,18 +591,20 @@ export class OrderDatabaseLayer {
                     "orderProduct.orderProduct": 1,
                     "orderProduct.payableAmount": 1,
                     "orderProduct.addOnsId": 1,
-                    "customerAddress._id": 1,
+                    "customerAddress.customerAddressId": 1,
                     "customerAddress.phoneNumber": 1,
                     "customerAddress.addressType": 1,
                     "customerAddress.addressLine1": 1,
                     "customerAddress.cityId": 1,
                     "customerAddress.stateId": 1,
                     "customerAddress.countryId": 1,
-                    'orderId': '$_id',
+                    'orderId': '$_id',      
                     'deliveryMode': 1,
                     'payableAmount': 1,
                     'discountPrice': 1,
                     'totalPrice': 1,
+                    "orderStatus":1,
+                    "couponDiscountPrice":1,
                     'orderDate': '$createdAt',
                     '_id': 0,
                 }

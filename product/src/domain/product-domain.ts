@@ -84,15 +84,18 @@ export class ProductDomain {
         res.status(201).send(Product);
     }
 
-    
-
     static async getProductVariant(req:Request,res:Response){
-        const Product =  await ProductDatabaseLayer.getProductVariant(req,req.params.id);
+        const Product =  await ProductDatabaseLayer.getProductVariant(req,req.query.productItemId,req.query.productId);
         res.status(201).send(Product);
     }
     
     static async checkProductCombination(req:Request,res:Response){
         const Product =  await ProductDatabaseLayer.checkProductCombination(req,);
+        res.status(201).send(Product);
+    }
+    
+    static async couponSuggestionBasedOnProduct(req:Request,res:Response){
+        const Product =  await ProductDatabaseLayer.couponSuggestionBasedOnProduct(req,req.params.id);
         res.status(201).send(Product);
     }
 }

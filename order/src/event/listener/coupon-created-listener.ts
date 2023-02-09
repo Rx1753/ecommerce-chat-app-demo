@@ -24,7 +24,7 @@ export class CouponCreatedListener extends Listener<CouponCreatedEvent>{
             name,
             discountPercentage,
             couponCode,
-            repeatCoupon,
+            isRepeatCoupon: repeatCoupon,
             maxUserLimit,
             maxDiscountAmount,
             createdFor,
@@ -32,7 +32,10 @@ export class CouponCreatedListener extends Listener<CouponCreatedEvent>{
             endDate,
             isMonthlyActive,
             couponAuthor,
-            imageUrl
+            imageUrl,
+            description: "",
+            minOrderAmount: 0,
+            isActive: false
         });
 
         couponData._id = id

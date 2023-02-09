@@ -11,6 +11,6 @@ export class CouponValidation {
     body('startDate').trim().notEmpty().withMessage('pls provide startDate'),
     body('endDate').trim().notEmpty().withMessage('pls provide endDate'),
     body('isMonthlyActive').isBoolean().notEmpty().withMessage('pls provide isMonthlyActive'),
-    body('imageUrl').isArray().notEmpty().withMessage('pls provide imageUrl'),
+    body('imageUrl').notEmpty().withMessage('pls provide imageUrl'),
   ];
 }

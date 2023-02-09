@@ -6,12 +6,14 @@ export interface CouponAttrs {
   name: string;
   discountPercentage: number;
   couponCode: string;
-  repeatCoupon: boolean;
+  description:string;
+  isRepeatCoupon: boolean;
   maxUserLimit: number;
   maxDiscountAmount: number;
   createdFor: string;
   startDate: Date;
   endDate: Date;
+  minOrderAmount:number;
   isMonthlyActive: boolean;
   couponAuthor: string;
   imageUrl: string;
@@ -25,13 +27,15 @@ export interface CouponModel extends mongoose.Model<CouponDoc> {
 export interface CouponDoc extends mongoose.Document {
   name: string;
   discountPercentage: number;
+  description:string;
   couponCode: string;
-  repeatCoupon: boolean;
+  isRepeatCoupon: boolean;
   maxUserLimit: number;
   maxDiscountAmount: number;
   createdFor: string;
   startDate: Date;
   endDate: Date;
+  minOrderAmount:number;
   isMonthlyActive: boolean;
   couponAuthor: string;
   imageUrl: string;
@@ -42,32 +46,34 @@ export interface CouponDoc extends mongoose.Document {
 export const CouponSchema = new mongoose.Schema(
   {
     name: { type: String, unique: true, required: true },
+    description:{type:String,required:true},
     discountPercentage: { type: Number, required: true },
     couponCode: { type: String, unique: true, required: true },
-    repeatCoupon: { type: Boolean, default: false },
+    isRepeatCoupon: { type: Boolean, default: false },
     maxUserLimit: { type: Number },
     maxDiscountAmount: { type: Number },
     createdFor: {
       type: String,
       enum: [
+        "isGeneral",
         "store",
         "product",
         "customer",
-        "product category",
-        "product sub-category",
+        "productCategory",
+        "productSubCategory",
       ],
       required: true,
     },
+    minOrderAmount:{type:Number,default:0},
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     isMonthlyActive: { type: Boolean, default: false },
     couponAuthor: { type: String, enum: ["Admin", "Vendor"], required: true },
     imageUrl: { type: String },
     isActive: { type: Boolean, default: true },
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
   }
-  
 );
 CouponSchema.pre("save", async function (done) {
   done();

@@ -47,7 +47,8 @@ export interface ProductDoc extends mongoose.Document {
     discount:number,
     discountedValue:number,
     maxDiscount:number,
-    storeId:string
+    storeId:string,
+    productSubCategoryId:ProductSubCategoryDoc;
 }
 
 const ProductSchema = new mongoose.Schema({

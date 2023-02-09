@@ -16,6 +16,8 @@ export interface OrderAttrs {
     discountPrice: number;
     originalPrice: number;
     remarks: string;
+    orderStatus: string;
+    couponDiscountPrice:number
 }
 
 // interface for usermodel pass
@@ -36,6 +38,8 @@ export interface OrderDoc extends mongoose.Document {
     discountPrice: number;
     originalPrice: number;
     remarks: string;
+    orderStatus: string;
+    couponDiscountPrice:number;
 }
 
 const OrderSchema = new mongoose.Schema({
@@ -43,8 +47,10 @@ const OrderSchema = new mongoose.Schema({
     rewardPoints: { type: Number },
     addressId: { type: mongoose.Schema.Types.ObjectId, ref: 'CustomerAddress' },
     deliveryMode: { type: String, enum: ['DeliveryMode', 'PickUpMode'], default: 'DeliveryMode' },
+    orderStatus: { type: String, enum: ["created", "paymentFail", "success"], default: "created" },
     payableAmount: { type: Number },
-    couponId: { type: mongoose.Schema.Types.ObjectId, ref: 'Coupon' },
+    couponId: { type: mongoose.Schema.Types.ObjectId || null, ref: 'Coupon', default: null },
+    couponDiscountPrice: {type:Number, default:0},
     discountPrice: { type: Number, },
     originalPrice: { type: Number },
     remarks: { type: String },

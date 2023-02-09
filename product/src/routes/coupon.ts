@@ -1,7 +1,7 @@
 import { validateRequest } from '@rx-ecommerce-chat/common_lib';
 import express, { Request, Response, Router } from 'express';
 import { CouponDomain } from '../domain/coupon-domain';
-import { verifyToken } from '../middlewares/current-user';
+import { verifyCustomerToken, verifyToken } from '../middlewares/current-user';
 import { CouponValidation } from '../validations/coupon-validation';
 
 
@@ -22,5 +22,7 @@ router.delete('/api/product/coupon/delete/:id',verifyToken,CouponDomain.deleteCo
 router.get('/api/product/coupon/get',CouponDomain.getCouponList);
 router.get('/api/product/coupon/getactive',CouponDomain.getCouponActiveList);
 router.get('/api/product/coupon/getdeactive',CouponDomain.getCouponDeactiveList);
+
+router.get('/api/product/my/coupon',verifyCustomerToken,CouponDomain.getMyCoupon);
 
 export { router as CouponRouter };

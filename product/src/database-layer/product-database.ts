@@ -8,6 +8,8 @@ import { BusinessCategory } from '../models/business-category';
 import { BusinessRoleMapping } from '../models/business-role-mapping';
 import { BusinessSubCategory } from '../models/business-sub-category';
 import { BusinessUser } from '../models/business-user';
+import { Coupon } from '../models/coupon';
+import { CouponMapping } from '../models/coupon-mapping';
 import { Product } from "../models/product";
 import { ProductCategory } from '../models/product-category';
 import { ProductReview } from '../models/product-review';
@@ -18,24 +20,24 @@ import { Store } from '../models/store';
 import { ProductWhishlist } from '../models/whislist-product';
 import { natsWrapper } from '../nats-wrapper';
 
-interface Iresponse{
-    message? : string,
-    result? : any,
-    page? : number,
-    total? : number
+interface Iresponse {
+    message?: string,
+    result?: any,
+    page?: number,
+    total?: number
 }
 
 export class ProductDatabaseLayer {
-    
-    static responseSuccess(data:Iresponse) {
+
+    static responseSuccess(data: Iresponse) {
         return {
-          success: true,
-          page : data?.page,
-          total : data?.total,
-          message: data?.message || "success",
-          data: data?.result,
+            success: true,
+            page: data?.page,
+            total: data?.total,
+            message: data?.message || "success",
+            data: data?.result,
         };
-      }
+    }
     static async createProduct(req: any) {
         const { name, description, productSubCategoryId, imageUrl, storeId, brandName, warrenty, guaranty, basePrice, highlights, addOns, quantity, isInvoiceAvailable, isCancellation, relatableProducts, isDiscountPercentage, discount, maxDiscount, } = req.body;
 
@@ -423,21 +425,21 @@ export class ProductDatabaseLayer {
                 } else {
                     e.isInWishList = false;
                 }
-                const productSkusData= await SKUS.findOne({productId:e.productId});
-                if(productSkusData){
-                    e.productIteamId=productSkusData._id;
-                    e.productImage=productSkusData.imageUrl;
-                }else{
-                    e.productIteamId=null;
+                const productSkusData = await SKUS.findOne({ productId: e.productId });
+                if (productSkusData) {
+                    e.productIteamId = productSkusData._id;
+                    e.productImage = productSkusData.imageUrl;
+                } else {
+                    e.productIteamId = null;
                     e.productImage = e.imageUrl[0];
                 }
-                
+
                 const reviewData = await ProductReview.find({ productId: e.ProductId });
                 e.totalRating = reviewData.length;
-                
+
                 delete e['imageUrl'];
             }))
-            return this.responseSuccess({total:totalPage,page: page,result: dataStr});
+            return this.responseSuccess({ total: totalPage, page: page, result: dataStr });
         } else {
             throw new BadRequestError("no data found for given id");
         }
@@ -522,7 +524,7 @@ export class ProductDatabaseLayer {
             }
         ]);
 
-        if (data) {
+        if (data.length!=0) {
             var dataStr = JSON.parse(JSON.stringify(data[0]));
             if (req.currentUser) {
                 const wishData = await ProductWhishlist.findOne({ $and: [{ productId: id }, { customerId: req.currentUser.id }] });
@@ -645,9 +647,9 @@ export class ProductDatabaseLayer {
                 }
             }))
             // at signle API
-            return (this.responseSuccess({result:{ totalReviews: totalReviews, specificRating: specificRating, reviewImages: reviewImages, totalNumberImages: totalNumberImages, reviewsByUser: reviewsByUser }}));
+            return (this.responseSuccess({ result: { totalReviews: totalReviews, specificRating: specificRating, reviewImages: reviewImages, totalNumberImages: totalNumberImages, reviewsByUser: reviewsByUser } }));
             // function calling
-            return (this.responseSuccess({result:{ totalReviews: totalReviews, specificRating: specificRating, reviewImages: reviewImages, totalNumberImages: totalNumberImages, reviewsByUser: reviewsByUser }}));
+            return (this.responseSuccess({ result: { totalReviews: totalReviews, specificRating: specificRating, reviewImages: reviewImages, totalNumberImages: totalNumberImages, reviewsByUser: reviewsByUser } }));
         } else {
             throw new BadRequestError("product id is not valid");
         }
@@ -660,13 +662,13 @@ export class ProductDatabaseLayer {
             {
                 "$lookup": {
                     "from": "skus",
-                    "let": { "proId":  "$_id"  },
+                    "let": { "proId": "$_id" },
                     "pipeline": [
                         { "$match": { "$expr": { "$eq": ["$productId", "$$proId"] } } },
                         {
                             "$lookup": {
                                 "from": "productvariantcombinations",
-                                "let": { "pSKUsId":'$_id'  },
+                                "let": { "pSKUsId": '$_id' },
                                 "pipeline": [
                                     { "$match": { "$expr": { "$eq": ['$productSKUsId', "$$pSKUsId"] } } },
                                     {
@@ -674,13 +676,13 @@ export class ProductDatabaseLayer {
                                             "from": "attributevalues",
                                             "let": { "avId": '$attributeValueId' },
                                             "pipeline": [
-                                                { "$match": { "$expr": { "$eq": [ "$_id" , "$$avId"] } } },
+                                                { "$match": { "$expr": { "$eq": ["$_id", "$$avId"] } } },
                                                 {
                                                     "$lookup": {
                                                         "from": "attributes",
                                                         "let": { "aId": '$attributeId' },
                                                         "pipeline": [
-                                                            { "$match": { "$expr": { "$eq": [ "$_id" , "$$aId"] } } },
+                                                            { "$match": { "$expr": { "$eq": ["$_id", "$$aId"] } } },
 
                                                         ],
                                                         "as": "attributeData"
@@ -708,13 +710,13 @@ export class ProductDatabaseLayer {
             {
                 "$lookup": {
                     "from": "skus",
-                    "let": { "proId":  "$_id"  },
+                    "let": { "proId": "$_id" },
                     "pipeline": [
                         { "$match": { "$expr": { "$eq": ["$productId", "$$proId"] } } },
                         {
                             "$lookup": {
                                 "from": "productvariantcombinations",
-                                "let": { "pSKUsId":  '$_id'  },
+                                "let": { "pSKUsId": '$_id' },
                                 "pipeline": [
                                     { "$match": { "$expr": { "$eq": ['$productSKUsId', "$$pSKUsId"] } } },
                                     {
@@ -722,13 +724,13 @@ export class ProductDatabaseLayer {
                                             "from": "attributevalues",
                                             "let": { "avId": '$attributeValueId' },
                                             "pipeline": [
-                                                { "$match": { "$expr": { "$eq": [ "$_id" , "$$avId"] } } },
+                                                { "$match": { "$expr": { "$eq": ["$_id", "$$avId"] } } },
                                                 {
                                                     "$lookup": {
                                                         "from": "attributes",
                                                         "let": { "aId": '$attributeId' },
                                                         "pipeline": [
-                                                            { "$match": { "$expr": { "$eq": [ "$_id", "$$aId"] } } },
+                                                            { "$match": { "$expr": { "$eq": ["$_id", "$$aId"] } } },
                                                         ],
                                                         "as": "attributeData"
                                                     }
@@ -783,13 +785,14 @@ export class ProductDatabaseLayer {
 
     }
 
-    static async getProductVariant(req: any, id: any) {
+    static async getProductVariant(req: any, id: any,pId?:any) {
+        if(id!=null && id!=undefined){
+            
+        }
         const data = await SKUS.findById(id);
         var skusIdArr: string[] = [];
         var productAttributeValueIdArr: any[] = [];
         var productAttributeIdArr: any[] = [];
-        console.log('id', id);
-        console.log('data', data);
 
         if (data) {
             const productData = await Product.aggregate([
@@ -811,9 +814,9 @@ export class ProductDatabaseLayer {
                 }
             ]);
 
-            if (productData) {
+            if (productData.length!=0) {
                 const productSkusData = await SKUS.find({ productId: productData[0].productId });
-                console.log('productSkusData', productSkusData);
+                // console.log('productSkusData', productSkusData);
 
                 await Promise.all(productSkusData.map((e: any) => {
                     skusIdArr.push(e._id)
@@ -823,7 +826,7 @@ export class ProductDatabaseLayer {
                     { $match: { productSKUsId: { $in: skusIdArr } } },
                     { $group: { _id: '$attributeValueId' } }
                 ])
-                console.log('productAttributValueData', productAttributValueData);
+                // console.log('productAttributValueData', productAttributValueData);
 
 
                 await Promise.all(productAttributValueData.map((e: any) => {
@@ -918,7 +921,7 @@ export class ProductDatabaseLayer {
                 dataStr.review = await this.reviewBasedOnProductId(productData[0].productId);
                 dataStr.similarProduct = productSimilarData;
                 dataStr.attributes = attributeStrData;
-                return this.responseSuccess({result:dataStr});
+                return this.responseSuccess({ result: dataStr });
             }
         } else {
             throw new BadRequestError("ProductIteamId is not valid");
@@ -928,7 +931,7 @@ export class ProductDatabaseLayer {
 
     static async checkProductCombination(req: any) {
         const productIteamId = req.query.productIteamId;
-        
+
         const attribute = req.query.attribute;
 
         //TODO query params logic pending
@@ -968,11 +971,43 @@ export class ProductDatabaseLayer {
             }
 
             //productIteamId based combination check
-            const d = await this.getProductVariant(req, returnProductIteamId[0]);
+            const d = await this.getProductVariant(req, returnProductIteamId[0],null);
             return d;
 
         } else {
             throw new BadRequestError("ProductIteamId is not valid");
         }
+    }
+
+    static async couponSuggestionBasedOnProduct(req: any, id: any) {
+        
+        const producData = await Product.findById(id).populate({
+            path: 'productSubCategoryId', populate: {
+                path: 'productCategoryId'
+            }
+        })
+
+        console.log('producData', producData);
+
+        const couponMappingData = await CouponMapping.aggregate([{
+            $match: {
+                $or:
+                    [{ $and: [{ isProduct: true }, { baseId: new mongoose.Types.ObjectId(id) }] },
+                    { $and: [{ isProductSubCategory: true }, { baseId: producData?.productSubCategoryId._id }] },
+                    { $and: [{ isProductCategory: true }, { baseId: producData?.productSubCategoryId.productCategoryId._id }] }]
+            }
+        },
+        { $group: { _id: '$couponId' } }
+        ])
+
+        var couponIdArr:any[]=[];
+
+        couponMappingData.map((e:any)=>{
+            couponIdArr.push(e._id);
+        })
+
+        const couponData= await Coupon.find({$and:[{_id:{$in:couponIdArr}},{ startDate: { "$lte": new Date() } }, { endDate: { '$lte': new Date() } }]})
+
+        return couponData
     }
 }

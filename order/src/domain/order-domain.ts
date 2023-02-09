@@ -54,9 +54,13 @@ export class OrderDomain {
         res.status(201).send(Order);
     }
     static async couponSuggestion(req: Request, res: Response) {
-        const Cart =  await OrderDatabaseLayer.couponSuggestion(req);
+        const Cart =  await OrderDatabaseLayer.couponSuggestion(req,req.params.id);
         res.status(201).send(Cart);
     }
     
+    static async applyCoupon(req: Request, res: Response) {
+        const Cart =  await OrderDatabaseLayer.applyCoupon(req);
+        res.status(201).send(Cart);
+    }
 
 }

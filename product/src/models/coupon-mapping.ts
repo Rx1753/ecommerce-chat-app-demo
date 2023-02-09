@@ -34,8 +34,8 @@ export const CouponMappingSchema = new mongoose.Schema({
     isProductCategory:{type:Boolean,default:false},
     isProductSubCategory:{type:Boolean,default:false},
     baseId:{type:mongoose.Schema.Types.ObjectId},
-    createdAt: { type: Number, default: () => Date.now() },
-    updatedAt: { type: Number, default: () => Date.now() },
+    createdAt: { type: Date, default: () => Date.now() },
+    updatedAt: { type: Date, default: () => Date.now() },
 });
 
 CouponMappingSchema.pre('save', async function (done) {

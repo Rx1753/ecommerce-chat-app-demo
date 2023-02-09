@@ -22,23 +22,7 @@ export class CouponDatabaseLayer {
         const productCategoryID: any[] = [];
         const productSubCategoryID: any[] = [];
         const storeID: any[] = [];
-        const { name,
-            discountPercentage,
-            repeatCoupon,
-            maxUserLimit,
-            maxDiscountAmount,
-            createdFor,
-            startDate,
-            endDate,
-            isMonthlyActive,
-            couponAuthor,
-            imageUrl,
-            productId,
-            customerId,
-            productCategoryId,
-            productSubCategoryId,
-            storeId
-        } = req.body;
+        const { name, discountPercentage, repeatCoupon, maxUserLimit, minOrderAmount, maxDiscountAmount, createdFor, startDate, endDate, isMonthlyActive, couponAuthor, description, imageUrl, productId, customerId, productCategoryId, productSubCategoryId, storeId } = req.body;
 
         var permission = false;
         console.log('type', req.currentUser.id);
@@ -71,7 +55,7 @@ export class CouponDatabaseLayer {
                 name: name,
                 discountPercentage: discountPercentage,
                 couponCode: code,
-                repeatCoupon: repeatCoupon,
+                isRepeatCoupon: repeatCoupon,
                 maxUserLimit: maxUserLimit,
                 maxDiscountAmount: maxDiscountAmount,
                 createdFor: createdFor,
@@ -80,7 +64,9 @@ export class CouponDatabaseLayer {
                 isMonthlyActive: isMonthlyActive,
                 couponAuthor: req.currentUser.type,
                 imageUrl: imageUrl,
-                isActive: true
+                isActive: true,
+                description: description,
+                minOrderAmount: minOrderAmount
             });
             if (productId != null && productId != undefined && productId.length != 0) {
                 console.log('you are safe productId');
@@ -104,7 +90,7 @@ export class CouponDatabaseLayer {
                         baseId: e,
                     })
                     CouponMappingData.save();
-                   await new CouponMappingCreatedPublisher(natsWrapper.client).publish({
+                    await new CouponMappingCreatedPublisher(natsWrapper.client).publish({
                         id: CouponMappingData.id,
                         couponId: CouponMappingData.couponId,
                         isProduct: CouponMappingData.isProduct,
@@ -177,7 +163,9 @@ export class CouponDatabaseLayer {
                         isProductSubCategory: false,
                         baseId: e
                     })
+
                     await CouponMappingData.save();
+
                     await new CouponMappingCreatedPublisher(natsWrapper.client).publish({
                         id: CouponMappingData.id,
                         couponId: CouponMappingData.couponId,
@@ -273,7 +261,7 @@ export class CouponDatabaseLayer {
                 name: CouponData.name,
                 discountPercentage: CouponData.discountPercentage,
                 couponCode: CouponData.couponCode,
-                repeatCoupon:CouponData.repeatCoupon,
+                repeatCoupon: CouponData.isRepeatCoupon,
                 maxUserLimit: CouponData.maxUserLimit,
                 maxDiscountAmount: CouponData.maxDiscountAmount,
                 createdFor: CouponData.createdFor,
@@ -281,18 +269,17 @@ export class CouponDatabaseLayer {
                 endDate: CouponData.endDate,
                 isMonthlyActive: CouponData.isMonthlyActive,
                 couponAuthor: CouponData.couponAuthor,
-                imageUrl:CouponData.imageUrl
+                imageUrl: CouponData.imageUrl
             })
             const data = Coupon.aggregate([
                 { "$addFields": { "cId": { "$toString": "$_id" } } },
                 { $match: { _id: new mongoose.Types.ObjectId(CouponData.id) } },
-               
                 {
                     $lookup: {
                         from: 'couponmappings',
                         localField: 'cId',
                         foreignField: 'couponId',
-                        as: 'couponID'
+                        as: 'couponId'
                     }
                 }
             ])
@@ -304,10 +291,7 @@ export class CouponDatabaseLayer {
     }
 
     static async updateCoupon(req: any, id: string) {
-    
-
         var permission = false;
-        console.log('type', req.currentUser.type);
 
         if (req.currentUser.type == 'Vendor') {
             const userData = await BusinessUser.findById(req.currentUser.id);
@@ -360,7 +344,7 @@ export class CouponDatabaseLayer {
                     })
                 }
             }
-            
+
         } else if (req.currentUser.type == "Admin") {
             permission = true;
         } else {
@@ -397,7 +381,10 @@ export class CouponDatabaseLayer {
     }
 
     static async getCouponActiveList(req: any) {
-        const data = await Coupon.find({ isActive: true })
+        const date = new Date();
+        console.log('date', date);
+
+        const data = await Coupon.find({ $and: [{ isActive: true }, { startDate: { "$gte": new Date() } }, { endDate: { '$gte': new Date() } }] })
         if (data) {
             return data;
         } else {
@@ -414,5 +401,49 @@ export class CouponDatabaseLayer {
         }
     }
 
+    static async getMyCoupon(req: any) {
+
+        const data = await CouponMapping.aggregate([
+            { $match: { $and: [{ isCustomer: true }, { baseId: new mongoose.Types.ObjectId(req.currentUser.id) }] } },
+            { $group: { _id : '$couponId' } }
+        ]);
+
+        const couponList:any[]=[];
+
+        data.map((e:any)=>{
+            couponList.push( new mongoose.Types.ObjectId(e._id));
+        })
+
+        const couponData= await Coupon.aggregate([{$match:{$and:[{_id:{$in:couponList}},{isActive:true}]}},
+            {
+                "$project": {
+                    'couponId': '$_id',
+                    '_id': 0,
+                    "name": 1,
+                    "description":1,
+                    "startDate":1,
+                    "endDate":1,
+                    "couponCode":1,
+                    "imageUrl":1,
+                    "expiryOfCoupon": {
+                      "$cond": { 
+                        "if":  { $and:[ {$lte: ['$startDate',new Date()]},  {$lte:['$endDate',new Date()]} ]},
+                        "then": "expired",
+                        "else": {
+                            "$cond": { 
+                                "if":  { $and:[ {$lte: ['$startDate',new Date()]},  {$gte:['$endDate',new Date()]} ]},
+                                "then": "ongoing",
+                                "else": "upcoming",
+                        }
+                      }
+                    }
+                  }
+                }
+            }
+        ]);
+
+        return couponData;
+        
+    }
 
 }

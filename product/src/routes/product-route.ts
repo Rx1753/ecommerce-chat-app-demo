@@ -14,8 +14,9 @@ router.get('/api/product/search/:data',ProductDomain.serchData);
 
 router.get('/api/product/getproduct',ProductDomain.getProduct);
 router.get('/api/product/getwith/variantproduct',ProductDomain.getProductWithVariant);
-router.get('/api/product/get/variant/product/:id',ProductDomain.getProductVariant);
+router.get('/api/product/get/variant/product',ProductDomain.getProductVariant);
 router.get('/api/product/variant/check',ProductDomain.checkProductCombination);
+router.get('/api/product/suggest/coupon/:id',ProductDomain.couponSuggestionBasedOnProduct);
 
 
 router.post('/api/product/create',verifyToken,ProductValidation.ProductCreateValidation,validateRequest,ProductDomain.createProduct);

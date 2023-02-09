@@ -39,4 +39,9 @@ export class CouponDomain {
         const Coupon =  await CouponDatabaseLayer.getCouponDeactiveList(req);
         res.status(201).send(Coupon);
     }
+    
+    static async getMyCoupon(req: Request, res: Response) {
+        const Coupon =  await CouponDatabaseLayer.getMyCoupon(req);
+        res.status(201).send(Coupon);
+    }
 }

@@ -3,7 +3,7 @@ import { Subjects, Listener, CouponMappingCreatedEvent } from "@rx-ecommerce-cha
 import { Country } from "../../models/country";
 import { queueGroup } from "./queue-group-name";
 import { Coupon } from "../../models/coupon";
-import { baseIdEnum, CouponMapping } from "../../models/coupon-mapping";
+import {  CouponMapping } from "../../models/coupon-mapping";
 
 export class CouponMappingCreatedListener extends Listener<CouponMappingCreatedEvent>{
     queueGroupName = queueGroup;
@@ -25,7 +25,6 @@ export class CouponMappingCreatedListener extends Listener<CouponMappingCreatedE
             isProductCategory,
             isProductSubCategory,
             baseId,
-            baseType:baseType as baseIdEnum
         });
 
         couponData._id = id

@@ -65,7 +65,6 @@ const OrderProductSchema = new mongoose.Schema({
     deliveryRecivedDate: { type: Date, default: null },
     deliveryCharges: { type: Number, default: 0 },
     orderStatus: { type: String, enum: ['pending', 'accepted', 'rejected', 'completed', 'cancelled', 'returned', 'requested', 'enRoute'], default: 'pending' },
-    couponId: { type: mongoose.Schema.Types.ObjectId || null, ref: 'Coupon', default: null },
     discountPrice: { type: Number },
     originalPrice: { type: Number },
     payableAmount: { type: Number },
